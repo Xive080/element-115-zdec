@@ -625,6 +625,7 @@ set(SRC_DATABASE
 	"${SRC_DIR}/database/db_memory.h"
 	"${SRC_DIR}/database/db_registry.cpp"
 	"${SRC_DIR}/database/db_registry.h"
+	"${SRC_DIR}/database/db_arena.cpp"
 	"${SRC_DIR}/database/db_stream.cpp"
 	"${SRC_DIR}/database/db_stream.h"
 	"${SRC_DIR}/database/db_stream_load.cpp"

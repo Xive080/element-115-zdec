@@ -2,6 +2,7 @@
 #include <win32/win_common.h>
 #include <cstddef>
 #include "database.h"
+#include <universal/ptr32.h>
 #include <bgame/bg_emblems.h>
 #include <gfx_d3d/r_material.h>
 #include <xanim/xmodel.h>
@@ -24,9 +25,9 @@ enum DBCloneMethod : __int32
 
 struct RawFile // sizeof=0xC
 {                                       // XREF: XAssetPoolEntry<RawFile>/r
-    const char *name;
+    PTR32(const char) name;
     int len;
-    const char *buffer;
+    PTR32(const char) buffer;
 };
 
 struct XZoneInfoInternal // sizeof=0x44
@@ -203,6 +204,7 @@ void __cdecl DB_RemoveGfxWorld(XAssetHeader);
 void __cdecl Load_LightDefAsset(XAssetHeader *lightDef);
 void __cdecl Mark_LightDefAsset(GfxLightDef *lightDef);
 void __cdecl Load_FontAsset(XAssetHeader *font);
+void __cdecl Load_FontAsset32(PTR32(Font_s) *font);
 void __cdecl Mark_FontAsset(Font_s *font);
 void __cdecl Load_MenuListAsset(XAssetHeader *menuList);
 void __cdecl Mark_MenuListAsset(MenuList *menuList);
@@ -222,8 +224,10 @@ void __cdecl Load_FxEffectDefFromName(const char **name);
 void __cdecl Load_FxImpactTableAsset(XAssetHeader *impactFx);
 void __cdecl Mark_FxImpactTableAsset(FxImpactTable *impactFx);
 void __cdecl Load_RawFileAsset(XAssetHeader *rawfile);
+void __cdecl Load_RawFileAsset32(PTR32(RawFile) *rawfile);
 void __cdecl Mark_RawFileAsset(RawFile *rawfile);
 void __cdecl Load_StringTableAsset(XAssetHeader *stringTable);
+void __cdecl Load_StringTableAsset32(PTR32(StringTable) *stringTable);
 void __cdecl Mark_StringTableAsset(StringTable *stringTable);
 void __cdecl Load_PackIndexAsset(XAssetHeader *packIndex);
 void __cdecl Mark_PackIndexAsset(PackIndex *packIndex);

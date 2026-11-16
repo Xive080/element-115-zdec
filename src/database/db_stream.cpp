@@ -84,7 +84,7 @@ unsigned __int8 *__cdecl DB_AllocStreamPos(int alignment)
     {
         __debugbreak();
     }
-    g_streamPos = (unsigned __int8 *)(~alignment & (unsigned int)&g_streamPos[alignment]);
+    g_streamPos = (unsigned __int8 *)(~(uintptr_t)alignment & (uintptr_t)&g_streamPos[alignment]);
     return g_streamPos;
 }
 
@@ -103,6 +103,18 @@ void __cdecl DB_IncStreamPos(int size)
     //    __debugbreak();
     //}
     g_streamPos += size;
+}
+
+// Hueco de puntero de 4 bytes en el stream (formato .ff), leido/escrito como uint32 (offset de Ptr32 en LP64).
+unsigned int *__cdecl DB_InsertPointer32()
+{
+    unsigned int *pData;
+
+    DB_PushStreamPos(4u);
+    pData = (unsigned int *)DB_AllocStreamPos(3);
+    DB_IncStreamPos(4);
+    DB_PopStreamPos();
+    return pData;
 }
 
 const void **__cdecl DB_InsertPointer()

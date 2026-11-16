@@ -1,6 +1,7 @@
 #include "db_load.h"
 #include "db_stream_load.h"
 #include "db_stream.h"
+#include "db_file_load.h"
 #include <xanim/dobj.h>
 #include "db_stringtable_load.h"
 
@@ -59,6 +60,13 @@ unsigned __int16 *varScriptString;
 const char *varConstChar;
 const char **varTempString;
 const char **varXString;
+PTR32(const char) *varXString32;
+PTR32(Material) *varMaterialHandle32;
+#if defined(__LP64__)
+#define PTR32_RAW(x) ((x).off)
+#else
+#define PTR32_RAW(x) ((unsigned int)(x))
+#endif
 ScriptStringList *varScriptStringList;
 complex_s *varcomplex_t;
 dmaterial_t *vardmaterial_t;
@@ -305,12 +313,12 @@ EmblemCategory *varEmblemCategory;
 EmblemSet *varEmblemSet;
 EmblemSet **varEmblemSetPtr;
 RawFile *varRawFile;
-RawFile **varRawFilePtr;
+PTR32(RawFile) *varRawFilePtr;
 XGlobals *varXGlobals;
 XGlobals **varXGlobalsPtr;
 StringTableCell *varStringTableCell;
 StringTable *varStringTable;
-StringTable **varStringTablePtr;
+PTR32(StringTable) *varStringTablePtr;
 ddlMemberDef_t *varddlMemberDef_t;
 ddlStructDef_t *varddlStructDef_t;
 ddlEnumDef_t *varddlEnumDef_t;
@@ -363,7 +371,7 @@ GfxHeroLightTree *varGfxHeroLightTree;
 GfxWorld **varGfxWorldPtr;
 Glyph *varGlyph;
 Font_s *varFont;
-Font_s **varFontHandle;
+PTR32(Font_s) *varFontHandle;
 GlassDef *varGlassDef;
 Glasses *varGlasses;
 Glasses **varGlassesPtr;
@@ -591,6 +599,26 @@ void __cdecl Load_XString(bool atStreamStart)
         else
         {
             DB_ConvertOffsetToPointer((unsigned int *)varXString);
+        }
+    }
+}
+
+// Variante para campos PTR32(const char): hueco de 4 bytes en el stream, offset Ptr32 en memoria (LP64)
+void __cdecl Load_XString32(bool atStreamStart)
+{
+    Load_Stream(atStreamStart, (unsigned __int8 *)varXString32, 4);
+    if ( *varXString32 )
+    {
+        if ( *varXString32 == (const char *)-1 )
+        {
+            *varXString32 = (const char *)AllocLoad_raw_byte();
+            varConstChar = *varXString32;
+            unsigned __int8 *numBytesLoaded = DB_LoadXFileDataNullTerminated((unsigned __int8 *)(const char *)*varXString32);
+            DB_IncStreamPos((int)(intptr_t)numBytesLoaded);
+        }
+        else
+        {
+            DB_ConvertOffsetToPointer((unsigned int *)varXString32);
         }
     }
 }
@@ -2500,6 +2528,38 @@ void __cdecl Load_Material(bool atStreamStart)
 }
 
 void *DB_ModLinkDeferredAlias(void *data); // db_registry.cpp (mod L60/L62)
+// Variante para campos PTR32(Material) (hueco de 4 bytes; mismo flujo que Load_MaterialHandle)
+void __cdecl Load_MaterialHandle32(bool atStreamStart)
+{
+    unsigned int *inserted;
+    unsigned int value;
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialHandle32, 4);
+    DB_PushStreamPos(0);
+    if ( *varMaterialHandle32 )
+    {
+        value = PTR32_RAW(*varMaterialHandle32);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
+        {
+            *varMaterialHandle32 = (Material *)AllocLoad_FxElemVisStateSample();
+            varMaterial = *varMaterialHandle32;
+            inserted = (value == 0xFFFFFFFEu) ? DB_InsertPointer32() : 0;
+            Load_Material(1);
+            Material *m = *varMaterialHandle32;
+            Load_MaterialAsset(&m);
+            *varMaterialHandle32 = m;
+            if ( inserted )
+                *inserted = PTR32_RAW(*varMaterialHandle32);
+        }
+        else
+        {
+            DB_ConvertOffsetToAlias((unsigned int *)varMaterialHandle32);
+            *varMaterialHandle32 = (Material *)DB_ModLinkDeferredAlias(*varMaterialHandle32);
+        }
+    }
+    DB_PopStreamPos();
+}
+
 void __cdecl Load_MaterialHandle(bool atStreamStart)
 {
     const void **inserted; // [esp+0h] [ebp-Ch]
@@ -7347,8 +7407,8 @@ void __cdecl Load_RawFile(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varRawFile, 12);
     DB_PushStreamPos(4u);
-    varXString = &varRawFile->name;
-    Load_XString(0);
+    varXString32 = &varRawFile->name;
+    Load_XString32(0);
     if ( varRawFile->buffer )
     {
         varRawFile->buffer = (const char *)AllocLoad_raw_byte();
@@ -7360,26 +7420,26 @@ void __cdecl Load_RawFile(bool atStreamStart)
 
 void __cdecl Load_RawFilePtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varRawFilePtr, 4);
     DB_PushStreamPos(0);
     if ( *varRawFilePtr )
     {
-        value = (unsigned int)*varRawFilePtr;
-        if ( *varRawFilePtr == (RawFile *)-1 || value == -2 )
+        value = PTR32_RAW(*varRawFilePtr);
+        if ( *varRawFilePtr == (RawFile *)-1 || value == 0xFFFFFFFEu )
         {
             *varRawFilePtr = (RawFile *)AllocLoad_FxElemVisStateSample();
             varRawFile = *varRawFilePtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_RawFile(1);
-            Load_RawFileAsset((XAssetHeader *)varRawFilePtr);
+            Load_RawFileAsset32(varRawFilePtr);
             if ( inserted )
-                *inserted = *varRawFilePtr;
+                *inserted = PTR32_RAW(*varRawFilePtr);
         }
         else
         {
@@ -7450,8 +7510,8 @@ void __cdecl Mark_XGlobalsPtr()
 void __cdecl Load_StringTableCell(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varStringTableCell, 8);
-    varXString = &varStringTableCell->string;
-    Load_XString(0);
+    varXString32 = &varStringTableCell->string;
+    Load_XString32(0);
 }
 
 void __cdecl Load_StringTableCellArray(bool atStreamStart, int count)
@@ -7473,8 +7533,8 @@ void __cdecl Load_StringTable(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varStringTable, sizeof(StringTable));
     DB_PushStreamPos(4u);
-    varXString = &varStringTable->name;
-    Load_XString(0);
+    varXString32 = &varStringTable->name;
+    Load_XString32(0);
     if ( varStringTable->values )
     {
         varStringTable->values = (StringTableCell *)AllocLoad_FxElemVisStateSample();
@@ -7492,26 +7552,26 @@ void __cdecl Load_StringTable(bool atStreamStart)
 
 void __cdecl Load_StringTablePtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varStringTablePtr, 4);
     DB_PushStreamPos(0);
     if ( *varStringTablePtr )
     {
-        value = (unsigned int)*varStringTablePtr;
-        if ( *varStringTablePtr == (StringTable *)-1 || value == -2 )
+        value = PTR32_RAW(*varStringTablePtr);
+        if ( *varStringTablePtr == (StringTable *)-1 || value == 0xFFFFFFFEu )
         {
             *varStringTablePtr = (StringTable *)AllocLoad_FxElemVisStateSample();
             varStringTable = *varStringTablePtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_StringTable(1);
-            Load_StringTableAsset((XAssetHeader *)varStringTablePtr);
+            Load_StringTableAsset32(varStringTablePtr);
             if ( inserted )
-                *inserted = *varStringTablePtr;
+                *inserted = PTR32_RAW(*varStringTablePtr);
         }
         else
         {
@@ -8877,12 +8937,12 @@ void __cdecl Load_Font(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varFont, sizeof(Font_s));
     DB_PushStreamPos(4u);
-    varXString = &varFont->fontName;
-    Load_XString(0);
-    varMaterialHandle = &varFont->material;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varFont->glowMaterial;
-    Load_MaterialHandle(0);
+    varXString32 = &varFont->fontName;
+    Load_XString32(0);
+    varMaterialHandle32 = &varFont->material;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varFont->glowMaterial;
+    Load_MaterialHandle32(0);
     if ( varFont->glyphs )
     {
         if ( varFont->glyphs == (Glyph *)-1 )
@@ -8901,26 +8961,26 @@ void __cdecl Load_Font(bool atStreamStart)
 
 void __cdecl Load_FontHandle(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varFontHandle, 4);
     DB_PushStreamPos(0);
     if ( *varFontHandle )
     {
-        value = (unsigned int)*varFontHandle;
-        if ( *varFontHandle == (Font_s *)-1 || value == -2 )
+        value = PTR32_RAW(*varFontHandle);
+        if ( *varFontHandle == (Font_s *)-1 || value == 0xFFFFFFFEu )
         {
             *varFontHandle = (Font_s *)AllocLoad_FxElemVisStateSample();
             varFont = *varFontHandle;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_Font(1);
-            Load_FontAsset((XAssetHeader *)varFontHandle);
+            Load_FontAsset32(varFontHandle);
             if ( inserted )
-                *inserted = *varFontHandle;
+                *inserted = PTR32_RAW(*varFontHandle);
         }
         else
         {
@@ -8932,10 +8992,18 @@ void __cdecl Load_FontHandle(bool atStreamStart)
 
 void __cdecl Mark_Font()
 {
-    varMaterialHandle = &varFont->material;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varFont->glowMaterial;
-    Mark_MaterialHandle();
+    varMaterial = varFont->material;
+    if ( varMaterial )
+    {
+        Mark_MaterialAsset(varMaterial);
+        Mark_Material();
+    }
+    varMaterial = varFont->glowMaterial;
+    if ( varMaterial )
+    {
+        Mark_MaterialAsset(varMaterial);
+        Mark_Material();
+    }
 }
 
 void __cdecl Mark_FontHandle()
@@ -9186,7 +9254,7 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_GfxLightDefPtr(atStreamStart);
             break;
         case 20:
-            varFontHandle = (Font_s **)varXAssetHeader;
+            varFontHandle = (PTR32(Font_s) *)varXAssetHeader;
             Load_FontHandle(atStreamStart);
             break;
         case 21:
@@ -9218,11 +9286,11 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_FxImpactTablePtr(atStreamStart);
             break;
         case 36:
-            varRawFilePtr = (RawFile **)varXAssetHeader;
+            varRawFilePtr = (PTR32(RawFile) *)varXAssetHeader;
             Load_RawFilePtr(atStreamStart);
             break;
         case 37:
-            varStringTablePtr = (StringTable **)varXAssetHeader;
+            varStringTablePtr = (PTR32(StringTable) *)varXAssetHeader;
             Load_StringTablePtr(atStreamStart);
             break;
         case 38:
@@ -9329,7 +9397,7 @@ void __cdecl Mark_XAssetHeader()
             Mark_GfxLightDefPtr();
             break;
         case ASSET_TYPE_FONT:
-            varFontHandle = (Font_s **)varXAssetHeader;
+            varFontHandle = (PTR32(Font_s) *)varXAssetHeader;
             Mark_FontHandle();
             break;
         case ASSET_TYPE_MENULIST:
@@ -9361,11 +9429,11 @@ void __cdecl Mark_XAssetHeader()
             Mark_FxImpactTablePtr();
             break;
         case ASSET_TYPE_RAWFILE:
-            varRawFilePtr = (RawFile **)varXAssetHeader;
+            varRawFilePtr = (PTR32(RawFile) *)varXAssetHeader;
             Mark_RawFilePtr();
             break;
         case ASSET_TYPE_STRINGTABLE:
-            varStringTablePtr = (StringTable **)varXAssetHeader;
+            varStringTablePtr = (PTR32(StringTable) *)varXAssetHeader;
             Mark_StringTablePtr();
             break;
         case ASSET_TYPE_PACK_INDEX:

@@ -1,18 +1,19 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct StringTableCell // sizeof=0x8
 {
-    const char *string;
+    PTR32(const char) string;
     int hash;
 };
 
 struct StringTable // sizeof=0x14
 {                                       // XREF: XAssetPoolEntry<StringTable>/r
-    const char *name;
+    PTR32(const char) name;
     int columnCount;
     int rowCount;
-    StringTableCell *values;
-    __int16 *cellIndex;
+    PTR32(StringTableCell) values;
+    PTR32(__int16) cellIndex;
 };
 static_assert(sizeof(StringTable) == 20);
 

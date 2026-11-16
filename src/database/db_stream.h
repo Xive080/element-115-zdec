@@ -15,6 +15,7 @@ unsigned __int8 *__cdecl DB_GetStreamPos();
 unsigned __int8 *__cdecl DB_AllocStreamPos(int alignment);
 void __cdecl DB_IncStreamPos(int size);
 const void **__cdecl DB_InsertPointer();
+unsigned int *__cdecl DB_InsertPointer32();
 
 
 extern XBlock *g_streamBlocks;

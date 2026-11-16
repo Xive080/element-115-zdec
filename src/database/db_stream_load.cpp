@@ -2,6 +2,7 @@
 #include "db_stream.h"
 #include <universal/assertive.h>
 #include <string.h>
+#include <universal/ptr32.h>
 #include "db_file_load.h"
 #include <clientscript/cscr_stringlist.h>
 
@@ -76,12 +77,19 @@ void __cdecl DB_ConvertOffsetToAlias(unsigned int *data)
     {
         __debugbreak();
     }
+    // el hueco alias es un uint32 (offset Ptr32 en LP64, puntero en x86): se copia tal cual
     *data = *(unsigned int *)&g_streamBlocks[(offset - 1) >> 29].data[(offset - 1) & 0x1FFFFFFF];
 }
 
 void __cdecl DB_ConvertOffsetToPointer(unsigned int *data)
 {
-    *data = (unsigned int)&g_streamBlocks[(unsigned int)(*data - 1) >> 29].data[(*data - 1) & 0x1FFFFFFF];
+    unsigned __int8 *p = &g_streamBlocks[(unsigned int)(*data - 1) >> 29].data[(*data - 1) & 0x1FFFFFFF];
+#if defined(__LP64__)
+    Ptr32_AssertInArena(p); // los XBlock deben vivir dentro de la arena
+    *data = (unsigned int)((uintptr_t)p - g_ptr32Base);
+#else
+    *data = (unsigned int)p;
+#endif
 }
 
 void __cdecl Load_XStringCustom(const char **str)

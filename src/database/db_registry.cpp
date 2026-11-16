@@ -938,6 +938,25 @@ void __cdecl Load_RawFileAsset(XAssetHeader *rawfile)
     rawfile->xmodelPieces = DB_AddXAsset(ASSET_TYPE_RAWFILE, (XAssetHeader)rawfile->xmodelPieces).xmodelPieces;
 }
 
+// Variantes para handles PTR32 (slot de 4 bytes): AddXAsset devuelve el puntero del pool (debe estar en la arena)
+void __cdecl Load_RawFileAsset32(PTR32(RawFile) *p)
+{
+    XAssetHeader h; h.rawfile = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_RAWFILE, h).rawfile;
+}
+
+void __cdecl Load_StringTableAsset32(PTR32(StringTable) *p)
+{
+    XAssetHeader h; h.stringTable = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_STRINGTABLE, h).stringTable;
+}
+
+void __cdecl Load_FontAsset32(PTR32(Font_s) *p)
+{
+    XAssetHeader h; h.font = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_FONT, h).font;
+}
+
 void __cdecl Mark_RawFileAsset(RawFile *rawfile)
 {
     DB_GetXAsset(ASSET_TYPE_RAWFILE, (XAssetHeader)rawfile);
