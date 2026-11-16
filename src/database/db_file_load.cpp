@@ -85,7 +85,8 @@ void __cdecl DB_CancelLoadXFile()
     {
         while ( g_load.outstandingReads )
             DB_WaitXFileStage();
-        DB_AuthLoad_InflateEnd(&g_load.stream);
+        if ( !g_load.rawFile )
+            DB_AuthLoad_InflateEnd(&g_load.stream);
         if ( !g_load.f
             && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp", 1172, 0, "%s", "g_load.f") )
         {
@@ -139,8 +140,43 @@ void __cdecl DB_LoadedExternalData(unsigned int size)
     _InterlockedExchangeAdd(&g_loadedExternalBytes, size);
 }
 
+// IWffr100: el payload va sin comprimir; se copia directamente del ring de lectura (compressBuffer).
+static void DB_LoadXFileDataRaw(unsigned __int8 *pos, int size)
+{
+    while ( size > 0 )
+    {
+        if ( !g_load.stream.avail_in )
+        {
+            DB_WaitXFileStage();
+            DB_ReadXFileStage();
+            continue;
+        }
+        unsigned int n = (unsigned int)size;
+        if ( n > g_load.stream.avail_in )
+            n = g_load.stream.avail_in;
+        if ( n > (unsigned int)(g_load.compressBufferEnd - g_load.stream.next_in) )
+            n = (unsigned int)(g_load.compressBufferEnd - g_load.stream.next_in);
+        memcpy(pos, g_load.stream.next_in, n);
+        g_load.stream.next_in += n;
+        g_load.stream.avail_in -= n;
+        if ( g_load.stream.next_in == g_load.compressBufferEnd )
+            g_load.stream.next_in = g_load.compressBufferStart;
+        pos += n;
+        size -= (int)n;
+    }
+}
+
 unsigned __int8 *__cdecl DB_LoadXFileDataNullTerminated(unsigned __int8 *pos)
 {
+    if ( g_load.rawFile )
+    {
+        unsigned __int8 *start = pos;
+        do
+            DB_LoadXFileDataRaw(pos, 1);
+        while ( *pos++ );
+        return (unsigned __int8 *)(pos - start);
+    }
+
     unsigned __int8 *origPos; // [esp+0h] [ebp-4h]
 
     origPos = pos;
@@ -157,6 +193,8 @@ unsigned __int8 *__cdecl DB_LoadXFileDataNullTerminated(unsigned __int8 *pos)
 
 void __cdecl DB_LoadXFileSetSize(int size)
 {
+    if ( g_load.rawFile )
+        return;
     if ( g_load.deflateRemainingFileSize
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
@@ -180,6 +218,11 @@ void __cdecl DB_LoadXFileData(unsigned __int8 *pos, int size)
 
     iassert(size);
     iassert(g_load.f);
+    if ( g_load.rawFile )
+    {
+        DB_LoadXFileDataRaw(pos, size);
+        return;
+    }
     iassert(!g_load.stream.avail_out);
 
 RESTART:
@@ -397,7 +440,8 @@ void __cdecl DB_LoadXFileInternal()
     *(unsigned int *)&magic[4] = *((unsigned int *)g_load.stream.next_in + 1);
     g_load.stream.next_in += 8;
     g_load.stream.avail_in -= 8;
-    if ( memcmp(magic, "IWff0100", 8u) && memcmp(magic, "IWffu100", 8u) )
+    g_load.rawFile = memcmp(magic, "IWffr100", 8u) == 0;
+    if ( !g_load.rawFile && memcmp(magic, "IWff0100", 8u) && memcmp(magic, "IWffu100", 8u) )
     {
         //BLOPS_NULLSUB();
         Com_Error(ERR_DROP, "Fastfile for zone '%s' is corrupt or unreadable.", g_load.filename);
@@ -432,8 +476,8 @@ void __cdecl DB_LoadXFileInternal()
                 version,
                 473);
     }
-    fileIsSecure = memcmp(magic, "IWffu100", 8u) != 0;
-    err = DB_AuthLoad_InflateInit(&g_load.stream, fileIsSecure);
+    fileIsSecure = !g_load.rawFile && memcmp(magic, "IWffu100", 8u) != 0;
+    err = g_load.rawFile ? 0 : DB_AuthLoad_InflateInit(&g_load.stream, fileIsSecure);
     failureReason = 0;
     if ( fileIsSecure )
         failureReason = "authenticated file not supported";
@@ -445,7 +489,7 @@ void __cdecl DB_LoadXFileInternal()
         DB_CancelLoadXFile();
         Com_Error(ERR_DROP, "Fastfile for zone '%s' could not be loaded (%s)", g_load.filename, failureReason);
     }
-    if ( g_load.deflateBufferPos != 0x8000
+    if ( !g_load.rawFile && g_load.deflateBufferPos != 0x8000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
                     1861,

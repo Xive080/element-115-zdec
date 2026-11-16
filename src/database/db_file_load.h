@@ -42,6 +42,7 @@ struct DB_LoadData // sizeof=0x807C
     unsigned __int8 deflateBuffer[32768];
                                         // XREF: DB_LoadXFileDataNullTerminated(uchar *)+2E/r
                                         // DB_LoadXFileData(uchar *,int)+C3/r ...
+    bool rawFile;                       // port: 'IWffr100' = payload sin comprimir (packs web): se lee del ring sin inflate
 };
 
 struct XFile // sizeof=0x24
