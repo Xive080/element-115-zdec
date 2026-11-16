@@ -963,7 +963,7 @@ void __cdecl R_SetWndParms(GfxWindowParms *wndParms)
     {
         refreshRateString = Dvar_EnumToString(r_displayRefresh);
         sscanf(refreshRateString, "%i Hz", &refreshRate);
-        wndParms->hz = (int)R_ClosestRefreshRateForMode(wndParms->displayWidth, wndParms->displayHeight, refreshRate);
+        wndParms->hz = (int)(intptr_t)R_ClosestRefreshRateForMode(wndParms->displayWidth, wndParms->displayHeight, refreshRate);
     }
     else
     {
@@ -999,7 +999,7 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
                     return (const char *)refreshRate;
             }
         }
-        if ( (int)comparison >= 0 )
+        if ( (int)(intptr_t)comparison >= 0 )
             top = mid - 1;
         else
             bot = mid + 1;
@@ -1377,11 +1377,11 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
     {
         resolutionCount = R_AddValidResolution(
                                                 dx.displayModes[modeIndex].Width,
-                                                (int)dx.resolutionNameTable[4 * modeIndex - 1023],
+                                                (int)(intptr_t)dx.resolutionNameTable[4 * modeIndex - 1023],
                                                 resolutionCount,
                                                 availableResolutions);
         refreshRateCount = R_AddValidRefreshRate(
-                                                 (int)dx.resolutionNameTable[4 * modeIndex - 1022],
+                                                 (int)(intptr_t)dx.resolutionNameTable[4 * modeIndex - 1022],
                                                  refreshRateCount,
                                                  availableRefreshRates);
     }
@@ -1547,7 +1547,7 @@ int __stdcall R_MonitorEnumCallback(HMONITOR__ *monitorHandle, HDC__ *hdc, tagRE
     }
     else
     {
-        userData[1] = (unsigned int)monitorHandle;
+        userData[1] = (uint32_t)(uintptr_t)monitorHandle;
         return 0;
     }
 }
