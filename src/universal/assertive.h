@@ -60,7 +60,7 @@ bool Assert_MyHandler(const char *filename, int line, int type, const char *fmt,
 #define nanassertvec3(vec) iassert( !IS_NAN((vec)[0]) && !IS_NAN((vec)[1]) && !IS_NAN((vec)[2]) )
 #define alwaysfails 0
 #else
-#define iassert(expression)
+#define iassert(expression, ...)
 #define vassert(expression, fmt, ...)
 #define bcassert(expression, maxv)
 #define bcassert2(expression, maxv)
