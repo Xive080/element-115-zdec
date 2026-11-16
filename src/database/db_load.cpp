@@ -2808,21 +2808,6 @@ void __cdecl Mark_MaterialHandle32()
     }
 }
 
-void __cdecl Load_MaterialHandleArray32(bool atStreamStart, int count)
-{
-    PTR32(Material) *var;
-    int i;
-
-    Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialHandle32, 4 * count);
-    var = varMaterialHandle32;
-    for ( i = 0; i < count; ++i )
-    {
-        varMaterialHandle32 = var;
-        Load_MaterialHandle32(0);
-        ++var;
-    }
-}
-
 void __cdecl Mark_MaterialHandleArray32(int count)
 {
     PTR32(Material) *var;
@@ -2847,16 +2832,6 @@ void __cdecl Mark_MaterialHandle()
     }
 }
 
-void __cdecl Mark_MaterialHandle32()
-{
-    if ( *varMaterialHandle32 )
-    {
-        varMaterial = *varMaterialHandle32;
-        Mark_MaterialAsset(varMaterial);
-        Mark_Material();
-    }
-}
-
 void __cdecl Mark_MaterialHandleArray(int count)
 {
     Material **var; // [esp+0h] [ebp-8h]
@@ -2867,20 +2842,6 @@ void __cdecl Mark_MaterialHandleArray(int count)
     {
         varMaterialHandle = var;
         Mark_MaterialHandle();
-        ++var;
-    }
-}
-
-void __cdecl Mark_MaterialHandleArray32(int count)
-{
-    PTR32(Material) *var; // [esp+0h] [ebp-8h]
-    int i; // [esp+4h] [ebp-4h]
-
-    var = varMaterialHandle32;
-    for ( i = 0; i < count; ++i )
-    {
-        varMaterialHandle32 = var;
-        Mark_MaterialHandle32();
         ++var;
     }
 }
@@ -2961,7 +2922,8 @@ void __cdecl Mark_GfxLightDefPtr()
 
 void __cdecl Mark_GfxLight()
 {
-    MarkHandle32(varGfxLight->def, varGfxLightDefPtr, Mark_GfxLightDefPtr);
+    varGfxLightDefPtr = &varGfxLight->def;
+    Mark_GfxLightDefPtr();
 }
 
 void __cdecl Load_GfxSurface(bool atStreamStart)
