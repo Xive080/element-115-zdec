@@ -18,6 +18,7 @@
 #include <physics/physconstraints_load_obj.h>
 #include <physics/physpreset_load_obj.h>
 #include <game/pathnode.h>
+#include <clientscript/cscr_stringlist.h>
 #include <DynEntity/DynEntity_client.h>
 #include <DynEntity/DynEntity_load_obj.h>
 #include <ui/ui_utils.h>
@@ -59,7 +60,7 @@ __int16 (*varXQuat2)[2];
 unsigned __int16 *varUnsignedShort;
 unsigned __int16 *varScriptString;
 const char *varConstChar;
-const char **varTempString;
+unsigned int *varTempString;
 const char **varXString;
 PTR32(const char) *varXString32;
 PTR32(Material) *varMaterialHandle32;
@@ -197,13 +198,13 @@ pathnode_constant_t *varpathnode_constant_t;
 pathnode_t *varpathnode_t;
 pathbasenode_t *varpathbasenode_t;
 pathnode_tree_nodes_t *varpathnode_tree_nodes_t;
-pathnode_tree_t **varpathnode_tree_ptr;
+PTR32(pathnode_tree_t) *varpathnode_tree_ptr;
 pathnode_tree_t *varpathnode_tree_t;
 PathData *varPathData;
 GameWorldSp *varGameWorldSp;
-GameWorldSp **varGameWorldSpPtr;
+PTR32(GameWorldSp) *varGameWorldSpPtr;
 GameWorldMp *varGameWorldMp;
-GameWorldMp **varGameWorldMpPtr;
+PTR32(GameWorldMp) *varGameWorldMpPtr;
 const FxEffectDef **varFxEffectDefHandle;
 FxElemMarkVisuals *varFxElemMarkVisuals;
 FxElemVisuals *varFxElemVisuals;
@@ -561,25 +562,28 @@ void __cdecl Load_ConstCharArray(bool atStreamStart, int count)
 
 void __cdecl Load_TempString(bool atStreamStart)
 {
+    // arm64: el campo es de 4 bytes y guarda un indice de script string (no un puntero): se trata como uint32 crudo
     Load_Stream(atStreamStart, (unsigned __int8 *)varTempString, 4);
     if ( *varTempString )
     {
-        if ( *varTempString == (const char *)-1 )
+        if ( *varTempString == 0xFFFFFFFFu )
         {
-            *varTempString = (const char *)AllocLoad_raw_byte();
-            varConstChar = *varTempString;
-            Load_TempStringCustom(varTempString);
+            char *str = (char *)AllocLoad_raw_byte();
+            varConstChar = str;
+            unsigned __int8 *numBytesLoaded = DB_LoadXFileDataNullTerminated((unsigned __int8 *)str);
+            DB_IncStreamPos((int)(intptr_t)numBytesLoaded);
+            *varTempString = (unsigned int)SL_GetString(str, 4u, SCRIPTINSTANCE_SERVER);
         }
         else
         {
-            DB_ConvertOffsetToPointer((unsigned int *)varTempString);
+            DB_ConvertOffsetToPointer(varTempString);
         }
     }
 }
 
 void __cdecl Load_TempStringArray(bool atStreamStart, int count)
 {
-    const char **var; // [esp+0h] [ebp-8h]
+    unsigned int *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varTempString, 4 * count);
@@ -720,8 +724,8 @@ void __cdecl Load_ScriptStringList(bool atStreamStart)
     DB_PushStreamPos(4u);
     if ( varScriptStringList->strings )
     {
-        varScriptStringList->strings = (const char **)AllocLoad_FxElemVisStateSample();
-        varTempString = varScriptStringList->strings;
+        varScriptStringList->strings = (PTR32(const char) *)AllocLoad_FxElemVisStateSample();
+        varTempString = (unsigned int *)(void *)varScriptStringList->strings;
         Load_TempStringArray(1, varScriptStringList->count);
     }
     DB_PopStreamPos();
@@ -3909,7 +3913,7 @@ void __cdecl Load_pathnode_tree_ptr(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varpathnode_tree_ptr, 4);
     if ( *varpathnode_tree_ptr )
     {
-        if ( *varpathnode_tree_ptr == (pathnode_tree_t *)-1 )
+        if ( PTR32_RAW(*varpathnode_tree_ptr) == 0xFFFFFFFFu )
         {
             *varpathnode_tree_ptr = (pathnode_tree_t *)AllocLoad_FxElemVisStateSample();
             varpathnode_tree_t = *varpathnode_tree_ptr;
@@ -3924,7 +3928,7 @@ void __cdecl Load_pathnode_tree_ptr(bool atStreamStart)
 
 void __cdecl Load_pathnode_tree_ptrArray(bool atStreamStart, int count)
 {
-    pathnode_tree_t **var; // [esp+0h] [ebp-8h]
+    PTR32(pathnode_tree_t) *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varpathnode_tree_ptr, 4 * count);
@@ -3946,7 +3950,7 @@ void __cdecl Load_pathnode_tree_info_t(bool atStreamStart)
     }
     else
     {
-        varpathnode_tree_ptr = (pathnode_tree_t **)varpathnode_tree_info_t;
+        varpathnode_tree_ptr = (PTR32(pathnode_tree_t) *)(void *)varpathnode_tree_info_t;
         Load_pathnode_tree_ptrArray(atStreamStart, 2);
     }
 }
@@ -4054,8 +4058,8 @@ void __cdecl Load_GameWorldSp(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGameWorldSp, 44);
     DB_PushStreamPos(4u);
-    varXString = &varGameWorldSp->name;
-    Load_XString(0);
+    varXString32 = &varGameWorldSp->name;
+    Load_XString32(0);
     varPathData = &varGameWorldSp->path;
     Load_PathData(0);
     DB_PopStreamPos();
@@ -4065,8 +4069,8 @@ void __cdecl Load_GameWorldMp(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGameWorldMp, 44);
     DB_PushStreamPos(4u);
-    varXString = &varGameWorldMp->name;
-    Load_XString(0);
+    varXString32 = &varGameWorldMp->name;
+    Load_XString32(0);
     varPathData = &varGameWorldMp->path;
     Load_PathData(0);
     DB_PopStreamPos();
@@ -4074,26 +4078,26 @@ void __cdecl Load_GameWorldMp(bool atStreamStart)
 
 void __cdecl Load_GameWorldSpPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varGameWorldSpPtr, 4);
     DB_PushStreamPos(0);
     if ( *varGameWorldSpPtr )
     {
-        value = (unsigned int)*varGameWorldSpPtr;
-        if ( *varGameWorldSpPtr == (GameWorldSp *)-1 || value == -2 )
+        value = PTR32_RAW(*varGameWorldSpPtr);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varGameWorldSpPtr = (GameWorldSp *)AllocLoad_FxElemVisStateSample();
             varGameWorldSp = *varGameWorldSpPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_GameWorldSp(1);
-            Load_GameWorldSpAsset((XAssetHeader *)varGameWorldSpPtr);
+            Load_GameWorldSpAsset32(varGameWorldSpPtr);
             if ( inserted )
-                *inserted = *varGameWorldSpPtr;
+                *inserted = PTR32_RAW(*varGameWorldSpPtr);
         }
         else
         {
@@ -4105,26 +4109,26 @@ void __cdecl Load_GameWorldSpPtr(bool atStreamStart)
 
 void __cdecl Load_GameWorldMpPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varGameWorldMpPtr, 4);
     DB_PushStreamPos(0);
     if ( *varGameWorldMpPtr )
     {
-        value = (unsigned int)*varGameWorldMpPtr;
-        if ( *varGameWorldMpPtr == (GameWorldMp *)-1 || value == -2 )
+        value = PTR32_RAW(*varGameWorldMpPtr);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varGameWorldMpPtr = (GameWorldMp *)AllocLoad_FxElemVisStateSample();
             varGameWorldMp = *varGameWorldMpPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_GameWorldMp(1);
-            Load_GameWorldMpAsset((XAssetHeader *)varGameWorldMpPtr);
+            Load_GameWorldMpAsset32(varGameWorldMpPtr);
             if ( inserted )
-                *inserted = *varGameWorldMpPtr;
+                *inserted = PTR32_RAW(*varGameWorldMpPtr);
         }
         else
         {
@@ -9557,11 +9561,11 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_ComWorldPtr(atStreamStart);
             break;
         case 14:
-            varGameWorldSpPtr = (GameWorldSp **)varXAssetHeader;
+            varGameWorldSpPtr = (PTR32(GameWorldSp) *)varXAssetHeader;
             Load_GameWorldSpPtr(atStreamStart);
             break;
         case 15:
-            varGameWorldMpPtr = (GameWorldMp **)varXAssetHeader;
+            varGameWorldMpPtr = (PTR32(GameWorldMp) *)varXAssetHeader;
             Load_GameWorldMpPtr(atStreamStart);
             break;
         case 16:
@@ -9700,11 +9704,11 @@ void __cdecl Mark_XAssetHeader()
             Mark_ComWorldPtr();
             break;
         case ASSET_TYPE_GAMEWORLD_SP:
-            varGameWorldSpPtr = (GameWorldSp **)varXAssetHeader;
+            varGameWorldSpPtr = (PTR32(GameWorldSp) *)varXAssetHeader;
             Mark_GameWorldSpPtr();
             break;
         case ASSET_TYPE_GAMEWORLD_MP:
-            varGameWorldMpPtr = (GameWorldMp **)varXAssetHeader;
+            varGameWorldMpPtr = (PTR32(GameWorldMp) *)varXAssetHeader;
             Mark_GameWorldMpPtr();
             break;
         case ASSET_TYPE_MAP_ENTS:

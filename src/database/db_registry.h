@@ -45,14 +45,14 @@ struct XAsset // sizeof=0x8
 struct ScriptStringList // sizeof=0x8
 {                                       // XREF: XAssetList/r
     int count;
-    const char **strings;
+    PTR32(PTR32(const char)) strings;
 };
 
 struct XAssetList // sizeof=0x10
 {                                       // XREF: .data:g_varXAssetList/r
     ScriptStringList stringList;
     int assetCount;
-    XAsset *assets;
+    PTR32(XAsset) assets;
 };
 
 struct PhysConstraints;
@@ -161,6 +161,8 @@ struct clipMap_t;
 
 void __cdecl DB_InitSingleton(void *pool, int size);
 void __cdecl Load_PhysPresetAsset(XAssetHeader *physPreset);
+void __cdecl Load_GameWorldSpAsset32(PTR32(GameWorldSp) *p);
+void __cdecl Load_GameWorldMpAsset32(PTR32(GameWorldMp) *p);
 void __cdecl Load_PhysPresetAsset32(PTR32(PhysPreset) *p);
 void __cdecl Load_PhysConstraintsAsset32(PTR32(PhysConstraints) *p);
 void __cdecl Load_DestructibleDefAsset32(PTR32(DestructibleDef) *p);

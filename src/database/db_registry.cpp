@@ -1,4 +1,5 @@
 #include "db_registry.h"
+#include "db_handle32.h"
 #include <universal/profile.h>
 #include <clientscript/cscr_parsetree.h>
 #include <gfx_d3d/rb_resource.h>
@@ -169,7 +170,7 @@ XAssetHeader DB_AllocXAsset(void *pool)
     }
     else
     {
-        header.data = NULL;
+        header.data = nullptr;
     }
 
     return header;
@@ -1024,6 +1025,18 @@ void __cdecl Load_FxEffectDefFromName32(PTR32(const char) *name)
     }
 }
 
+void __cdecl Load_GameWorldSpAsset32(PTR32(GameWorldSp) *p)
+{
+    XAssetHeader h; h.gameWorldSp = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_GAMEWORLD_SP, h).gameWorldSp;
+}
+
+void __cdecl Load_GameWorldMpAsset32(PTR32(GameWorldMp) *p)
+{
+    XAssetHeader h; h.gameWorldMp = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_GAMEWORLD_MP, h).gameWorldMp;
+}
+
 void __cdecl Load_PackIndexAsset32(PTR32(PackIndex) *p)
 {
     XAssetHeader h; h.packIndex = *p;
@@ -1130,7 +1143,7 @@ void __cdecl DB_FreeXAssetHeader_EmblemSet_(XAssetPoolEntry<EmblemSet> **pool, X
     XAssetPoolEntry<EmblemSet> *oldFreeHead; // [esp+8h] [ebp-4h]
 
     oldFreeHead = *pool;
-    *pool = (XAssetPoolEntry<EmblemSet> *)header.xmodelPieces;
+    *pool = (XAssetPoolEntry<EmblemSet> *)(void *)header.data;
     header.xmodelPieces->name = (const char *)oldFreeHead;
 }
 
@@ -1246,7 +1259,7 @@ GfxImage *__cdecl DB_AllocTempImage()
     Sys_EnterCriticalSection(CRITSECT_DBHASH);
     header.xmodelPieces = DB_AllocXAssetHeader(ASSET_TYPE_IMAGE).xmodelPieces;
     Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-    return (GfxImage *)header.xmodelPieces;
+    return (GfxImage *)(void *)header.data;
 }
 
 XAssetHeader __cdecl DB_AllocXAssetHeader(XAssetType type)
@@ -1630,7 +1643,7 @@ LABEL_62:
     case ASSET_TYPE_XGLOBALS:
     case ASSET_TYPE_GLASSES:
         Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-        result.xmodelPieces = 0;
+        result.data = nullptr;
         break;
     default:
         if (db_xassetdebug)
@@ -2210,7 +2223,7 @@ void __cdecl DB_CloneXAssetInternal(const XAsset *from, XAsset *to)
         __debugbreak();
     }
     size = DB_GetXAssetTypeSize(from->type);
-    memcpy((unsigned __int8 *)to->header.xmodelPieces, (unsigned __int8 *)from->header.xmodelPieces, size);
+    memcpy((void *)to->header.data, (void *)from->header.data, size);
 }
 
 void __cdecl PrintWaitedError(XAssetType type, char *name, int waitedMsec)
@@ -3222,7 +3235,7 @@ void __cdecl DB_GetXAsset(XAssetType type, XAssetHeader header)
     XAssetEntry *assetEntry; // [esp+14h] [ebp-4h]
 
     if ( s_inuseCacheEnabled
-        && s_inuseCache[((unsigned int)header.xmodelPieces >> 2) & 0x1FFF] == HIWORD(header.physPreset) )
+        && s_inuseCache[((unsigned int)PTR32_RAW(header.data) >> 2) & 0x1FFF] == HIWORD(PTR32_RAW(header.data)) )
     {
         ++s_inuseCacheHits;
     }
@@ -3241,7 +3254,7 @@ void __cdecl DB_GetXAsset(XAssetType type, XAssetHeader header)
             {
                 assetEntry->inuse = 1;
                 if ( s_inuseCacheEnabled )
-                    s_inuseCache[((unsigned int)header.xmodelPieces >> 2) & 0x1FFF] = HIWORD(header.physPreset);
+                    s_inuseCache[((unsigned int)PTR32_RAW(header.data) >> 2) & 0x1FFF] = HIWORD(PTR32_RAW(header.data));
                 return;
             }
         }
