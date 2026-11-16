@@ -23,8 +23,10 @@ struct Ptr32 {
     Ptr32() = default;
     Ptr32(std::nullptr_t) : off(0) {}
     Ptr32(T *p) { set(p); }
+    Ptr32(int v) : off((uint32_t)v) {}   // literal 0 (o marcadores -1/-2): evita 'ambiguous ='
     Ptr32 &operator=(T *p) { set(p); return *this; }
     Ptr32 &operator=(std::nullptr_t) { off = 0; return *this; }
+    Ptr32 &operator=(int v) { off = (uint32_t)v; return *this; }
     void set(const T *p)
     {
         uintptr_t v = (uintptr_t)p;
@@ -57,8 +59,10 @@ struct PtrRt32 {
     PtrRt32() = default;
     PtrRt32(std::nullptr_t) : idx(0) {}
     PtrRt32(T *p) : idx(PtrRt32_Register(p)) {}
+    PtrRt32(int v) : idx((uint32_t)v) {}   // solo 0 (nulo) tiene sentido
     PtrRt32 &operator=(T *p) { idx = PtrRt32_Register(p); return *this; }
     PtrRt32 &operator=(std::nullptr_t) { idx = 0; return *this; }
+    PtrRt32 &operator=(int v) { idx = (uint32_t)v; return *this; }
     T *get() const { return (T *)PtrRt32_Resolve(idx); }
     operator T *() const { return get(); }
     T *operator->() const { return get(); }

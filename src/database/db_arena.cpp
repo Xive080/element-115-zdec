@@ -117,5 +117,15 @@ uint32_t PtrRt32_Register(const void *p)
     return g_rtCount;
 }
 
-void *PtrRt32_Resolve(uint32_t idx) { return idx ? g_rtTable[idx] : nullptr; }
+void *PtrRt32_Resolve(uint32_t idx)
+{
+    if (!idx)
+        return nullptr;
+    if (idx > g_rtCount) // indice basura (campo sin inicializar / dato del .ff): fallo ruidoso en vez de leer fuera de tabla
+    {
+        fprintf(stderr, "PtrRt32_Resolve: indice %u fuera de rango (max %u)\n", idx, g_rtCount);
+        abort();
+    }
+    return g_rtTable[idx];
+}
 #endif
