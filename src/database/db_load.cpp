@@ -311,7 +311,7 @@ DestructibleDef *varDestructibleDef;
 flameTable *varflameTable;
 flameTable **varflameTablePtr;
 WeaponDef *varWeaponDef;
-WeaponVariantDef **varWeaponVariantDefPtr;
+PTR32(WeaponVariantDef) *varWeaponVariantDefPtr32;
 WeaponVariantDef *varWeaponVariantDef;
 EmblemIcon *varEmblemIcon;
 EmblemBackground *varEmblemBackground;
@@ -611,6 +611,22 @@ void __cdecl Load_XString(bool atStreamStart)
 }
 
 // Variante para campos PTR32(const char): hueco de 4 bytes en el stream, offset Ptr32 en memoria (LP64)
+void __cdecl Load_XString32(bool atStreamStart);
+void __cdecl Load_XStringArray32(bool atStreamStart, int count)
+{
+    PTR32(const char) *var; // [esp+0h] [ebp-8h]
+    int i; // [esp+4h] [ebp-4h]
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varXString32, 4 * count);
+    var = varXString32;
+    for ( i = 0; i < count; ++i )
+    {
+        varXString32 = var;
+        Load_XString32(0);
+        ++var;
+    }
+}
+
 void __cdecl Load_XString32(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varXString32, 4);
@@ -6858,32 +6874,32 @@ void __cdecl Mark_DestructibleDefPtr()
 void __cdecl Load_flameTable(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varflameTable, 476);
-    varXString = &varflameTable->name;
-    Load_XString(0);
-    varMaterialHandle = &varflameTable->fire;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->smoke;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->heat;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->drips;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->streamFuel;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->streamFuel2;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->streamFlame;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varflameTable->streamFlame2;
-    Load_MaterialHandle(0);
-    varXString = &varflameTable->flameOffLoopSound;
-    Load_XString(0);
-    varXString = &varflameTable->flameIgniteSound;
-    Load_XString(0);
-    varXString = &varflameTable->flameOnLoopSound;
-    Load_XString(0);
-    varXString = &varflameTable->flameCooldownSound;
-    Load_XString(0);
+    varXString32 = &varflameTable->name;
+    Load_XString32(0);
+    varMaterialHandle32 = &varflameTable->fire;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->smoke;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->heat;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->drips;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->streamFuel;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->streamFuel2;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->streamFlame;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varflameTable->streamFlame2;
+    Load_MaterialHandle32(0);
+    varXString32 = &varflameTable->flameOffLoopSound;
+    Load_XString32(0);
+    varXString32 = &varflameTable->flameIgniteSound;
+    Load_XString32(0);
+    varXString32 = &varflameTable->flameOnLoopSound;
+    Load_XString32(0);
+    varXString32 = &varflameTable->flameCooldownSound;
+    Load_XString32(0);
 }
 
 XAsset *__cdecl AllocLoad_FxElemVisStateSample()
@@ -6894,25 +6910,25 @@ XAsset *__cdecl AllocLoad_FxElemVisStateSample()
 void __cdecl Load_WeaponDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varWeaponDef, 2056);
-    varXString = &varWeaponDef->szOverlayName;
-    Load_XString(0);
+    varXString32 = &varWeaponDef->szOverlayName;
+    Load_XString32(0);
     if ( varWeaponDef->gunXModel )
     {
-        if ( varWeaponDef->gunXModel == (XModel **)-1 )
+        if ( varWeaponDef->gunXModel == (PTR32(XModel) *)-1 )
         {
-            varWeaponDef->gunXModel = (XModel **)AllocLoad_FxElemVisStateSample();
-            varXModelPtr = varWeaponDef->gunXModel;
-            Load_XModelPtrArray(1, 16);
+            varWeaponDef->gunXModel = (PTR32(XModel) *)AllocLoad_FxElemVisStateSample();
+            varXModelPtr32 = varWeaponDef->gunXModel;
+            Load_XModelPtrArray32(1, 16);
         }
         else
         {
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->gunXModel);
         }
     }
-    varXModelPtr = &varWeaponDef->handXModel;
-    Load_XModelPtr(0);
-    varXString = &varWeaponDef->szModeName;
-    Load_XString(0);
+    varXModelPtr32 = &varWeaponDef->handXModel;
+    Load_XModelPtr32(0);
+    varXString32 = &varWeaponDef->szModeName;
+    Load_XString32(0);
     if ( varWeaponDef->notetrackSoundMapKeys )
     {
         if ( varWeaponDef->notetrackSoundMapKeys == (unsigned __int16 *)-1 )
@@ -6939,240 +6955,240 @@ void __cdecl Load_WeaponDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->notetrackSoundMapValues);
         }
     }
-    varXString = &varWeaponDef->parentWeaponName;
-    Load_XString(0);
-    varFxEffectDefHandle = &varWeaponDef->viewFlashEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->worldFlashEffect;
-    Load_FxEffectDefHandle(0);
-    varXString = &varWeaponDef->pickupSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->pickupSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->ammoPickupSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->ammoPickupSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->projectileSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->pullbackSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->pullbackSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireLoopSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireLoopSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireLoopEndSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireLoopEndSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireStopSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireStopSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireLastSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->fireLastSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->emptyFireSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->emptyFireSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->crackSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->whizbySound;
-    Load_XString(0);
-    varXString = &varWeaponDef->meleeSwipeSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->meleeSwipeSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->meleeHitSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->meleeMissSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->rechamberSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->rechamberSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadEmptySound;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadEmptySoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadStartSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadStartSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadEndSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadEndSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->rotateLoopSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->rotateLoopSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->deploySound;
-    Load_XString(0);
-    varXString = &varWeaponDef->deploySoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->finishDeploySound;
-    Load_XString(0);
-    varXString = &varWeaponDef->finishDeploySoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->breakdownSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->breakdownSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->finishBreakdownSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->finishBreakdownSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->detonateSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->detonateSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->nightVisionWearSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->nightVisionWearSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->nightVisionRemoveSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->nightVisionRemoveSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->altSwitchSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->altSwitchSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->raiseSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->raiseSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->firstRaiseSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->firstRaiseSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->putawaySound;
-    Load_XString(0);
-    varXString = &varWeaponDef->putawaySoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->overheatSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->overheatSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->adsZoomSound;
-    Load_XString(0);
+    varXString32 = &varWeaponDef->parentWeaponName;
+    Load_XString32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->viewFlashEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->worldFlashEffect;
+    Load_FxEffectDefHandle32(0);
+    varXString32 = &varWeaponDef->pickupSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->pickupSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->ammoPickupSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->ammoPickupSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->projectileSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->pullbackSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->pullbackSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireLoopSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireLoopSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireLoopEndSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireLoopEndSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireStopSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireStopSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireLastSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->fireLastSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->emptyFireSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->emptyFireSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->crackSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->whizbySound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->meleeSwipeSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->meleeSwipeSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->meleeHitSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->meleeMissSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->rechamberSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->rechamberSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadEmptySound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadEmptySoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadStartSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadStartSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadEndSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadEndSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->rotateLoopSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->rotateLoopSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->deploySound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->deploySoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->finishDeploySound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->finishDeploySoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->breakdownSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->breakdownSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->finishBreakdownSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->finishBreakdownSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->detonateSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->detonateSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->nightVisionWearSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->nightVisionWearSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->nightVisionRemoveSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->nightVisionRemoveSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->altSwitchSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->altSwitchSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->raiseSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->raiseSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->firstRaiseSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->firstRaiseSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->putawaySound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->putawaySoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->overheatSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->overheatSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->adsZoomSound;
+    Load_XString32(0);
     if ( varWeaponDef->bounceSound )
     {
-        if ( varWeaponDef->bounceSound == (const char **)-1 )
+        if ( varWeaponDef->bounceSound == (PTR32(const char) *)-1 )
         {
-            varWeaponDef->bounceSound = (const char **)AllocLoad_FxElemVisStateSample();
-            varXString = varWeaponDef->bounceSound;
-            Load_XStringArray(1, 31);
+            varWeaponDef->bounceSound = (PTR32(const char) *)AllocLoad_FxElemVisStateSample();
+            varXString32 = varWeaponDef->bounceSound;
+            Load_XStringArray32(1, 31);
         }
         else
         {
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->bounceSound);
         }
     }
-    varXString = &varWeaponDef->standMountedWeapdef;
-    Load_XString(0);
-    varXString = &varWeaponDef->crouchMountedWeapdef;
-    Load_XString(0);
-    varXString = &varWeaponDef->proneMountedWeapdef;
-    Load_XString(0);
-    varFxEffectDefHandle = &varWeaponDef->viewShellEjectEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->worldShellEjectEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->viewLastShotEjectEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->worldLastShotEjectEffect;
-    Load_FxEffectDefHandle(0);
-    varMaterialHandle = &varWeaponDef->reticleCenter;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varWeaponDef->reticleSide;
-    Load_MaterialHandle(0);
+    varXString32 = &varWeaponDef->standMountedWeapdef;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->crouchMountedWeapdef;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->proneMountedWeapdef;
+    Load_XString32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->viewShellEjectEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->worldShellEjectEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->viewLastShotEjectEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->worldLastShotEjectEffect;
+    Load_FxEffectDefHandle32(0);
+    varMaterialHandle32 = &varWeaponDef->reticleCenter;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varWeaponDef->reticleSide;
+    Load_MaterialHandle32(0);
     if ( varWeaponDef->worldModel )
     {
-        if ( varWeaponDef->worldModel == (XModel **)-1 )
+        if ( varWeaponDef->worldModel == (PTR32(XModel) *)-1 )
         {
-            varWeaponDef->worldModel = (XModel **)AllocLoad_FxElemVisStateSample();
-            varXModelPtr = varWeaponDef->worldModel;
-            Load_XModelPtrArray(1, 16);
+            varWeaponDef->worldModel = (PTR32(XModel) *)AllocLoad_FxElemVisStateSample();
+            varXModelPtr32 = varWeaponDef->worldModel;
+            Load_XModelPtrArray32(1, 16);
         }
         else
         {
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->worldModel);
         }
     }
-    varXModelPtr = &varWeaponDef->worldClipModel;
-    Load_XModelPtr(0);
-    varXModelPtr = &varWeaponDef->rocketModel;
-    Load_XModelPtr(0);
-    varXModelPtr = &varWeaponDef->mountedModel;
-    Load_XModelPtr(0);
-    varXModelPtr = &varWeaponDef->additionalMeleeModel;
-    Load_XModelPtr(0);
-    varMaterialHandle = &varWeaponDef->hudIcon;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varWeaponDef->ammoCounterIcon;
-    Load_MaterialHandle(0);
-    varXString = &varWeaponDef->szSharedAmmoCapName;
-    Load_XString(0);
+    varXModelPtr32 = &varWeaponDef->worldClipModel;
+    Load_XModelPtr32(0);
+    varXModelPtr32 = &varWeaponDef->rocketModel;
+    Load_XModelPtr32(0);
+    varXModelPtr32 = &varWeaponDef->mountedModel;
+    Load_XModelPtr32(0);
+    varXModelPtr32 = &varWeaponDef->additionalMeleeModel;
+    Load_XModelPtr32(0);
+    varMaterialHandle32 = &varWeaponDef->hudIcon;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varWeaponDef->ammoCounterIcon;
+    Load_MaterialHandle32(0);
+    varXString32 = &varWeaponDef->szSharedAmmoCapName;
+    Load_XString32(0);
     varScriptString = &varWeaponDef->explosionTag;
     Load_ScriptString(0);
-    varXString = &varWeaponDef->spinLoopSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->spinLoopSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->startSpinSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->startSpinSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->stopSpinSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->stopSpinSoundPlayer;
-    Load_XString(0);
-    varXString = &varWeaponDef->stackSound;
-    Load_XString(0);
-    varMaterialHandle = &varWeaponDef->killIcon;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varWeaponDef->indicatorIcon;
-    Load_MaterialHandle(0);
-    varXString = &varWeaponDef->szSpawnedGrenadeWeaponName;
-    Load_XString(0);
-    varXString = &varWeaponDef->szDualWieldWeaponName;
-    Load_XString(0);
-    varXModelPtr = &varWeaponDef->projectileModel;
-    Load_XModelPtr(0);
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect2;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect3;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect4;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect5;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->projDudEffect;
-    Load_FxEffectDefHandle(0);
-    varXString = &varWeaponDef->projExplosionSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->projDudSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->mortarShellSound;
-    Load_XString(0);
-    varXString = &varWeaponDef->tankShellSound;
-    Load_XString(0);
+    varXString32 = &varWeaponDef->spinLoopSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->spinLoopSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->startSpinSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->startSpinSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->stopSpinSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->stopSpinSoundPlayer;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->stackSound;
+    Load_XString32(0);
+    varMaterialHandle32 = &varWeaponDef->killIcon;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varWeaponDef->indicatorIcon;
+    Load_MaterialHandle32(0);
+    varXString32 = &varWeaponDef->szSpawnedGrenadeWeaponName;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->szDualWieldWeaponName;
+    Load_XString32(0);
+    varXModelPtr32 = &varWeaponDef->projectileModel;
+    Load_XModelPtr32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect2;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect3;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect4;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect5;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projDudEffect;
+    Load_FxEffectDefHandle32(0);
+    varXString32 = &varWeaponDef->projExplosionSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->projDudSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->mortarShellSound;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->tankShellSound;
+    Load_XString32(0);
     if ( varWeaponDef->parallelBounce )
     {
         if ( varWeaponDef->parallelBounce == (float *)-1 )
@@ -7199,14 +7215,14 @@ void __cdecl Load_WeaponDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->perpendicularBounce);
         }
     }
-    varFxEffectDefHandle = &varWeaponDef->projTrailEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->projIgnitionEffect;
-    Load_FxEffectDefHandle(0);
-    varXString = &varWeaponDef->projIgnitionSound;
-    Load_XString(0);
-    varXString = varWeaponDef->accuracyGraphName;
-    Load_XString(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projTrailEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->projIgnitionEffect;
+    Load_FxEffectDefHandle32(0);
+    varXString32 = &varWeaponDef->projIgnitionSound;
+    Load_XString32(0);
+    varXString32 = varWeaponDef->accuracyGraphName;
+    Load_XString32(0);
     if ( varWeaponDef->accuracyGraphKnots[0] )
     {
         if ( varWeaponDef->accuracyGraphKnots[0] == (float (*)[2])-1 )
@@ -7233,8 +7249,8 @@ void __cdecl Load_WeaponDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)varWeaponDef->originalAccuracyGraphKnots);
         }
     }
-    varXString = &varWeaponDef->accuracyGraphName[1];
-    Load_XString(0);
+    varXString32 = &varWeaponDef->accuracyGraphName[1];
+    Load_XString32(0);
     if ( varWeaponDef->accuracyGraphKnots[1] )
     {
         if ( varWeaponDef->accuracyGraphKnots[1] == (float (*)[2])-1 )
@@ -7261,12 +7277,12 @@ void __cdecl Load_WeaponDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->originalAccuracyGraphKnots[1]);
         }
     }
-    varXString = &varWeaponDef->szUseHintString;
-    Load_XString(0);
-    varXString = &varWeaponDef->dropHintString;
-    Load_XString(0);
-    varXString = &varWeaponDef->szScript;
-    Load_XString(0);
+    varXString32 = &varWeaponDef->szUseHintString;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->dropHintString;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->szScript;
+    Load_XString32(0);
     if ( varWeaponDef->locationDamageMultipliers )
     {
         if ( varWeaponDef->locationDamageMultipliers == (float *)-1 )
@@ -7280,16 +7296,16 @@ void __cdecl Load_WeaponDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->locationDamageMultipliers);
         }
     }
-    varXString = &varWeaponDef->fireRumble;
-    Load_XString(0);
-    varXString = &varWeaponDef->meleeImpactRumble;
-    Load_XString(0);
-    varXString = &varWeaponDef->reloadRumble;
-    Load_XString(0);
-    varXString = &varWeaponDef->flameTableFirstPerson;
-    Load_XString(0);
-    varXString = &varWeaponDef->flameTableThirdPerson;
-    Load_XString(0);
+    varXString32 = &varWeaponDef->fireRumble;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->meleeImpactRumble;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->reloadRumble;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->flameTableFirstPerson;
+    Load_XString32(0);
+    varXString32 = &varWeaponDef->flameTableThirdPerson;
+    Load_XString32(0);
     if ( varWeaponDef->flameTableFirstPersonPtr )
     {
         if ( varWeaponDef->flameTableFirstPersonPtr == (flameTable *)-1 )
@@ -7316,18 +7332,18 @@ void __cdecl Load_WeaponDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponDef->flameTableThirdPersonPtr);
         }
     }
-    varFxEffectDefHandle = &varWeaponDef->tagFx_preparationEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varWeaponDef->tagFlash_preparationEffect;
-    Load_FxEffectDefHandle(0);
+    varFxEffectDefHandle32 = &varWeaponDef->tagFx_preparationEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varWeaponDef->tagFlash_preparationEffect;
+    Load_FxEffectDefHandle32(0);
 }
 
 void __cdecl Load_WeaponVariantDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varWeaponVariantDef, 228);
     DB_PushStreamPos(4u);
-    varXString = &varWeaponVariantDef->szInternalName;
-    Load_XString(0);
+    varXString32 = &varWeaponVariantDef->szInternalName;
+    Load_XString32(0);
     if ( varWeaponVariantDef->weapDef )
     {
         if ( varWeaponVariantDef->weapDef == (WeaponDef *)-1 )
@@ -7341,17 +7357,17 @@ void __cdecl Load_WeaponVariantDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponVariantDef->weapDef);
         }
     }
-    varXString = &varWeaponVariantDef->szDisplayName;
-    Load_XString(0);
-    varXString = &varWeaponVariantDef->szAltWeaponName;
-    Load_XString(0);
+    varXString32 = &varWeaponVariantDef->szDisplayName;
+    Load_XString32(0);
+    varXString32 = &varWeaponVariantDef->szAltWeaponName;
+    Load_XString32(0);
     if ( varWeaponVariantDef->szXAnims )
     {
-        if ( varWeaponVariantDef->szXAnims == (const char **)-1 )
+        if ( varWeaponVariantDef->szXAnims == (PTR32(const char) *)-1 )
         {
-            varWeaponVariantDef->szXAnims = (const char **)AllocLoad_FxElemVisStateSample();
-            varXString = varWeaponVariantDef->szXAnims;
-            Load_XStringArray(1, 66);
+            varWeaponVariantDef->szXAnims = (PTR32(const char) *)AllocLoad_FxElemVisStateSample();
+            varXString32 = varWeaponVariantDef->szXAnims;
+            Load_XStringArray32(1, 66);
         }
         else
         {
@@ -7371,45 +7387,45 @@ void __cdecl Load_WeaponVariantDef(bool atStreamStart)
             DB_ConvertOffsetToPointer((unsigned int *)&varWeaponVariantDef->hideTags);
         }
     }
-    varXString = &varWeaponVariantDef->szAmmoName;
-    Load_XString(0);
-    varXString = &varWeaponVariantDef->szClipName;
-    Load_XString(0);
-    varMaterialHandle = &varWeaponVariantDef->overlayMaterial;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varWeaponVariantDef->overlayMaterialLowRes;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varWeaponVariantDef->dpadIcon;
-    Load_MaterialHandle(0);
+    varXString32 = &varWeaponVariantDef->szAmmoName;
+    Load_XString32(0);
+    varXString32 = &varWeaponVariantDef->szClipName;
+    Load_XString32(0);
+    varMaterialHandle32 = &varWeaponVariantDef->overlayMaterial;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varWeaponVariantDef->overlayMaterialLowRes;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varWeaponVariantDef->dpadIcon;
+    Load_MaterialHandle32(0);
     DB_PopStreamPos();
 }
 
-void __cdecl Load_WeaponVariantDefPtr(bool atStreamStart)
+void __cdecl Load_WeaponVariantDefPtr32(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
-    Load_Stream(atStreamStart, (unsigned __int8 *)varWeaponVariantDefPtr, 4);
+    Load_Stream(atStreamStart, (unsigned __int8 *)varWeaponVariantDefPtr32, 4);
     DB_PushStreamPos(0);
-    if ( *varWeaponVariantDefPtr )
+    if ( *varWeaponVariantDefPtr32 )
     {
-        value = (unsigned int)*varWeaponVariantDefPtr;
-        if ( *varWeaponVariantDefPtr == (WeaponVariantDef *)-1 || value == -2 )
+        value = PTR32_RAW(*varWeaponVariantDefPtr32);
+        if ( *varWeaponVariantDefPtr32 == (WeaponVariantDef *)-1 || value == 0xFFFFFFFEu )
         {
-            *varWeaponVariantDefPtr = (WeaponVariantDef *)AllocLoad_FxElemVisStateSample();
-            varWeaponVariantDef = *varWeaponVariantDefPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            *varWeaponVariantDefPtr32 = (WeaponVariantDef *)AllocLoad_FxElemVisStateSample();
+            varWeaponVariantDef = *varWeaponVariantDefPtr32;
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_WeaponVariantDef(1);
-            Load_WeaponVariantDefAsset((XAssetHeader *)varWeaponVariantDefPtr);
+            Load_WeaponVariantDefAsset32(varWeaponVariantDefPtr32);
             if ( inserted )
-                *inserted = *varWeaponVariantDefPtr;
+                *inserted = PTR32_RAW(*varWeaponVariantDefPtr32);
         }
         else
         {
-            DB_ConvertOffsetToAlias((unsigned int *)varWeaponVariantDefPtr);
+            DB_ConvertOffsetToAlias((unsigned int *)varWeaponVariantDefPtr32);
         }
     }
     DB_PopStreamPos();
@@ -7417,33 +7433,33 @@ void __cdecl Load_WeaponVariantDefPtr(bool atStreamStart)
 
 void __cdecl Mark_flameTable()
 {
-    varMaterialHandle = &varflameTable->fire;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->smoke;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->heat;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->drips;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->streamFuel;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->streamFuel2;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->streamFlame;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varflameTable->streamFlame2;
-    Mark_MaterialHandle();
+    varMaterialHandle32 = &varflameTable->fire;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->smoke;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->heat;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->drips;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->streamFuel;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->streamFuel2;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->streamFlame;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varflameTable->streamFlame2;
+    Mark_MaterialHandle32();
 }
 
 void __cdecl Mark_WeaponDef()
 {
     if ( varWeaponDef->gunXModel )
     {
-        varXModelPtr = varWeaponDef->gunXModel;
-        Mark_XModelPtrArray(16);
+        varXModelPtr32 = varWeaponDef->gunXModel;
+        Mark_XModelPtrArray32(16);
     }
-    varXModelPtr = &varWeaponDef->handXModel;
-    Mark_XModelPtr();
+    varXModelPtr32 = &varWeaponDef->handXModel;
+    Mark_XModelPtr32();
     if ( varWeaponDef->notetrackSoundMapKeys )
     {
         varScriptString = varWeaponDef->notetrackSoundMapKeys;
@@ -7454,63 +7470,63 @@ void __cdecl Mark_WeaponDef()
         varScriptString = varWeaponDef->notetrackSoundMapValues;
         Mark_ScriptStringArray(20);
     }
-    varFxEffectDefHandle = &varWeaponDef->viewFlashEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->worldFlashEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->viewShellEjectEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->worldShellEjectEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->viewLastShotEjectEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->worldLastShotEjectEffect;
-    Mark_FxEffectDefHandle();
-    varMaterialHandle = &varWeaponDef->reticleCenter;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varWeaponDef->reticleSide;
-    Mark_MaterialHandle();
+    varFxEffectDefHandle32 = &varWeaponDef->viewFlashEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->worldFlashEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->viewShellEjectEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->worldShellEjectEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->viewLastShotEjectEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->worldLastShotEjectEffect;
+    Mark_FxEffectDefHandle32();
+    varMaterialHandle32 = &varWeaponDef->reticleCenter;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varWeaponDef->reticleSide;
+    Mark_MaterialHandle32();
     if ( varWeaponDef->worldModel )
     {
-        varXModelPtr = varWeaponDef->worldModel;
-        Mark_XModelPtrArray(16);
+        varXModelPtr32 = varWeaponDef->worldModel;
+        Mark_XModelPtrArray32(16);
     }
-    varXModelPtr = &varWeaponDef->worldClipModel;
-    Mark_XModelPtr();
-    varXModelPtr = &varWeaponDef->rocketModel;
-    Mark_XModelPtr();
-    varXModelPtr = &varWeaponDef->mountedModel;
-    Mark_XModelPtr();
-    varXModelPtr = &varWeaponDef->additionalMeleeModel;
-    Mark_XModelPtr();
-    varMaterialHandle = &varWeaponDef->hudIcon;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varWeaponDef->ammoCounterIcon;
-    Mark_MaterialHandle();
+    varXModelPtr32 = &varWeaponDef->worldClipModel;
+    Mark_XModelPtr32();
+    varXModelPtr32 = &varWeaponDef->rocketModel;
+    Mark_XModelPtr32();
+    varXModelPtr32 = &varWeaponDef->mountedModel;
+    Mark_XModelPtr32();
+    varXModelPtr32 = &varWeaponDef->additionalMeleeModel;
+    Mark_XModelPtr32();
+    varMaterialHandle32 = &varWeaponDef->hudIcon;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varWeaponDef->ammoCounterIcon;
+    Mark_MaterialHandle32();
     varScriptString = &varWeaponDef->explosionTag;
     Mark_ScriptString();
-    varMaterialHandle = &varWeaponDef->killIcon;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varWeaponDef->indicatorIcon;
-    Mark_MaterialHandle();
-    varXModelPtr = &varWeaponDef->projectileModel;
-    Mark_XModelPtr();
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect2;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect3;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect4;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projExplosionEffect5;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projDudEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projTrailEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->projIgnitionEffect;
-    Mark_FxEffectDefHandle();
+    varMaterialHandle32 = &varWeaponDef->killIcon;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varWeaponDef->indicatorIcon;
+    Mark_MaterialHandle32();
+    varXModelPtr32 = &varWeaponDef->projectileModel;
+    Mark_XModelPtr32();
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect2;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect3;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect4;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projExplosionEffect5;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projDudEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projTrailEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->projIgnitionEffect;
+    Mark_FxEffectDefHandle32();
     if ( varWeaponDef->flameTableFirstPersonPtr )
     {
         varflameTable = varWeaponDef->flameTableFirstPersonPtr;
@@ -7521,10 +7537,10 @@ void __cdecl Mark_WeaponDef()
         varflameTable = varWeaponDef->flameTableThirdPersonPtr;
         Mark_flameTable();
     }
-    varFxEffectDefHandle = &varWeaponDef->tagFx_preparationEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varWeaponDef->tagFlash_preparationEffect;
-    Mark_FxEffectDefHandle();
+    varFxEffectDefHandle32 = &varWeaponDef->tagFx_preparationEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varWeaponDef->tagFlash_preparationEffect;
+    Mark_FxEffectDefHandle32();
 }
 
 void __cdecl Mark_WeaponVariantDef()
@@ -7539,19 +7555,19 @@ void __cdecl Mark_WeaponVariantDef()
         varScriptString = varWeaponVariantDef->hideTags;
         Mark_ScriptStringArray(32);
     }
-    varMaterialHandle = &varWeaponVariantDef->overlayMaterial;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varWeaponVariantDef->overlayMaterialLowRes;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varWeaponVariantDef->dpadIcon;
-    Mark_MaterialHandle();
+    varMaterialHandle32 = &varWeaponVariantDef->overlayMaterial;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varWeaponVariantDef->overlayMaterialLowRes;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varWeaponVariantDef->dpadIcon;
+    Mark_MaterialHandle32();
 }
 
-void __cdecl Mark_WeaponVariantDefPtr()
+void __cdecl Mark_WeaponVariantDefPtr32()
 {
-    if ( *varWeaponVariantDefPtr )
+    if ( *varWeaponVariantDefPtr32 )
     {
-        varWeaponVariantDef = *varWeaponVariantDefPtr;
+        varWeaponVariantDef = *varWeaponVariantDefPtr32;
         Mark_WeaponVariantDefAsset(varWeaponVariantDef);
         Mark_WeaponVariantDef();
     }
@@ -9615,8 +9631,8 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_LocalizeEntryPtr(atStreamStart);
             break;
         case 24:
-            varWeaponVariantDefPtr = (WeaponVariantDef **)varXAssetHeader;
-            Load_WeaponVariantDefPtr(atStreamStart);
+            varWeaponVariantDefPtr32 = (PTR32(WeaponVariantDef) *)varXAssetHeader;
+            Load_WeaponVariantDefPtr32(atStreamStart);
             break;
         case 27:
             varSndDriverGlobalsPtr = (PTR32(SndDriverGlobals) *)varXAssetHeader;
@@ -9758,8 +9774,8 @@ void __cdecl Mark_XAssetHeader()
             Mark_LocalizeEntryPtr();
             break;
         case ASSET_TYPE_WEAPON:
-            varWeaponVariantDefPtr = (WeaponVariantDef **)varXAssetHeader;
-            Mark_WeaponVariantDefPtr();
+            varWeaponVariantDefPtr32 = (PTR32(WeaponVariantDef) *)varXAssetHeader;
+            Mark_WeaponVariantDefPtr32();
             break;
         case ASSET_TYPE_SNDDRIVER_GLOBALS:
             varSndDriverGlobalsPtr = (PTR32(SndDriverGlobals) *)varXAssetHeader;

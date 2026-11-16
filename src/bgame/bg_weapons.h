@@ -1,5 +1,6 @@
 #pragma once
 #include <universal/q_shared.h>
+#include <universal/ptr32.h>
 
 struct XModel;
 struct FxEffectDef;
@@ -305,12 +306,12 @@ struct BulletTraceResults;
 
 struct WeaponDef // sizeof=0x808
 {                                                                             // XREF: WeaponFullDef/r
-        const char *szOverlayName;
-        XModel **gunXModel;
-        XModel *handXModel;
-        const char *szModeName;
-        unsigned __int16 *notetrackSoundMapKeys;
-        unsigned __int16 *notetrackSoundMapValues;
+        PTR32(const char) szOverlayName;
+        PTR32(PTR32(XModel)) gunXModel;
+        PTR32(XModel) handXModel;
+        PTR32(const char) szModeName;
+        PTR32(unsigned __int16) notetrackSoundMapKeys;
+        PTR32(unsigned __int16) notetrackSoundMapValues;
         int playerAnimType;
         weapType_t weapType;
         weapClass_t weapClass;
@@ -320,7 +321,7 @@ struct WeaponDef // sizeof=0x808
         weapFireType_t fireType;
         weapClipType_t clipType;
         int itemIndex;
-        const char *parentWeaponName;
+        PTR32(const char) parentWeaponName;
         int iJamFireTime;
         int tracerFrequency;
         float tracerWidth;
@@ -337,83 +338,83 @@ struct WeaponDef // sizeof=0x808
         OffhandClass offhandClass;
         OffhandSlot offhandSlot;
         weapStance_t stance;
-        const FxEffectDef *viewFlashEffect;
-        const FxEffectDef *worldFlashEffect;
-        const char *pickupSound;
-        const char *pickupSoundPlayer;
-        const char *ammoPickupSound;
-        const char *ammoPickupSoundPlayer;
-        const char *projectileSound;
-        const char *pullbackSound;
-        const char *pullbackSoundPlayer;
-        const char *fireSound;
-        const char *fireSoundPlayer;
-        const char *fireLoopSound;
-        const char *fireLoopSoundPlayer;
-        const char *fireLoopEndSound;
-        const char *fireLoopEndSoundPlayer;
-        const char *fireStopSound;
-        const char *fireStopSoundPlayer;
-        const char *fireLastSound;
-        const char *fireLastSoundPlayer;
-        const char *emptyFireSound;
-        const char *emptyFireSoundPlayer;
-        const char *crackSound;
-        const char *whizbySound;
-        const char *meleeSwipeSound;
-        const char *meleeSwipeSoundPlayer;
-        const char *meleeHitSound;
-        const char *meleeMissSound;
-        const char *rechamberSound;
-        const char *rechamberSoundPlayer;
-        const char *reloadSound;
-        const char *reloadSoundPlayer;
-        const char *reloadEmptySound;
-        const char *reloadEmptySoundPlayer;
-        const char *reloadStartSound;
-        const char *reloadStartSoundPlayer;
-        const char *reloadEndSound;
-        const char *reloadEndSoundPlayer;
-        const char *rotateLoopSound;
-        const char *rotateLoopSoundPlayer;
-        const char *deploySound;
-        const char *deploySoundPlayer;
-        const char *finishDeploySound;
-        const char *finishDeploySoundPlayer;
-        const char *breakdownSound;
-        const char *breakdownSoundPlayer;
-        const char *finishBreakdownSound;
-        const char *finishBreakdownSoundPlayer;
-        const char *detonateSound;
-        const char *detonateSoundPlayer;
-        const char *nightVisionWearSound;
-        const char *nightVisionWearSoundPlayer;
-        const char *nightVisionRemoveSound;
-        const char *nightVisionRemoveSoundPlayer;
-        const char *altSwitchSound;
-        const char *altSwitchSoundPlayer;
-        const char *raiseSound;
-        const char *raiseSoundPlayer;
-        const char *firstRaiseSound;
-        const char *firstRaiseSoundPlayer;
-        const char *putawaySound;
-        const char *putawaySoundPlayer;
-        const char *overheatSound;
-        const char *overheatSoundPlayer;
-        const char *adsZoomSound;
-        const char **bounceSound;
-        const char *standMountedWeapdef;
-        const char *crouchMountedWeapdef;
-        const char *proneMountedWeapdef;
+        PTR32(const FxEffectDef) viewFlashEffect;
+        PTR32(const FxEffectDef) worldFlashEffect;
+        PTR32(const char) pickupSound;
+        PTR32(const char) pickupSoundPlayer;
+        PTR32(const char) ammoPickupSound;
+        PTR32(const char) ammoPickupSoundPlayer;
+        PTR32(const char) projectileSound;
+        PTR32(const char) pullbackSound;
+        PTR32(const char) pullbackSoundPlayer;
+        PTR32(const char) fireSound;
+        PTR32(const char) fireSoundPlayer;
+        PTR32(const char) fireLoopSound;
+        PTR32(const char) fireLoopSoundPlayer;
+        PTR32(const char) fireLoopEndSound;
+        PTR32(const char) fireLoopEndSoundPlayer;
+        PTR32(const char) fireStopSound;
+        PTR32(const char) fireStopSoundPlayer;
+        PTR32(const char) fireLastSound;
+        PTR32(const char) fireLastSoundPlayer;
+        PTR32(const char) emptyFireSound;
+        PTR32(const char) emptyFireSoundPlayer;
+        PTR32(const char) crackSound;
+        PTR32(const char) whizbySound;
+        PTR32(const char) meleeSwipeSound;
+        PTR32(const char) meleeSwipeSoundPlayer;
+        PTR32(const char) meleeHitSound;
+        PTR32(const char) meleeMissSound;
+        PTR32(const char) rechamberSound;
+        PTR32(const char) rechamberSoundPlayer;
+        PTR32(const char) reloadSound;
+        PTR32(const char) reloadSoundPlayer;
+        PTR32(const char) reloadEmptySound;
+        PTR32(const char) reloadEmptySoundPlayer;
+        PTR32(const char) reloadStartSound;
+        PTR32(const char) reloadStartSoundPlayer;
+        PTR32(const char) reloadEndSound;
+        PTR32(const char) reloadEndSoundPlayer;
+        PTR32(const char) rotateLoopSound;
+        PTR32(const char) rotateLoopSoundPlayer;
+        PTR32(const char) deploySound;
+        PTR32(const char) deploySoundPlayer;
+        PTR32(const char) finishDeploySound;
+        PTR32(const char) finishDeploySoundPlayer;
+        PTR32(const char) breakdownSound;
+        PTR32(const char) breakdownSoundPlayer;
+        PTR32(const char) finishBreakdownSound;
+        PTR32(const char) finishBreakdownSoundPlayer;
+        PTR32(const char) detonateSound;
+        PTR32(const char) detonateSoundPlayer;
+        PTR32(const char) nightVisionWearSound;
+        PTR32(const char) nightVisionWearSoundPlayer;
+        PTR32(const char) nightVisionRemoveSound;
+        PTR32(const char) nightVisionRemoveSoundPlayer;
+        PTR32(const char) altSwitchSound;
+        PTR32(const char) altSwitchSoundPlayer;
+        PTR32(const char) raiseSound;
+        PTR32(const char) raiseSoundPlayer;
+        PTR32(const char) firstRaiseSound;
+        PTR32(const char) firstRaiseSoundPlayer;
+        PTR32(const char) putawaySound;
+        PTR32(const char) putawaySoundPlayer;
+        PTR32(const char) overheatSound;
+        PTR32(const char) overheatSoundPlayer;
+        PTR32(const char) adsZoomSound;
+        PTR32(PTR32(const char)) bounceSound;
+        PTR32(const char) standMountedWeapdef;
+        PTR32(const char) crouchMountedWeapdef;
+        PTR32(const char) proneMountedWeapdef;
         int standMountedIndex;
         int crouchMountedIndex;
         int proneMountedIndex;
-        const FxEffectDef *viewShellEjectEffect;
-        const FxEffectDef *worldShellEjectEffect;
-        const FxEffectDef *viewLastShotEjectEffect;
-        const FxEffectDef *worldLastShotEjectEffect;
-        Material *reticleCenter;
-        Material *reticleSide;
+        PTR32(const FxEffectDef) viewShellEjectEffect;
+        PTR32(const FxEffectDef) worldShellEjectEffect;
+        PTR32(const FxEffectDef) viewLastShotEjectEffect;
+        PTR32(const FxEffectDef) worldLastShotEjectEffect;
+        PTR32(Material) reticleCenter;
+        PTR32(Material) reticleSide;
         int iReticleCenterSize;
         int iReticleSideSize;
         int iReticleMinOfs;
@@ -456,23 +457,23 @@ struct WeaponDef // sizeof=0x808
         float fStandRotMinSpeed;
         float fDuckedRotMinSpeed;
         float fProneRotMinSpeed;
-        XModel **worldModel;
-        XModel *worldClipModel;
-        XModel *rocketModel;
-        XModel *mountedModel;
-        XModel *additionalMeleeModel;
-        Material *hudIcon;
+        PTR32(PTR32(XModel)) worldModel;
+        PTR32(XModel) worldClipModel;
+        PTR32(XModel) rocketModel;
+        PTR32(XModel) mountedModel;
+        PTR32(XModel) additionalMeleeModel;
+        PTR32(Material) hudIcon;
         weaponIconRatioType_t hudIconRatio;
-        Material *indicatorIcon;
+        PTR32(Material) indicatorIcon;
         weaponIconRatioType_t indicatorIconRatio;
-        Material *ammoCounterIcon;
+        PTR32(Material) ammoCounterIcon;
         weaponIconRatioType_t ammoCounterIconRatio;
         ammoCounterClipType_t ammoCounterClip;
         int iStartAmmo;
         int iHeatIndex;
         int iMaxAmmo;
         int shotCount;
-        const char *szSharedAmmoCapName;
+        PTR32(const char) szSharedAmmoCapName;
         int iSharedAmmoCapIndex;
         int iSharedAmmoCap;
         bool unlimitedAmmo;
@@ -495,12 +496,12 @@ struct WeaponDef // sizeof=0x808
         int iSpinUpTime;
         int iSpinDownTime;
         float spinRate;
-        const char *spinLoopSound;
-        const char *spinLoopSoundPlayer;
-        const char *startSpinSound;
-        const char *startSpinSoundPlayer;
-        const char *stopSpinSound;
-        const char *stopSpinSoundPlayer;
+        PTR32(const char) spinLoopSound;
+        PTR32(const char) spinLoopSoundPlayer;
+        PTR32(const char) startSpinSound;
+        PTR32(const char) startSpinSoundPlayer;
+        PTR32(const char) stopSpinSound;
+        PTR32(const char) stopSpinSoundPlayer;
         int iFireTime;
         int iLastFireTime;
         int iRechamberTime;
@@ -560,7 +561,7 @@ struct WeaponDef // sizeof=0x808
         unsigned int stackFire;
         float stackFireSpread;
         float stackFireAccuracyDecay;
-        const char *stackSound;
+        PTR32(const char) stackSound;
         float autoAimRange;
         float aimAssistRange;
         bool mountableWeapon;
@@ -652,7 +653,7 @@ struct WeaponDef // sizeof=0x808
         bool bKeepCrosshairWhenADS;
         bool bUseOnlyAltWeaoponHideTagsInAltMode;
         // padding byte
-        Material *killIcon;
+        PTR32(Material) killIcon;
         weaponIconRatioType_t killIconRatio;
         bool flipKillIcon;
         bool bNoPartialReload;
@@ -660,8 +661,8 @@ struct WeaponDef // sizeof=0x808
         bool bNoADSAutoReload;
         int iReloadAmmoAdd;
         int iReloadStartAdd;
-        const char *szSpawnedGrenadeWeaponName;
-        const char *szDualWieldWeaponName;
+        PTR32(const char) szSpawnedGrenadeWeaponName;
+        PTR32(const char) szDualWieldWeaponName;
         unsigned int dualWieldWeaponIndex;
         int iDropAmmoMin;
         int iDropAmmoMax;
@@ -686,38 +687,38 @@ struct WeaponDef // sizeof=0x808
         float projLifetime;
         float timeToAccelerate;
         float projectileCurvature;
-        XModel *projectileModel;
+        PTR32(XModel) projectileModel;
         weapProjExposion_t projExplosion;
-        const FxEffectDef *projExplosionEffect;
+        PTR32(const FxEffectDef) projExplosionEffect;
         bool projExplosionEffectForceNormalUp;
         // padding byte
         // padding byte
         // padding byte
-        const FxEffectDef *projExplosionEffect2;
+        PTR32(const FxEffectDef) projExplosionEffect2;
         bool projExplosionEffect2ForceNormalUp;
         // padding byte
         // padding byte
         // padding byte
-        const FxEffectDef *projExplosionEffect3;
+        PTR32(const FxEffectDef) projExplosionEffect3;
         bool projExplosionEffect3ForceNormalUp;
         // padding byte
         // padding byte
         // padding byte
-        const FxEffectDef *projExplosionEffect4;
+        PTR32(const FxEffectDef) projExplosionEffect4;
         bool projExplosionEffect4ForceNormalUp;
         // padding byte
         // padding byte
         // padding byte
-        const FxEffectDef *projExplosionEffect5;
+        PTR32(const FxEffectDef) projExplosionEffect5;
         bool projExplosionEffect5ForceNormalUp;
         // padding byte
         // padding byte
         // padding byte
-        const FxEffectDef *projDudEffect;
-        const char *projExplosionSound;
-        const char *projDudSound;
-        const char *mortarShellSound;
-        const char *tankShellSound;
+        PTR32(const FxEffectDef) projDudEffect;
+        PTR32(const char) projExplosionSound;
+        PTR32(const char) projDudSound;
+        PTR32(const char) mortarShellSound;
+        PTR32(const char) tankShellSound;
         bool bProjImpactExplode;
         bool bBulletImpactExplode;
         // padding byte
@@ -742,15 +743,15 @@ struct WeaponDef // sizeof=0x808
         bool isCameraSensor;
         bool isAcousticSensor;
         // padding byte
-        float *parallelBounce;
-        float *perpendicularBounce;
-        const FxEffectDef *projTrailEffect;
+        PTR32(float) parallelBounce;
+        PTR32(float) perpendicularBounce;
+        PTR32(const FxEffectDef) projTrailEffect;
         float vProjectileColor[3];
         guidedMissileType_t guidedMissileType;
         float maxSteeringAccel;
         int projIgnitionDelay;
-        const FxEffectDef *projIgnitionEffect;
-        const char *projIgnitionSound;
+        PTR32(const FxEffectDef) projIgnitionEffect;
+        PTR32(const char) projIgnitionSound;
         float fAdsAimPitch;
         float fAdsCrosshairInFrac;
         float fAdsCrosshairOutFrac;
@@ -789,9 +790,9 @@ struct WeaponDef // sizeof=0x808
         float fHipViewScatterMax;
         float fightDist;
         float maxDist;
-        const char *accuracyGraphName[2];
-        float (*accuracyGraphKnots[2])[2];
-        float (*originalAccuracyGraphKnots[2])[2];
+        PTR32(const char) accuracyGraphName[2];
+        PTR32(float[2]) accuracyGraphKnots[2];
+        PTR32(float[2]) originalAccuracyGraphKnots[2];
         int accuracyGraphKnotCount[2];
         int originalAccuracyGraphKnotCount[2];
         int iPositionReloadTransTime;
@@ -810,13 +811,13 @@ struct WeaponDef // sizeof=0x808
         float maxRange;
         float fAnimHorRotateInc;
         float fPlayerPositionDist;
-        const char *szUseHintString;
-        const char *dropHintString;
+        PTR32(const char) szUseHintString;
+        PTR32(const char) dropHintString;
         int iUseHintStringIndex;
         int dropHintStringIndex;
         float horizViewJitter;
         float vertViewJitter;
-        const char *szScript;
+        PTR32(const char) szScript;
         int minDamage;
         int minPlayerDamage;
         float fMaxDamageRange;
@@ -824,10 +825,10 @@ struct WeaponDef // sizeof=0x808
         float destabilizationRateTime;
         float destabilizationCurvatureMax;
         int destabilizeDistance;
-        float *locationDamageMultipliers;
-        const char *fireRumble;
-        const char *meleeImpactRumble;
-        const char *reloadRumble;
+        PTR32(float) locationDamageMultipliers;
+        PTR32(const char) fireRumble;
+        PTR32(const char) meleeImpactRumble;
+        PTR32(const char) reloadRumble;
         float adsDofStart;
         float adsDofEnd;
         float hipDofStart;
@@ -835,12 +836,12 @@ struct WeaponDef // sizeof=0x808
         float scanSpeed;
         float scanAccel;
         int scanPauseTime;
-        const char *flameTableFirstPerson;
-        const char *flameTableThirdPerson;
-        flameTable *flameTableFirstPersonPtr;
-        flameTable *flameTableThirdPersonPtr;
-        const FxEffectDef *tagFx_preparationEffect;
-        const FxEffectDef *tagFlash_preparationEffect;
+        PTR32(const char) flameTableFirstPerson;
+        PTR32(const char) flameTableThirdPerson;
+        PTR32(flameTable) flameTableFirstPersonPtr;
+        PTR32(flameTable) flameTableThirdPersonPtr;
+        PTR32(const FxEffectDef) tagFx_preparationEffect;
+        PTR32(const FxEffectDef) tagFlash_preparationEffect;
         bool doGibbing;
         // padding byte
         // padding byte
@@ -850,13 +851,13 @@ struct WeaponDef // sizeof=0x808
 
 struct WeaponVariantDef // sizeof=0xE4
 {                                                                             // XREF: XAssetPoolEntry<WeaponVariantDef>/r
-    const char *szInternalName;
+    PTR32(const char) szInternalName;
     int iVariantCount;
-    WeaponDef *weapDef;
-    const char *szDisplayName;
-    const char **szXAnims;
-    const char *szAltWeaponName;
-    unsigned __int16 *hideTags;
+    PTR32(WeaponDef) weapDef;
+    PTR32(const char) szDisplayName;
+    PTR32(PTR32(const char)) szXAnims;
+    PTR32(const char) szAltWeaponName;
+    PTR32(unsigned __int16) hideTags;
     unsigned int altWeaponIndex;
     int iClipSize;
     int iReloadTime;
@@ -866,9 +867,9 @@ struct WeaponVariantDef // sizeof=0xE4
     int iAdsTransInTime;
     int iAdsTransOutTime;
     int iAltRaiseTime;
-    const char *szAmmoName;
+    PTR32(const char) szAmmoName;
     int iAmmoIndex;
-    const char *szClipName;
+    PTR32(const char) szClipName;
     int iClipIndex;
     float fAimAssistRangeAds;
     float fAdsSwayHorizScale;
@@ -890,9 +891,9 @@ struct WeaponVariantDef // sizeof=0xE4
     // padding byte
     // padding byte
     // padding byte
-    Material *overlayMaterial;
-    Material *overlayMaterialLowRes;
-    Material *dpadIcon;
+    PTR32(Material) overlayMaterial;
+    PTR32(Material) overlayMaterialLowRes;
+    PTR32(Material) dpadIcon;
     weaponIconRatioType_t dpadIconRatio;
     float ikLeftHandOffset[3];
     float ikLeftHandRotation[3];
@@ -901,6 +902,9 @@ struct WeaponVariantDef // sizeof=0xE4
     float ikLeftHandUiViewerOffset[3];
     float ikLeftHandUiViewerRotation[3];
 };
+
+static_assert(sizeof(WeaponDef) == 0x808);
+static_assert(sizeof(WeaponVariantDef) == 0xE4);
 
 struct weaponParms // sizeof=0x44
 {                                       // XREF: ?Actor_Melee@@YAPAUgentity_s@@PAUactor_s@@QBM@Z/r
