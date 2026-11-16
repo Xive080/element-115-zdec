@@ -369,7 +369,7 @@ void __cdecl Menu_FreeItemMemory(itemDef_s *item)
         __debugbreak();
     Expression_Free(&item->visibleExp);
     if ( item->typeData.textDef )
-        Expression_Free((ExpressionStatement *)item->typeData.textDef);
+        Expression_Free((ExpressionStatement *)item->typeData.textDef.get());
     if ( item->typeData.textDef && item->typeData.textDef->textExpData )
         Expression_Free(&item->typeData.textDef->textExpData->textExp);
     if ( item->rectExpData )
@@ -542,7 +542,7 @@ int __cdecl PC_CndStackAddConditionsToScript(GenericEventScript **baseScript, ch
     if ( accumulatedScriptCommands && *accumulatedScriptCommands )
     {
         newEventScript->action = (const char *)UI_Alloc(strlen(accumulatedScriptCommands) + 1, 4);
-        I_strncpyz((char *)newEventScript->action, accumulatedScriptCommands, strlen(accumulatedScriptCommands));
+        I_strncpyz((char *)newEventScript->action.get(), accumulatedScriptCommands, strlen(accumulatedScriptCommands));
     }
     else
     {
@@ -600,7 +600,7 @@ int __cdecl MenuParse_name(menuDef_t *menu, int handle)
 {
     if ( !PC_String_Parse(handle, &menu->window.name) )
         return 0;
-    I_strlwr((char *)menu->window.name);
+    I_strlwr((char *)menu->window.name.get());
     return 1;
 }
 
@@ -1574,7 +1574,7 @@ void __cdecl Item_PostParse(itemDef_s *item)
     {
         size = 4 * item->animInfo->animStateCount;
         item->animInfo->animStates = (animParamsDef_t **)UI_Alloc(size, 4);
-        memcpy((unsigned __int8 *)item->animInfo->animStates, (unsigned __int8 *)g_load_0.animStates, size);
+        memcpy((unsigned __int8 *)item->animInfo->animStates.get(), (unsigned __int8 *)g_load_0.animStates, size);
     }
 }
 
@@ -1659,7 +1659,7 @@ void __cdecl Item_ValidateTypeData(itemDef_s *item, int handle)
             case 2:
             case 6:
                 item->typeData.textDef = (textDef_s *)UI_Alloc(0x10u, 4);
-                textDef = (unsigned int*)item->typeData.textDef;
+                textDef = (unsigned int*)item->typeData.textDef.get();
                 *textDef = 0;
                 textDef[1] = 0;
                 textDef[2] = 0;
@@ -3381,7 +3381,7 @@ int __cdecl ItemParse_execExp(itemDef_s *item, int handle)
             {
                 if ( item->type != 2 )
                     Com_Error(ERR_DROP, "set type to ITEM_TYPE_IMAGE if using keyword \"material\" \n");
-                if ( Expression_Read(handle, (ExpressionStatement *)item->typeData.textDef) )
+                if ( Expression_Read(handle, (ExpressionStatement *)item->typeData.textDef.get()) )
                     return 1;
             }
         }
@@ -3408,7 +3408,7 @@ int    ItemParse_gameMsgWindowIndex(itemDef_s *item, int handle)
 {
     if ( !item && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared_obj.cpp", 3922, 0, "%s", "item") )
         __debugbreak();
-    return PC_Int_Parse(handle, (int *)item->typeData.textDef->textTypeData.focusItemDef);
+    return PC_Int_Parse(handle, (int *)item->typeData.textDef->textTypeData.focusItemDef.get());
 }
 
 int    ItemParse_gameMsgWindowMode(itemDef_s *item, int handle)
@@ -3560,7 +3560,7 @@ int __cdecl ItemParse_state(itemDef_s *item, int handle)
         item->animInfo->animStates = g_load_0.animStates;
         *item->animInfo->animStates = (animParamsDef_t *)UI_Alloc(0x6Cu, 4);
         Item_PropertiesToAnimState(item, *item->animInfo->animStates);
-        **(unsigned int **)item->animInfo->animStates = (unsigned int)String_Alloc("Default");
+        **(unsigned int **)item->animInfo->animStates.get() = (unsigned int)String_Alloc("Default");
         ++item->animInfo->animStateCount;
     }
     animParams = (animParamsDef_t *)UI_Alloc(0x6Cu, 4);
@@ -3819,7 +3819,7 @@ void __cdecl Menu_PostParse(menuDef_t *menu)
         __debugbreak();
     size = 4 * menu->itemCount;
     menu->items = (itemDef_s **)UI_Alloc(size, 4);
-    memcpy((unsigned __int8 *)menu->items, (unsigned __int8 *)g_load_0.items, size);
+    memcpy((unsigned __int8 *)menu->items.get(), (unsigned __int8 *)g_load_0.items, size);
     if ( menu->fullScreen )
     {
         menu->window.rect.x = 0.0f;

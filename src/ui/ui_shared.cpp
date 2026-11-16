@@ -314,7 +314,7 @@ itemDef_s *__cdecl Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, char
     wildcard = -1;
     v3 = strstr(name, "*");
     if ( v3 )
-        wildcard = (unsigned int)v3 - (unsigned int)name;
+        wildcard = (unsigned int)(v3 - name);
     for ( i = 0; i < menu->itemCount; ++i )
     {
         if ( wildcard == -1 )
@@ -785,7 +785,7 @@ void __cdecl Item_LerpAnimationParameters(int localClientNum, int contextIndex, 
     float v6; // [esp+Ch] [ebp-14h]
     float v7; // [esp+10h] [ebp-10h]
     listBoxDef_s *listPtr; // [esp+18h] [ebp-8h]
-    const char *maxScroll; // [esp+1Ch] [ebp-4h]
+    int maxScroll; // [esp+1Ch] [ebp-4h]
 
     if ( item->animInfo )
     {
@@ -988,7 +988,7 @@ int __cdecl Menu_ItemsMatchingGroup(menuDef_t *menu, char *name)
     wildcard = -1;
     v2 = strstr(name, "*");
     if ( v2 )
-        wildcard = (unsigned int)v2 - (unsigned int)name;
+        wildcard = (unsigned int)(v2 - name);
     for ( i = 0; i < menu->itemCount; ++i )
     {
         if ( wildcard == -1 )
@@ -1211,9 +1211,9 @@ LABEL_36:
                 {
                     __debugbreak();
                 }
-                Com_PrintWarning(13, "WARNING: No menu has focus after closing %s.\n Active menus: \n", menu->window.name);
+                Com_PrintWarning(13, "WARNING: No menu has focus after closing %s.\n Active menus: \n", menu->window.name.get());
                 for ( menuNumb = 0; menuNumb < dc->openMenuCount; ++menuNumb )
-                    Com_PrintWarning(13, "    %d:    %s\n", menuNumb, dc->menuStack[menuNumb].menu->window.name);
+                    Com_PrintWarning(13, "    %d:    %s\n", menuNumb, dc->menuStack[menuNumb].menu->window.name.get());
             }
         }
         goto LABEL_56;
@@ -2084,7 +2084,7 @@ void __cdecl Script_FocusFirstInMenu(int localClientNum, UiContext *dc, itemDef_
     }
     else if ( item->parent->window.name )
     {
-        Com_Printf(13, "focusFirst: no itemDefs in %s were selectable\n", item->parent->window.name);
+        Com_Printf(13, "focusFirst: no itemDefs in %s were selectable\n", item->parent->window.name.get());
     }
     else
     {
@@ -2673,8 +2673,8 @@ void __cdecl Script_FeederTop(int localClientNum, UiContext *dc, itemDef_s *item
 void __cdecl Script_FeederBottom(int localClientNum, UiContext *dc, itemDef_s *item, const char **args)
 {
     int v3; // [esp+8h] [ebp-18h]
-    const char *v4; // [esp+Ch] [ebp-14h]
-    const char *max; // [esp+10h] [ebp-10h]
+    int v4; // [esp+Ch] [ebp-14h]
+    int max; // [esp+10h] [ebp-10h]
     listBoxDef_s *listPtr; // [esp+14h] [ebp-Ch]
     int viewmax; // [esp+18h] [ebp-8h]
 
@@ -2689,7 +2689,7 @@ void __cdecl Script_FeederBottom(int localClientNum, UiContext *dc, itemDef_s *i
         {
             max = Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, item);
             viewmax = Item_ListBox_Viewmax(localClientNum, dc->contextIndex, item);
-            v4 = (const char *)UI_FeederCount(localClientNum, dc->contextIndex, listPtr->special, listPtr) - 1;
+            v4 = UI_FeederCount(localClientNum, dc->contextIndex, listPtr->special, listPtr) - 1;
             if ( (int)v4 > 0 )
                 v3 = (int)v4;
             else
@@ -2998,7 +2998,6 @@ static void Script_SP_SaveVisibility(int localClientNum, UiContext *dc, itemDef_
 
 void __cdecl Item_RunScript(int localClientNum, UiContext *dc, itemDef_s *item, const char *s)
 {
-    __int64 v4; // [esp-8h] [ebp-420h]
     int bRan; // [esp+0h] [ebp-418h]
     int controllerIndex; // [esp+4h] [ebp-414h]
     char command[1028]; // [esp+8h] [ebp-410h] BYREF
@@ -3033,9 +3032,7 @@ void __cdecl Item_RunScript(int localClientNum, UiContext *dc, itemDef_s *item, 
                 }
                 if ( !bRan )
                 {
-                    HIDWORD(v4) = (DWORD)s;
-                    LODWORD(v4) = (DWORD)&p;
-                    UI_RunMenuScript(localClientNum, dc->contextIndex, v4);
+                    UI_RunMenuScript(localClientNum, dc->contextIndex, &p, s);
                 }
             }
         }
@@ -3577,7 +3574,7 @@ void __cdecl UI_MoveFeeder_f()
     int v10; // [esp+10h] [ebp-78h]
     int v11; // [esp+24h] [ebp-64h]
     int v12; // [esp+38h] [ebp-50h]
-    const char *max; // [esp+68h] [ebp-20h]
+    int max; // [esp+68h] [ebp-20h]
     itemDef_s *feederItem; // [esp+6Ch] [ebp-1Ch]
     listBoxDef_s *listPtr; // [esp+74h] [ebp-14h]
     int viewmax; // [esp+78h] [ebp-10h]
@@ -4054,12 +4051,12 @@ textDef_s *__cdecl Item_GetTextRect(int contextIndex, const itemDef_s *item)
     if ( !item && !Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ui\\../ui/ui_utils.h", 57, 0, "%s", "item") )
         __debugbreak();
     if ( item->typeData.textDef )
-        return (textDef_s *)((char *)item->typeData.textDef + 24 * contextIndex);
+        return (textDef_s *)((char *)item->typeData.textDef.get() + 24 * contextIndex);
     else
         return 0;
 }
 
-const char *__cdecl Item_ListBox_MaxScroll(int localClientNum, int contextIndex, itemDef_s *item)
+int __cdecl Item_ListBox_MaxScroll(int localClientNum, int contextIndex, itemDef_s *item)
 {
     int v3; // esi
     int v6; // [esp+10h] [ebp-8h]
@@ -4069,7 +4066,7 @@ const char *__cdecl Item_ListBox_MaxScroll(int localClientNum, int contextIndex,
     v3 = Item_ListBox_Viewmax(localClientNum, contextIndex, item);
     v6 = UI_FeederCount(localClientNum, contextIndex, listPtr->special, listPtr) - v3;
     if (v6 > 0)
-        return (const char *)v6;
+        return v6;
     else
         return 0;
 }
@@ -4481,7 +4478,7 @@ void    Menus_SetupOpenMenu(int localClientNum, UiContext *dc, menuDef_t *menu)
     {
         if (!CL_IsLocalClientInGame(localClientNum))
         {
-            UI_PlaySound(dc->contextIndex, (char*)menu->soundName);
+            UI_PlaySound(dc->contextIndex, (char*)menu->soundName.get());
         }
     }
 }
@@ -4605,7 +4602,7 @@ void __cdecl Menus_PrintAllLoadedMenus(UiContext *dc)
 
     Com_Printf(16, "Currently loaded UI menus (CG menus not included):\n");
     for ( i = 0; i < dc->menuCount; ++i )
-        Com_Printf(16, "%i. %s\n", i, dc->Menus[i]->window.name);
+        Com_Printf(16, "%i. %s\n", i, dc->Menus[i]->window.name.get());
     Com_Printf(16, "\n%i menus total\n", dc->menuCount);
 }
 
@@ -5807,7 +5804,7 @@ int __cdecl Item_Multi_HandleKey(UiContext *dc, itemDef_s *item, int key)
         next = Item_List_NextEntryForKey(key, next, count);
     if ( multiPtr->strDef )
     {
-        Dvar_SetFromStringByName(item->dvar, (char *)multiPtr->dvarStr[next]);
+        Dvar_SetFromStringByName(item->dvar, (char *)multiPtr->dvarStr[next].get());
     }
     else
     {
@@ -6198,7 +6195,7 @@ double __cdecl Item_ListBox_ScrollHeight(int localClientNum, int contextIndex, i
 
 double __cdecl Item_ListBox_ThumbPosition(int localClientNum, int contextIndex, itemDef_s *item)
 {
-    const char *max; // [esp+4h] [ebp-18h]
+    int max; // [esp+4h] [ebp-18h]
     float pos; // [esp+8h] [ebp-14h]
     float posa; // [esp+8h] [ebp-14h]
     listBoxDef_s *listPtr; // [esp+Ch] [ebp-10h]
@@ -6248,8 +6245,8 @@ void __cdecl Scroll_ListBox_ThumbFunc(int localClientNum, UiContext *dc, scrollI
 {
     int pos; // [esp+Ch] [ebp-34h]
     int posa; // [esp+Ch] [ebp-34h]
-    const char *max; // [esp+10h] [ebp-30h]
-    const char *maxa; // [esp+10h] [ebp-30h]
+    int max; // [esp+10h] [ebp-30h]
+    int maxa; // [esp+10h] [ebp-30h]
     rectDef_s r; // [esp+14h] [ebp-2Ch] BYREF
     scrollInfo_s *v8; // [esp+2Ch] [ebp-14h]
     listBoxDef_s *listPtr; // [esp+30h] [ebp-10h]
@@ -7286,7 +7283,7 @@ int __cdecl Item_Bind_HandleKey(int localClientNum, UiContext *dc, itemDef_s *it
                         Key_SetBinding(localClientNum, boundKeys[1], (char *)"", 1);
                     }
                     if ( key != 127 )
-                        Key_SetBinding(localClientNum, key, (char *)item->dvar, 1);
+                        Key_SetBinding(localClientNum, key, (char *)item->dvar.get(), 1);
                 }
                 else
                 {
@@ -7296,7 +7293,7 @@ int __cdecl Item_Bind_HandleKey(int localClientNum, UiContext *dc, itemDef_s *it
                         Key_SetBinding(localClientNum, boundKeys[1], (char *)"", 0);
                     }
                     if ( key != 127 )
-                        Key_SetBinding(localClientNum, key, (char *)item->dvar, 0);
+                        Key_SetBinding(localClientNum, key, (char *)item->dvar.get(), 0);
                 }
                 Sys_LeaveCriticalSection(CRITSECT_KEY_BINDINGS);
                 g_waitingForKey = 0;
@@ -7706,7 +7703,7 @@ int __cdecl Item_ListBox_GetIndexForMouse(int contextIndex, itemDef_s *item, flo
 void __cdecl Item_ListBox_ModalSelection(int localClientNum, int contextIndex, itemDef_s *item, int x, int y)
 {
     uiInfo_s *uiInfo; // [esp+8h] [ebp-14h]
-    const char *max; // [esp+Ch] [ebp-10h]
+    int max; // [esp+Ch] [ebp-10h]
     int newPos; // [esp+10h] [ebp-Ch]
     listBoxDef_s *listPtr; // [esp+14h] [ebp-8h]
     int viewmax; // [esp+18h] [ebp-4h]
@@ -7897,7 +7894,7 @@ LABEL_18:
     if ( uiscript_debug && uiscript_debug->current.integer )
     {
         if ( menu->window.name )
-            Com_Printf(13, "hiding the %s menu becuase the 'visible when' expression was false\n", menu->window.name);
+            Com_Printf(13, "hiding the %s menu becuase the 'visible when' expression was false\n", menu->window.name.get());
         else
             Com_Printf(13, "hiding the %s menu becuase the 'visible when' expression was false\n", "unnamed");
     }
@@ -8114,8 +8111,8 @@ char    Menu_Paint(
     else
         ui3dWindowId = menu->ui3dWindowId;
     ui3dWindow = ui3dWindowId;
-    if (ui3dWindowId == -1 && (int)UI3DOverrideId >= 0)
-        ui3dWindow = (int)UI3DOverrideId;
+    if (ui3dWindowId == -1 && (int)(intptr_t)UI3DOverrideId >= 0)
+        ui3dWindow = (int)(intptr_t)UI3DOverrideId;
     if (ui3dWindow < 0)
         scrPlace = &scrPlaceView[dc->contextIndex];
     else
@@ -8128,7 +8125,7 @@ char    Menu_Paint(
 
     ScopedScrPlaceViewStack scopedScrPlaceStack(scrPlaceViewStack, scrPlace); // [esp+B4h] [ebp-138h] BYREF
     //ScopedScrPlaceViewStack::ScopedScrPlaceViewStack(&scopedScrPlaceStack, scrPlaceViewStack, scrPlace);
-    if (*(_BYTE *)ui_showMenuOnly->current.integer
+    if (ui_showMenuOnly->current.string[0] // LP64: era *(_BYTE *)current.integer
         && menu->window.name
         && I_stricmp(menu->window.name, ui_showMenuOnly->current.string))
     {
@@ -8164,7 +8161,7 @@ char    Menu_Paint(
     }
     
     if (menu->soundName && !CL_IsLocalClientInGame(localClientNum))
-        UI_PlaySound(dc->contextIndex, (char *)menu->soundName);
+        UI_PlaySound(dc->contextIndex, (char *)menu->soundName.get());
 
     if (menu->blurRadius != 0.0 && !zombietron->current.enabled)
         dc->blurRadiusOut = sqrtf((float)(menu->blurRadius * menu->blurRadius) + (float)(dc->blurRadiusOut * dc->blurRadiusOut));
@@ -8821,7 +8818,7 @@ void __cdecl Item_Paint(int localClientNum, UiContext *dc, itemDef_s *item)
                     ExpressionResultString = GetExpressionResultString(
                                                                          localClientNum,
                                                                          item,
-                                                                         (ExpressionStatement *)item->typeData.textDef);
+                                                                         (ExpressionStatement *)item->typeData.textDef.get());
                     I_strncpyz(lowerCaseName, ExpressionResultString, 64);
                     I_strlwr(lowerCaseName);
                     item->window.background = Material_RegisterHandle(lowerCaseName, item->imageTrack);
@@ -8941,7 +8938,7 @@ void __cdecl Item_Text_Paint(int localClientNum, UiContext *dc, itemDef_s *item)
         textDefPtr->text = "NOT USING CINEMATIC_SUBTITLES";
     if ( textDefPtr && textDefPtr->text )
     {
-        textPtr = (char *)textDefPtr->text;
+        textPtr = (char *)textDefPtr->text.get();
     }
     else if ( textDefPtr && textDefPtr->textExpData && textDefPtr->textExpData->textExp.filename )
     {
@@ -9444,7 +9441,7 @@ const char *__cdecl Item_DvarEnum_Setting(itemDef_s *item)
     enumIndex = Item_DvarEnum_EnumIndex(item);
     if ( enumIndex < 0 || enumIndex >= enumDvar->domain.enumeration.stringCount )
     {
-        v2 = va("%s %i:%i", enumDvarPtr->enumDvarName, enumDvar->domain.enumeration.stringCount, enumIndex);
+        v2 = va("%s %i:%i", enumDvarPtr->enumDvarName.get(), enumDvar->domain.enumeration.stringCount, enumIndex);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",
                         6346,
@@ -10433,7 +10430,7 @@ void __cdecl Item_OwnerDraw_Paint(int localClientNum, UiContext *dc, itemDef_s *
                 textDefPtr->textStyle,
                 v7,
                 textDefPtr->textAlignMode,
-                (char *)textDefPtr->text);
+                (char *)textDefPtr->text.get());
         else
             UI_OwnerDrawText(
                 localClientNum,
@@ -10770,7 +10767,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
             if (!Menus_MenuIsInStack(dc, menu) && menu != toastPopupMenu)
             {
                 {
-                    v2 = va("Menu_Paint %s", menu->window.name);
+                    v2 = va("Menu_Paint %s", menu->window.name.get());
                     PROF_SCOPED_RUNTIME_NAME(v2);
                     drew = Menu_Paint(
                         localClientNum,
@@ -10867,7 +10864,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
             if (drewa && g_debugMode && menuIndexc == dc->openMenuCount - 1)
             {
                 font = UI_GetFontHandle(&scrPlaceView[dc->contextIndex], 0, 0.5);
-                v3 = va("menu: %s", menuc->window.name);
+                v3 = va("menu: %s", menuc->window.name.get());
                 UI_DrawText(&scrPlaceView[dc->contextIndex], v3, 0x7FFFFFFF, font, 200.0, 45.0, 0, 0, 0.5, colorWhite, 0);
             }
         }
@@ -11113,7 +11110,7 @@ void __cdecl UI_AddMenu(int localClientNum, UiContext *dc, menuDef_t *menu, int 
         __debugbreak();
     }
     if ( useFastFile->current.enabled
-        && DB_FindXAssetHeader(ASSET_TYPE_MENU, (char*)menu->window.name, 1, -1).menu != menu
+        && DB_FindXAssetHeader(ASSET_TYPE_MENU, (char*)menu->window.name.get(), 1, -1).menu != menu
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp", 11058, 0, "%s", "touchMenu == menu") )
     {
         __debugbreak();
