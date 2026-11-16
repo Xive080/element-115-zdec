@@ -1,9 +1,10 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct MapEnts // sizeof=0xC
 {                                       // XREF: XAssetPoolEntry<MapEnts>/r
-    const char *name;
-    char *entityString;
+    PTR32(const char) name;
+    PTR32(char) entityString;
     int numEntityChars;
 };
 

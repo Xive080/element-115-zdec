@@ -237,6 +237,11 @@ void __cdecl Mark_FxEffectDefAsset(FxEffectDef *fx);
 void __cdecl Load_FxEffectDefFromName(const char **name);
 void __cdecl Load_FxEffectDefFromName32(PTR32(const char) *name); // PTR32: el hueco union name/handle pasa de nombre a handle
 void __cdecl Load_PackIndexAsset32(PTR32(PackIndex) *p);
+void __cdecl Load_SndBankAsset32(PTR32(SndBank) *p);
+void __cdecl Load_SndPatchAsset32(PTR32(SndPatch) *p);
+void __cdecl Load_MapEntsAsset32(PTR32(MapEnts) *p);
+void __cdecl Load_FxImpactTableAsset32(PTR32(FxImpactTable) *p);
+void __cdecl Load_DDLAsset32(PTR32(ddlRoot_t) *p);
 void __cdecl Load_GlassesAsset32(PTR32(Glasses) *p);
 void __cdecl Load_FxImpactTableAsset(XAssetHeader *impactFx);
 void __cdecl Mark_FxImpactTableAsset(FxImpactTable *impactFx);

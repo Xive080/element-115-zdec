@@ -414,7 +414,7 @@ enum MtlTechSetNotFoundBehavior : __int32
 
 struct MaterialMemory // sizeof=0x8
 {                                                                             // XREF: MaterialList/r
-        Material *material;                                 // XREF: std::_Sort_heap<MaterialMemory *,bool (*)(MaterialMemory const &,MaterialMemory const &)>(MaterialMemory *,MaterialMemory *,bool (*)(MaterialMemory const &,MaterialMemory const &))+4E/w
+        PTR32(Material) material;                                 // XREF: std::_Sort_heap<MaterialMemory *,bool (*)(MaterialMemory const &,MaterialMemory const &)>(MaterialMemory *,MaterialMemory *,bool (*)(MaterialMemory const &,MaterialMemory const &))+4E/w
         int memory;                                                 // XREF: std::_Sort_heap<MaterialMemory *,bool (*)(MaterialMemory const &,MaterialMemory const &)>(MaterialMemory *,MaterialMemory *,bool (*)(MaterialMemory const &,MaterialMemory const &))+51/w
 };
 

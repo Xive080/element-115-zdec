@@ -97,34 +97,34 @@ struct snd_asset // sizeof=0x38
         snd_asset_channel channel_flags;
         snd_asset_flags flags;
         unsigned int seek_table_count;
-        unsigned int *seek_table;
+        PTR32(unsigned int) seek_table;
         unsigned int data_size;
-        char *data;
+        PTR32(char) data;
 };
 
 struct LoadedSound // sizeof=0x3C
 {
-        const char *name;
+        PTR32(const char) name;
         snd_asset sound;
 };
 
 struct PrimedSound // sizeof=0xC
 {
-        const char *name;
-        char *buffer;
+        PTR32(const char) name;
+        PTR32(char) buffer;
         unsigned int size;
 };
 
 struct StreamedSound // sizeof=0x8
 {
-        char *filename;
-        PrimedSound *primeSnd;
+        PTR32(char) filename;
+        PTR32(PrimedSound) primeSnd;
 };
 
 union SoundFileRef // sizeof=0x4
 {                                                                             // XREF: SoundFile/r
-        LoadedSound *loadSnd;
-        StreamedSound *streamSnd;
+        PTR32(LoadedSound) loadSnd;
+        PTR32(StreamedSound) streamSnd;
 };
 
 
@@ -140,11 +140,11 @@ struct __declspec(align(4)) SoundFile // sizeof=0x8
 
 struct __declspec(align(2)) snd_alias_t // sizeof=0x54
 {
-        const char *name;
+        PTR32(const char) name;
         unsigned int id;
-        const char *subtitle;
-        const char *secondaryname;
-        SoundFile *soundFile;
+        PTR32(const char) subtitle;
+        PTR32(const char) secondaryname;
+        PTR32(SoundFile) soundFile;
         unsigned int flags;
         unsigned int duck;
         unsigned int contextType;
@@ -186,9 +186,9 @@ struct __declspec(align(2)) snd_alias_t // sizeof=0x54
 
 struct snd_alias_list_t // sizeof=0x14
 {                                                                             // XREF: XAssetPoolEntry<snd_alias_list_t>/r
-        const char *name;
+        PTR32(const char) name;
         unsigned int id;
-        snd_alias_t *head;
+        PTR32(snd_alias_t) head;
         int count;
         int sequence;
 };

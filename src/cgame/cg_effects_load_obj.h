@@ -4,14 +4,14 @@
 
 struct FxImpactEntry // sizeof=0x8C
 {
-    const FxEffectDef *nonflesh[31];
-    const FxEffectDef *flesh[4];
+    PTR32(const FxEffectDef) nonflesh[31];
+    PTR32(const FxEffectDef) flesh[4];
 };
 
 struct FxImpactTable // sizeof=0x8
 {                                       // XREF: XAssetPoolEntry<FxImpactTable>/r
-    const char *name;
-    FxImpactEntry *table;
+    PTR32(const char) name;
+    PTR32(FxImpactEntry) table;
 };
 
 struct EffectFile // sizeof=0xB7C

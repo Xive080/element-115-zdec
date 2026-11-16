@@ -1024,6 +1024,38 @@ void __cdecl Load_FxEffectDefFromName32(PTR32(const char) *name)
     }
 }
 
+void __cdecl Load_SndBankAsset32(PTR32(SndBank) *p)
+{
+    XAssetHeader h; h.sound = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_SOUND, h).sound;
+    SND_AddBank(*p);
+}
+
+void __cdecl Load_SndPatchAsset32(PTR32(SndPatch) *p)
+{
+    XAssetHeader h; h.soundPatch = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_SOUND_PATCH, h).soundPatch;
+    SND_AddPatch(*p);
+}
+
+void __cdecl Load_MapEntsAsset32(PTR32(MapEnts) *p)
+{
+    XAssetHeader h; h.mapEnts = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_MAP_ENTS, h).mapEnts;
+}
+
+void __cdecl Load_FxImpactTableAsset32(PTR32(FxImpactTable) *p)
+{
+    XAssetHeader h; h.impactFx = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_IMPACT_FX, h).impactFx;
+}
+
+void __cdecl Load_DDLAsset32(PTR32(ddlRoot_t) *p)
+{
+    XAssetHeader h; h.ddlRoot = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_DDL, h).ddlRoot;
+}
+
 void __cdecl Load_PackIndexAsset32(PTR32(PackIndex) *p)
 {
     XAssetHeader h; h.packIndex = *p;
