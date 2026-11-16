@@ -1,5 +1,6 @@
 #include "db_registry.h"
 #include "db_handle32.h"
+#include <universal/ptr32.h>
 #include <universal/profile.h>
 #include <clientscript/cscr_parsetree.h>
 #include <gfx_d3d/rb_resource.h>
@@ -229,34 +230,34 @@ XAssetHeader(__cdecl *DB_AllocXAssetHeaderHandler[43])(void *) =
 };
 
 
-XAssetPool<XModelPieces, POOLSIZE_XMODELPIECES>         g_XModelPiecesPool;
-XAssetPool<PhysPreset, POOLSIZE_PHYSPRESET_MOD>             g_PhysPresetPool;
-XAssetPool<PhysConstraints, POOLSIZE_PHYSCONSTRAINTS_MOD>   g_PhysConstraintsPool;
-XAssetPool<DestructibleDef, POOLSIZE_DESTRUCTIBLEDEF_MOD>   g_DestructibleDefPool;
-XAssetPool<XAnimParts, POOLSIZE_XANIM_MOD>                  g_XAnimPartsPool;
-XAssetPool<XModel, POOLSIZE_XMODEL_MOD>                     g_XModelPool;
-XAssetPool<Material, POOLSIZE_MATERIAL_MOD>                 g_MaterialPool;
-XAssetPool<MaterialTechniqueSet, POOLSIZE_TECHSET_MOD>      g_MaterialTechniqueSetPool;
-XAssetPool<GfxImage, POOLSIZE_IMAGE_MOD>                    g_GfxImagePool;
-XAssetPool<SndBank, POOLSIZE_SOUND_MOD>                     g_SoundPool;
-XAssetPool<snd_alias_list_t, POOLSIZE_SOUND_PATCH>      g_SoundPatchPool;
-XAssetPool<MapEnts, POOLSIZE_MAP_ENTS>                  g_MapEntsPool;
-XAssetPool<GfxLightDef, POOLSIZE_LIGHTDEF_MOD>              g_GfxLightDefPool;
-XAssetPool<Font_s, POOLSIZE_FONT>                       g_FontPool;
-XAssetPool<MenuList, POOLSIZE_MENUFILE>                 g_MenuListPool;
-XAssetPool<menuDef_t, POOLSIZE_MENU>                    g_MenuPool;
-XAssetPool<LocalizeEntry, POOLSIZE_LOCALIZE>            g_LocalizeEntryPool;
-XAssetPool<WeaponVariantDef, POOLSIZE_WEAPON>           g_WeaponVariantDefPool;
-XAssetPool<SndDriverGlobals, POOLSIZE_SNDDRIVERGLOBALS> g_SndDriverGlobalsPool;
-XAssetPool<FxEffectDef, POOLSIZE_FX_MOD>                    g_FxEffectDefPool;
-XAssetPool<FxImpactTable, POOLSIZE_IMPACTFX_MOD>            g_FxImpactTablePool;
-XAssetPool<RawFile, POOLSIZE_RAWFILE_MOD>                   g_RawFilePool;
-XAssetPool<StringTable, POOLSIZE_STRINGTABLE_MOD>           g_StringTablePool;
-XAssetPool<PackIndex, POOLSIZE_PACKINDEX>               g_PackIndexPool;
-XAssetPool<XGlobals, POOLSIZE_XGLOBALS>                 g_XGlobalsPool;
-XAssetPool<ddlDef_t, POOLSIZE_DDL>                      g_DDLPool;
-XAssetPool<Glasses, POOLSIZE_GLASSES>                   g_GlassesPool;
-XAssetPool<EmblemSet, POOLSIZE_EMBLEMSET>               g_EmblemSetPool;
+XAssetPool<XModelPieces, POOLSIZE_XMODELPIECES> &g_XModelPiecesPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<XModelPieces, POOLSIZE_XMODELPIECES>), 64)) XAssetPool<XModelPieces, POOLSIZE_XMODELPIECES>;
+XAssetPool<PhysPreset, POOLSIZE_PHYSPRESET_MOD> &g_PhysPresetPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<PhysPreset, POOLSIZE_PHYSPRESET_MOD>), 64)) XAssetPool<PhysPreset, POOLSIZE_PHYSPRESET_MOD>;
+XAssetPool<PhysConstraints, POOLSIZE_PHYSCONSTRAINTS_MOD> &g_PhysConstraintsPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<PhysConstraints, POOLSIZE_PHYSCONSTRAINTS_MOD>), 64)) XAssetPool<PhysConstraints, POOLSIZE_PHYSCONSTRAINTS_MOD>;
+XAssetPool<DestructibleDef, POOLSIZE_DESTRUCTIBLEDEF_MOD> &g_DestructibleDefPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<DestructibleDef, POOLSIZE_DESTRUCTIBLEDEF_MOD>), 64)) XAssetPool<DestructibleDef, POOLSIZE_DESTRUCTIBLEDEF_MOD>;
+XAssetPool<XAnimParts, POOLSIZE_XANIM_MOD> &g_XAnimPartsPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<XAnimParts, POOLSIZE_XANIM_MOD>), 64)) XAssetPool<XAnimParts, POOLSIZE_XANIM_MOD>;
+XAssetPool<XModel, POOLSIZE_XMODEL_MOD> &g_XModelPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<XModel, POOLSIZE_XMODEL_MOD>), 64)) XAssetPool<XModel, POOLSIZE_XMODEL_MOD>;
+XAssetPool<Material, POOLSIZE_MATERIAL_MOD> &g_MaterialPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<Material, POOLSIZE_MATERIAL_MOD>), 64)) XAssetPool<Material, POOLSIZE_MATERIAL_MOD>;
+XAssetPool<MaterialTechniqueSet, POOLSIZE_TECHSET_MOD> &g_MaterialTechniqueSetPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<MaterialTechniqueSet, POOLSIZE_TECHSET_MOD>), 64)) XAssetPool<MaterialTechniqueSet, POOLSIZE_TECHSET_MOD>;
+XAssetPool<GfxImage, POOLSIZE_IMAGE_MOD> &g_GfxImagePool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<GfxImage, POOLSIZE_IMAGE_MOD>), 64)) XAssetPool<GfxImage, POOLSIZE_IMAGE_MOD>;
+XAssetPool<SndBank, POOLSIZE_SOUND_MOD> &g_SoundPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<SndBank, POOLSIZE_SOUND_MOD>), 64)) XAssetPool<SndBank, POOLSIZE_SOUND_MOD>;
+XAssetPool<snd_alias_list_t, POOLSIZE_SOUND_PATCH> &g_SoundPatchPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<snd_alias_list_t, POOLSIZE_SOUND_PATCH>), 64)) XAssetPool<snd_alias_list_t, POOLSIZE_SOUND_PATCH>;
+XAssetPool<MapEnts, POOLSIZE_MAP_ENTS> &g_MapEntsPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<MapEnts, POOLSIZE_MAP_ENTS>), 64)) XAssetPool<MapEnts, POOLSIZE_MAP_ENTS>;
+XAssetPool<GfxLightDef, POOLSIZE_LIGHTDEF_MOD> &g_GfxLightDefPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<GfxLightDef, POOLSIZE_LIGHTDEF_MOD>), 64)) XAssetPool<GfxLightDef, POOLSIZE_LIGHTDEF_MOD>;
+XAssetPool<Font_s, POOLSIZE_FONT> &g_FontPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<Font_s, POOLSIZE_FONT>), 64)) XAssetPool<Font_s, POOLSIZE_FONT>;
+XAssetPool<MenuList, POOLSIZE_MENUFILE> &g_MenuListPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<MenuList, POOLSIZE_MENUFILE>), 64)) XAssetPool<MenuList, POOLSIZE_MENUFILE>;
+XAssetPool<menuDef_t, POOLSIZE_MENU> &g_MenuPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<menuDef_t, POOLSIZE_MENU>), 64)) XAssetPool<menuDef_t, POOLSIZE_MENU>;
+XAssetPool<LocalizeEntry, POOLSIZE_LOCALIZE> &g_LocalizeEntryPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<LocalizeEntry, POOLSIZE_LOCALIZE>), 64)) XAssetPool<LocalizeEntry, POOLSIZE_LOCALIZE>;
+XAssetPool<WeaponVariantDef, POOLSIZE_WEAPON> &g_WeaponVariantDefPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<WeaponVariantDef, POOLSIZE_WEAPON>), 64)) XAssetPool<WeaponVariantDef, POOLSIZE_WEAPON>;
+XAssetPool<SndDriverGlobals, POOLSIZE_SNDDRIVERGLOBALS> &g_SndDriverGlobalsPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<SndDriverGlobals, POOLSIZE_SNDDRIVERGLOBALS>), 64)) XAssetPool<SndDriverGlobals, POOLSIZE_SNDDRIVERGLOBALS>;
+XAssetPool<FxEffectDef, POOLSIZE_FX_MOD> &g_FxEffectDefPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<FxEffectDef, POOLSIZE_FX_MOD>), 64)) XAssetPool<FxEffectDef, POOLSIZE_FX_MOD>;
+XAssetPool<FxImpactTable, POOLSIZE_IMPACTFX_MOD> &g_FxImpactTablePool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<FxImpactTable, POOLSIZE_IMPACTFX_MOD>), 64)) XAssetPool<FxImpactTable, POOLSIZE_IMPACTFX_MOD>;
+XAssetPool<RawFile, POOLSIZE_RAWFILE_MOD> &g_RawFilePool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<RawFile, POOLSIZE_RAWFILE_MOD>), 64)) XAssetPool<RawFile, POOLSIZE_RAWFILE_MOD>;
+XAssetPool<StringTable, POOLSIZE_STRINGTABLE_MOD> &g_StringTablePool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<StringTable, POOLSIZE_STRINGTABLE_MOD>), 64)) XAssetPool<StringTable, POOLSIZE_STRINGTABLE_MOD>;
+XAssetPool<PackIndex, POOLSIZE_PACKINDEX> &g_PackIndexPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<PackIndex, POOLSIZE_PACKINDEX>), 64)) XAssetPool<PackIndex, POOLSIZE_PACKINDEX>;
+XAssetPool<XGlobals, POOLSIZE_XGLOBALS> &g_XGlobalsPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<XGlobals, POOLSIZE_XGLOBALS>), 64)) XAssetPool<XGlobals, POOLSIZE_XGLOBALS>;
+XAssetPool<ddlDef_t, POOLSIZE_DDL> &g_DDLPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<ddlDef_t, POOLSIZE_DDL>), 64)) XAssetPool<ddlDef_t, POOLSIZE_DDL>;
+XAssetPool<Glasses, POOLSIZE_GLASSES> &g_GlassesPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<Glasses, POOLSIZE_GLASSES>), 64)) XAssetPool<Glasses, POOLSIZE_GLASSES>;
+XAssetPool<EmblemSet, POOLSIZE_EMBLEMSET> &g_EmblemSetPool = *new (Ptr32_ArenaAlloc(sizeof(XAssetPool<EmblemSet, POOLSIZE_EMBLEMSET>), 64)) XAssetPool<EmblemSet, POOLSIZE_EMBLEMSET>;
 
 void *DB_XAssetPool[43] =
 {
@@ -2197,7 +2198,7 @@ XAssetEntry *__cdecl DB_CreateDefaultEntry(XAssetType type, const char *name)
     db_hashTable[hash % 0x8000u] = ((char *)newEntry - (char *)g_assetEntryPool) >> 4;
     String = SL_GetString((char*)name, 4u, SCRIPTINSTANCE_SERVER);
     v4 = SL_ConvertToString(String, SCRIPTINSTANCE_SERVER);
-    DB_SetXAssetName(&newEntry->asset, v4);
+    DB_SetXAssetName(&newEntry->asset, Ptr32_ArenaStrdup(v4)); // arm64: el nombre se guarda en un PTR32 => debe vivir en la arena
     newEntry->inuse = 1;
     if ( db_xassetdebug->current.enabled )
     {
@@ -2230,7 +2231,7 @@ XAssetEntryPoolEntry *__cdecl DB_AllocXAssetEntry(XAssetType type, unsigned __in
     }
     if ( ++XAssetEntryHighCount > XAssetEntryHighWaterMark )
         XAssetEntryHighWaterMark = XAssetEntryHighCount;
-    g_freeAssetEntryHead = (XAssetEntryPoolEntry *)freeHead->entry.asset.type;
+    g_freeAssetEntryHead = freeHead->next; // arm64: la lista libre usa el puntero completo (la union solapa asset.type+header)
     freeHead->entry.asset.type = type;
     freeHead->entry.asset.header = DB_AllocXAssetHeader(type);
     freeHead->entry.zoneIndex = zoneIndex;

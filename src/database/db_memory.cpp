@@ -4,6 +4,7 @@
 #include <universal/physicalmemory.h>
 #include <universal/com_memory.h>
 #include <qcommon/common.h>
+#include <universal/ptr32.h>
 
 const char *g_block_mem_name[7] =
 {
@@ -64,6 +65,11 @@ unsigned __int8 *__cdecl DB_MemAlloc(
                 const char *filename,
                 int flags)
 {
+#if defined(__LP64__)
+    // arm64: los XBlock se referencian con Ptr32 (relativo a la arena): TODOS los tipos viven dentro de la arena.
+    (void)allocType; (void)filename; (void)flags; (void)type;
+    return (unsigned __int8 *)Ptr32_ArenaAlloc(size + 15, 4096);
+#endif
     if ( type > 1 )
     {
         if ( type != 2
@@ -97,7 +103,11 @@ void __cdecl DB_FreeXBlocks(XBlock *blocks, int flags)
         if ( (flags & 0x40000000) != 0 )
         {
             if ( blocks[blockIndex].data )
+#if defined(__LP64__)
+                Ptr32_ArenaFree(blocks[blockIndex].data);
+#else
                 Z_Free((char *)blocks[blockIndex].data, 12);
+#endif
         }
         blocks[blockIndex].data = 0;
         blocks[blockIndex].size = 0;

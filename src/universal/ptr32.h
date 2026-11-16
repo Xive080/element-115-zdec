@@ -12,6 +12,10 @@ extern uintptr_t g_ptr32Base;            // base de la arena de 4 GB (reservada 
 extern uintptr_t g_ptr32Size;
 void Ptr32_AssertInArena(const void *p); // aborta si p no está en la arena (caza destinos fuera)
 void Ptr32_InitArena();                  // reserva la arena (mmap 4 GB PROT_NONE)
+void *Ptr32_ArenaAlloc(size_t size, size_t align); // sub-asignador dentro de la arena (mprotect RW del tramo usado); zeroed
+void Ptr32_ArenaFree(void *p);                     // libera un bloque de Ptr32_ArenaAlloc
+size_t Ptr32_ArenaUsed();
+const char *Ptr32_ArenaStrdup(const char *s);        // copia la cadena dentro de la arena (nombres de assets por defecto, etc.)
 
 template <typename T>
 struct Ptr32 {
@@ -63,6 +67,10 @@ struct PtrRt32 {
 };
 #define PTRRT32(T) PtrRt32<T>
 #else
+#include <stdlib.h>
+inline void *Ptr32_ArenaAlloc(size_t size, size_t) { return calloc(1, size); }
+inline void Ptr32_ArenaFree(void *p) { free(p); }
+inline const char *Ptr32_ArenaStrdup(const char *s) { return s; }
 #define PTR32(T) T *   // x86 de 32 bits: puntero normal, layout idéntico
 #define PTRRT32(T) T *
 #endif
