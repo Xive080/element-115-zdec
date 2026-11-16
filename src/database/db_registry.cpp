@@ -561,6 +561,49 @@ void __cdecl Load_PhysPresetAsset(XAssetHeader *physPreset)
     physPreset->xmodelPieces = DB_AddXAsset(ASSET_TYPE_PHYSPRESET, (XAssetHeader)physPreset->xmodelPieces).xmodelPieces;
 }
 
+// Variantes para handles PTR32 (slot de 4 bytes) de los assets del grupo B; el puntero del pool debe estar en la arena
+void __cdecl Load_PhysPresetAsset32(PTR32(PhysPreset) *p)
+{
+    XAssetHeader h; h.physPreset = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_PHYSPRESET, h).physPreset;
+}
+
+void __cdecl Load_PhysConstraintsAsset32(PTR32(PhysConstraints) *p)
+{
+    XAssetHeader h; h.physConstraints = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_PHYSCONSTRAINTS, h).physConstraints;
+}
+
+void __cdecl Load_DestructibleDefAsset32(PTR32(DestructibleDef) *p)
+{
+    XAssetHeader h; h.destructibleDef = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_DESTRUCTIBLEDEF, h).destructibleDef;
+}
+
+void __cdecl Load_XAnimPartsAsset32(PTR32(XAnimParts) *p)
+{
+    XAssetHeader h; h.parts = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_XANIMPARTS, h).parts;
+}
+
+void __cdecl Load_XModelAsset32(PTR32(XModel) *p)
+{
+    XAssetHeader h; h.model = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_XMODEL, h).model;
+}
+
+void __cdecl Load_XGlobalsAsset32(PTR32(XGlobals) *p)
+{
+    XAssetHeader h; h.xGlobals = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_XGLOBALS, h).xGlobals;
+}
+
+void __cdecl Load_FxEffectDefAsset32(PTR32(const FxEffectDef) *p)
+{
+    XAssetHeader h; h.fx = (FxEffectDef *)(const FxEffectDef *)*p;
+    *p = (const FxEffectDef *)DB_AddXAsset(ASSET_TYPE_FX, h).fx;
+}
+
 void __cdecl Mark_PhysPresetAsset(PhysPreset *physPreset)
 {
     DB_GetXAsset(ASSET_TYPE_PHYSPRESET, (XAssetHeader)physPreset);

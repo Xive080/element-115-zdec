@@ -62,6 +62,11 @@ const char **varTempString;
 const char **varXString;
 PTR32(const char) *varXString32;
 PTR32(Material) *varMaterialHandle32;
+// punteros a assets del grupo B (PTR32): variantes paralelas de las que usan otros grupos con campos aun crudos
+PTR32(PhysPreset) *varPhysPresetPtr32;
+PTR32(XModel) *varXModelPtr32;
+PTR32(XModelPieces) *varXModelPiecesPtr32;
+PTR32(const FxEffectDef) *varFxEffectDefHandle32;
 #if defined(__LP64__)
 #define PTR32_RAW(x) ((x).off)
 #else
@@ -85,7 +90,7 @@ XAnimDynamicFrames *varXAnimDynamicFrames;
 XAnimPartTransFrames *varXAnimPartTransFrames;
 XAnimPartTransData *varXAnimPartTransData;
 XAnimNotifyInfo *varXAnimNotifyInfo;
-XAnimParts **varXAnimPartsPtr;
+PTR32(XAnimParts) *varXAnimPartsPtr;
 XBoneInfo *varXBoneInfo;
 snd_curve *varsnd_curve;
 snd_group *varsnd_group;
@@ -170,7 +175,7 @@ PhysPreset *varPhysPreset;
 PhysPreset **varPhysPresetPtr;
 PhysConstraints *varPhysConstraints;
 PhysConstraint *varPhysConstraint;
-PhysConstraints **varPhysConstraintsPtr;
+PTR32(PhysConstraints) *varPhysConstraintsPtr;
 cplane_s *varcplane_t;
 cbrushside_t *varcbrushside_t;
 XModelCollTri_s *varXModelCollTri;
@@ -300,7 +305,7 @@ FxImpactTable **varFxImpactTablePtr;
 DestructibleStage *varDestructibleStage;
 DestructiblePiece *varDestructiblePiece;
 DestructiblePiece **varDestructiblePiecePtr;
-DestructibleDef **varDestructibleDefPtr;
+PTR32(DestructibleDef) *varDestructibleDefPtr;
 DestructibleDef *varDestructibleDef;
 flameTable *varflameTable;
 flameTable **varflameTablePtr;
@@ -316,7 +321,7 @@ EmblemSet **varEmblemSetPtr;
 RawFile *varRawFile;
 PTR32(RawFile) *varRawFilePtr;
 XGlobals *varXGlobals;
-XGlobals **varXGlobalsPtr;
+PTR32(XGlobals) *varXGlobalsPtr;
 StringTableCell *varStringTableCell;
 StringTable *varStringTable;
 PTR32(StringTable) *varStringTablePtr;
@@ -687,8 +692,8 @@ void __cdecl Load_XAnimIndices()
     {
         if ( varXAnimIndices->_1 )
         {
-            varXAnimIndices->_1 = AllocLoad_XBlendInfo();
-            varushort = (unsigned __int16 *)varXAnimIndices->_1;
+            varXAnimIndices->_2 = (unsigned __int16 *)AllocLoad_XBlendInfo();
+            varushort = varXAnimIndices->_2;
             Load_ushortArray(1, varXAnimParts->indexCount);
         }
     }
@@ -932,8 +937,8 @@ void __cdecl Load_XAnimDynamicFrames()
     }
     else if ( varXAnimDynamicFrames->_1 )
     {
-        varXAnimDynamicFrames->_1 = (unsigned __int8 (*)[3])AllocLoad_FxElemVisStateSample();
-        varUShortVec = (unsigned __int16 (*)[3])varXAnimDynamicFrames->_1;
+        varXAnimDynamicFrames->_2 = (unsigned __int16 (*)[3])AllocLoad_FxElemVisStateSample();
+        varUShortVec = varXAnimDynamicFrames->_2;
         if ( varXAnimPartTrans->size )
             Load_UShortVecArray(1, varXAnimPartTrans->size + 1);
         else
@@ -1037,8 +1042,8 @@ void __cdecl Load_XAnimParts(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varXAnimParts, 104);
     DB_PushStreamPos(4u);
-    varXString = &varXAnimParts->name;
-    Load_XString(0);
+    varXString32 = &varXAnimParts->name;
+    Load_XString32(0);
     if ( varXAnimParts->names )
     {
         varXAnimParts->names = (unsigned __int16 *)AllocLoad_XBlendInfo();
@@ -1100,26 +1105,26 @@ void __cdecl Load_XAnimParts(bool atStreamStart)
 
 void __cdecl Load_XAnimPartsPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varXAnimPartsPtr, 4);
     DB_PushStreamPos(0);
     if ( *varXAnimPartsPtr )
     {
-        value = (unsigned int)*varXAnimPartsPtr;
-        if ( *varXAnimPartsPtr == (XAnimParts *)-1 || value == -2 )
+        value = PTR32_RAW(*varXAnimPartsPtr);
+        if ( *varXAnimPartsPtr == (XAnimParts *)-1 || value == 0xFFFFFFFEu )
         {
             *varXAnimPartsPtr = (XAnimParts *)AllocLoad_FxElemVisStateSample();
             varXAnimParts = *varXAnimPartsPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_XAnimParts(1);
-            Load_XAnimPartsAsset((XAssetHeader *)varXAnimPartsPtr);
+            Load_XAnimPartsAsset32(varXAnimPartsPtr);
             if ( inserted )
-                *inserted = *varXAnimPartsPtr;
+                *inserted = PTR32_RAW(*varXAnimPartsPtr);
         }
         else
         {
@@ -2667,6 +2672,21 @@ void __cdecl Load_MaterialHandleArray(bool atStreamStart, int count)
     }
 }
 
+void __cdecl Load_MaterialHandleArray32(bool atStreamStart, int count)
+{
+    PTR32(Material) *var; // [esp+0h] [ebp-8h]
+    int i; // [esp+4h] [ebp-4h]
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialHandle32, 4 * count);
+    var = varMaterialHandle32;
+    for ( i = 0; i < count; ++i )
+    {
+        varMaterialHandle32 = var;
+        Load_MaterialHandle32(0);
+        ++var;
+    }
+}
+
 void __cdecl Mark_MaterialTextureDefInfo()
 {
     if ( varMaterialTextureDef->semantic == 11 )
@@ -2773,6 +2793,16 @@ void __cdecl Mark_MaterialHandle()
     }
 }
 
+void __cdecl Mark_MaterialHandle32()
+{
+    if ( *varMaterialHandle32 )
+    {
+        varMaterial = *varMaterialHandle32;
+        Mark_MaterialAsset(varMaterial);
+        Mark_Material();
+    }
+}
+
 void __cdecl Mark_MaterialHandleArray(int count)
 {
     Material **var; // [esp+0h] [ebp-8h]
@@ -2783,6 +2813,20 @@ void __cdecl Mark_MaterialHandleArray(int count)
     {
         varMaterialHandle = var;
         Mark_MaterialHandle();
+        ++var;
+    }
+}
+
+void __cdecl Mark_MaterialHandleArray32(int count)
+{
+    PTR32(Material) *var; // [esp+0h] [ebp-8h]
+    int i; // [esp+4h] [ebp-4h]
+
+    var = varMaterialHandle32;
+    for ( i = 0; i < count; ++i )
+    {
+        varMaterialHandle32 = var;
+        Mark_MaterialHandle32();
         ++var;
     }
 }
@@ -2964,10 +3008,10 @@ void __cdecl Load_PhysPreset(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varPhysPreset, 84);
     DB_PushStreamPos(4u);
-    varXString = &varPhysPreset->name;
-    Load_XString(0);
-    varXString = &varPhysPreset->sndAliasPrefix;
-    Load_XString(0);
+    varXString32 = &varPhysPreset->name;
+    Load_XString32(0);
+    varXString32 = &varPhysPreset->sndAliasPrefix;
+    Load_XString32(0);
     DB_PopStreamPos();
 }
 
@@ -3002,11 +3046,51 @@ void __cdecl Load_PhysPresetPtr(bool atStreamStart)
     DB_PopStreamPos();
 }
 
+void __cdecl Load_PhysPresetPtr32(bool atStreamStart)
+{
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
+    unsigned int value; // [esp+4h] [ebp-8h]
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varPhysPresetPtr32, 4);
+    DB_PushStreamPos(0);
+    if ( *varPhysPresetPtr32 )
+    {
+        value = PTR32_RAW(*varPhysPresetPtr32);
+        if ( *varPhysPresetPtr32 == (PhysPreset *)-1 || value == 0xFFFFFFFEu )
+        {
+            *varPhysPresetPtr32 = (PhysPreset *)AllocLoad_FxElemVisStateSample();
+            varPhysPreset = *varPhysPresetPtr32;
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
+            else
+                inserted = 0;
+            Load_PhysPreset(1);
+            Load_PhysPresetAsset32(varPhysPresetPtr32);
+            if ( inserted )
+                *inserted = PTR32_RAW(*varPhysPresetPtr32);
+        }
+        else
+        {
+            DB_ConvertOffsetToAlias((unsigned int *)varPhysPresetPtr32);
+        }
+    }
+    DB_PopStreamPos();
+}
+
 void __cdecl Mark_PhysPresetPtr()
 {
     if ( *varPhysPresetPtr )
     {
         varPhysPreset = *varPhysPresetPtr;
+        Mark_PhysPresetAsset(varPhysPreset);
+    }
+}
+
+void __cdecl Mark_PhysPresetPtr32()
+{
+    if ( *varPhysPresetPtr32 )
+    {
+        varPhysPreset = *varPhysPresetPtr32;
         Mark_PhysPresetAsset(varPhysPreset);
     }
 }
@@ -3018,14 +3102,14 @@ void __cdecl Load_PhysConstraint(bool atStreamStart)
     Load_ScriptString(0);
     varScriptString = &varPhysConstraint->target_ent1;
     Load_ScriptString(0);
-    varXString = &varPhysConstraint->target_bone1;
-    Load_XString(0);
+    varXString32 = &varPhysConstraint->target_bone1;
+    Load_XString32(0);
     varScriptString = &varPhysConstraint->target_ent2;
     Load_ScriptString(0);
-    varXString = &varPhysConstraint->target_bone2;
-    Load_XString(0);
-    varMaterialHandle = &varPhysConstraint->material;
-    Load_MaterialHandle(0);
+    varXString32 = &varPhysConstraint->target_bone2;
+    Load_XString32(0);
+    varMaterialHandle32 = &varPhysConstraint->material;
+    Load_MaterialHandle32(0);
 }
 
 void __cdecl Load_PhysConstraintArray(bool atStreamStart, int count)
@@ -3047,8 +3131,8 @@ void __cdecl Load_PhysConstraints(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varPhysConstraints, 2696);
     DB_PushStreamPos(4u);
-    varXString = &varPhysConstraints->name;
-    Load_XString(0);
+    varXString32 = &varPhysConstraints->name;
+    Load_XString32(0);
     varPhysConstraint = varPhysConstraints->data;
     Load_PhysConstraintArray(0, 16);
     DB_PopStreamPos();
@@ -3056,26 +3140,26 @@ void __cdecl Load_PhysConstraints(bool atStreamStart)
 
 void __cdecl Load_PhysConstraintsPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varPhysConstraintsPtr, 4);
     DB_PushStreamPos(0);
     if ( *varPhysConstraintsPtr )
     {
-        value = (unsigned int)*varPhysConstraintsPtr;
-        if ( *varPhysConstraintsPtr == (PhysConstraints *)-1 || value == -2 )
+        value = PTR32_RAW(*varPhysConstraintsPtr);
+        if ( *varPhysConstraintsPtr == (PhysConstraints *)-1 || value == 0xFFFFFFFEu )
         {
             *varPhysConstraintsPtr = (PhysConstraints *)AllocLoad_FxElemVisStateSample();
             varPhysConstraints = *varPhysConstraintsPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_PhysConstraints(1);
-            Load_PhysConstraintsAsset((XAssetHeader *)varPhysConstraintsPtr);
+            Load_PhysConstraintsAsset32(varPhysConstraintsPtr);
             if ( inserted )
-                *inserted = *varPhysConstraintsPtr;
+                *inserted = PTR32_RAW(*varPhysConstraintsPtr);
         }
         else
         {
@@ -3093,8 +3177,8 @@ void __cdecl Mark_PhysConstraint()
     Mark_ScriptString();
     varScriptString = &varPhysConstraint->target_ent2;
     Mark_ScriptString();
-    varMaterialHandle = &varPhysConstraint->material;
-    Mark_MaterialHandle();
+    varMaterialHandle32 = &varPhysConstraint->material;
+    Mark_MaterialHandle32();
 }
 
 void __cdecl Mark_PhysConstraintArray(int count)
@@ -3328,8 +3412,8 @@ void __cdecl Load_XModel(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned char *)varXModel, 252);
     DB_PushStreamPos(4u);
-    varXString = &varXModel->name;
-    Load_XString(0);
+    varXString32 = &varXModel->name;
+    Load_XString32(0);
     if ( varXModel->localBoneNames )
     {
         if ( varXModel->localBoneNames == (unsigned __int16 *)-1 )
@@ -3422,9 +3506,9 @@ void __cdecl Load_XModel(bool atStreamStart)
     }
     if ( varXModel->materialHandles )
     {
-        varXModel->materialHandles = (Material **)AllocLoad_FxElemVisStateSample();
-        varMaterialHandle = varXModel->materialHandles;
-        Load_MaterialHandleArray(1, varXModel->numsurfs);
+        varXModel->materialHandles = (PTR32(Material) *)AllocLoad_FxElemVisStateSample();
+        varMaterialHandle32 = varXModel->materialHandles;
+        Load_MaterialHandleArray32(1, varXModel->numsurfs);
     }
     if ( varXModel->collSurfs )
     {
@@ -3440,8 +3524,8 @@ void __cdecl Load_XModel(bool atStreamStart)
     }
     varXModelStreamInfo = &varXModel->streamInfo;
     Load_XModelStreamInfo(0);
-    varPhysPresetPtr = &varXModel->physPreset;
-    Load_PhysPresetPtr(0);
+    varPhysPresetPtr32 = &varXModel->physPreset;
+    Load_PhysPresetPtr32(0);
     if ( varXModel->collmaps )
     {
         varXModel->collmaps = (Collmap *)AllocLoad_FxElemVisStateSample();
@@ -3486,6 +3570,39 @@ void __cdecl Load_XModelPtr(bool atStreamStart)
     DB_PopStreamPos();
 }
 
+void __cdecl Load_XModelPtr32(bool atStreamStart)
+{
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
+    unsigned int value; // [esp+4h] [ebp-8h]
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varXModelPtr32, 4);
+    DB_PushStreamPos(0);
+    if ( *varXModelPtr32 )
+    {
+        value = PTR32_RAW(*varXModelPtr32);
+        if ( *varXModelPtr32 == (XModel *)-1 || value == 0xFFFFFFFEu )
+        {
+            *varXModelPtr32 = (XModel *)AllocLoad_FxElemVisStateSample();
+            varXModel = *varXModelPtr32;
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
+            else
+                inserted = 0;
+            Load_XModel(1);
+            Load_XModelAsset32(varXModelPtr32);
+            if ( inserted )
+                *inserted = PTR32_RAW(*varXModelPtr32);
+        }
+        else
+        {
+            DB_ConvertOffsetToAlias((unsigned int *)varXModelPtr32);
+            // mod (L62): a later asset of a mod extra zone (weapon, fx, destructible) using a model it left unlinked links it now
+            *varXModelPtr32 = (XModel *)DB_ModLinkDeferredAlias(*varXModelPtr32);
+        }
+    }
+    DB_PopStreamPos();
+}
+
 void __cdecl Load_XModelPtrArray(bool atStreamStart, int count)
 {
     XModel **var; // [esp+0h] [ebp-8h]
@@ -3501,11 +3618,26 @@ void __cdecl Load_XModelPtrArray(bool atStreamStart, int count)
     }
 }
 
+void __cdecl Load_XModelPtrArray32(bool atStreamStart, int count)
+{
+    PTR32(XModel) *var; // [esp+0h] [ebp-8h]
+    int i; // [esp+4h] [ebp-4h]
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varXModelPtr32, 4 * count);
+    var = varXModelPtr32;
+    for ( i = 0; i < count; ++i )
+    {
+        varXModelPtr32 = var;
+        Load_XModelPtr32(0);
+        ++var;
+    }
+}
+
 void __cdecl Load_XModelPiece(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varXModelPiece, 16);
-    varXModelPtr = &varXModelPiece->model;
-    Load_XModelPtr(0);
+    varXModelPtr32 = &varXModelPiece->model;
+    Load_XModelPtr32(0);
 }
 
 void __cdecl Load_XModelPieceArray(bool atStreamStart, int count)
@@ -3526,8 +3658,8 @@ void __cdecl Load_XModelPieceArray(bool atStreamStart, int count)
 void __cdecl Load_XModelPieces(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varXModelPieces, 12);
-    varXString = &varXModelPieces->name;
-    Load_XString(0);
+    varXString32 = &varXModelPieces->name;
+    Load_XString32(0);
     if ( varXModelPieces->pieces )
     {
         varXModelPieces->pieces = (XModelPiece *)AllocLoad_FxElemVisStateSample();
@@ -3554,6 +3686,24 @@ void __cdecl Load_XModelPiecesPtr(bool atStreamStart)
     }
 }
 
+void __cdecl Load_XModelPiecesPtr32(bool atStreamStart)
+{
+    Load_Stream(atStreamStart, (unsigned __int8 *)varXModelPiecesPtr32, 4);
+    if ( *varXModelPiecesPtr32 )
+    {
+        if ( *varXModelPiecesPtr32 == (XModelPieces *)-1 )
+        {
+            *varXModelPiecesPtr32 = (XModelPieces *)AllocLoad_FxElemVisStateSample();
+            varXModelPieces = *varXModelPiecesPtr32;
+            Load_XModelPieces(1);
+        }
+        else
+        {
+            DB_ConvertOffsetToPointer((unsigned int *)varXModelPiecesPtr32);
+        }
+    }
+}
+
 void __cdecl Mark_XModel()
 {
     if ( varXModel->localBoneNames )
@@ -3563,11 +3713,11 @@ void __cdecl Mark_XModel()
     }
     if ( varXModel->materialHandles )
     {
-        varMaterialHandle = varXModel->materialHandles;
-        Mark_MaterialHandleArray(varXModel->numsurfs);
+        varMaterialHandle32 = varXModel->materialHandles;
+        Mark_MaterialHandleArray32(varXModel->numsurfs);
     }
-    varPhysPresetPtr = &varXModel->physPreset;
-    Mark_PhysPresetPtr();
+    varPhysPresetPtr32 = &varXModel->physPreset;
+    Mark_PhysPresetPtr32();
     varPhysConstraintsPtr = &varXModel->physConstraints;
     Mark_PhysConstraintsPtr();
 }
@@ -3577,6 +3727,16 @@ void __cdecl Mark_XModelPtr()
     if ( *varXModelPtr )
     {
         varXModel = *varXModelPtr;
+        Mark_XModelAsset(varXModel);
+        Mark_XModel();
+    }
+}
+
+void __cdecl Mark_XModelPtr32()
+{
+    if ( *varXModelPtr32 )
+    {
+        varXModel = *varXModelPtr32;
         Mark_XModelAsset(varXModel);
         Mark_XModel();
     }
@@ -3596,10 +3756,24 @@ void __cdecl Mark_XModelPtrArray(int count)
     }
 }
 
+void __cdecl Mark_XModelPtrArray32(int count)
+{
+    PTR32(XModel) *var; // [esp+0h] [ebp-8h]
+    int i; // [esp+4h] [ebp-4h]
+
+    var = varXModelPtr32;
+    for ( i = 0; i < count; ++i )
+    {
+        varXModelPtr32 = var;
+        Mark_XModelPtr32();
+        ++var;
+    }
+}
+
 void __cdecl Mark_XModelPiece()
 {
-    varXModelPtr = &varXModelPiece->model;
-    Mark_XModelPtr();
+    varXModelPtr32 = &varXModelPiece->model;
+    Mark_XModelPtr32();
 }
 
 void __cdecl Mark_XModelPieceArray(int count)
@@ -3630,6 +3804,15 @@ void __cdecl Mark_XModelPiecesPtr()
     if ( *varXModelPiecesPtr )
     {
         varXModelPieces = *varXModelPiecesPtr;
+        Mark_XModelPieces();
+    }
+}
+
+void __cdecl Mark_XModelPiecesPtr32()
+{
+    if ( *varXModelPiecesPtr32 )
+    {
+        varXModelPieces = *varXModelPiecesPtr32;
         Mark_XModelPieces();
     }
 }
@@ -4000,6 +4183,37 @@ void __cdecl Load_FxEffectDefHandle(bool atStreamStart)
     DB_PopStreamPos();
 }
 
+void __cdecl Load_FxEffectDefHandle32(bool atStreamStart)
+{
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
+    unsigned int value; // [esp+4h] [ebp-8h]
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varFxEffectDefHandle32, 4);
+    DB_PushStreamPos(0);
+    if ( *varFxEffectDefHandle32 )
+    {
+        value = PTR32_RAW(*varFxEffectDefHandle32);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
+        {
+            *varFxEffectDefHandle32 = (const FxEffectDef *)AllocLoad_FxElemVisStateSample();
+            varFxEffectDef = (FxEffectDef *)(const FxEffectDef *)*varFxEffectDefHandle32;
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
+            else
+                inserted = 0;
+            Load_FxEffectDef(1);
+            Load_FxEffectDefAsset32(varFxEffectDefHandle32);
+            if ( inserted )
+                *inserted = PTR32_RAW(*varFxEffectDefHandle32);
+        }
+        else
+        {
+            DB_ConvertOffsetToAlias((unsigned int *)varFxEffectDefHandle32);
+        }
+    }
+    DB_PopStreamPos();
+}
+
 void __cdecl Load_FxEffectDefHandleArray(bool atStreamStart, int count)
 {
     const FxEffectDef **var; // [esp+0h] [ebp-8h]
@@ -4223,6 +4437,16 @@ void __cdecl Mark_FxEffectDefHandle()
     if ( *varFxEffectDefHandle )
     {
         varFxEffectDef = *(FxEffectDef**)varFxEffectDefHandle; //de-const
+        Mark_FxEffectDefAsset(varFxEffectDef);
+        Mark_FxEffectDef();
+    }
+}
+
+void __cdecl Mark_FxEffectDefHandle32()
+{
+    if ( *varFxEffectDefHandle32 )
+    {
+        varFxEffectDef = (FxEffectDef *)(const FxEffectDef *)*varFxEffectDefHandle32;
         Mark_FxEffectDefAsset(varFxEffectDef);
         Mark_FxEffectDef();
     }
@@ -6401,18 +6625,18 @@ void __cdecl Load_DestructibleStage(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varDestructibleStage, 48);
     varScriptString = &varDestructibleStage->showBone;
     Load_ScriptString(0);
-    varFxEffectDefHandle = &varDestructibleStage->breakEffect;
-    Load_FxEffectDefHandle(0);
-    varXString = &varDestructibleStage->breakSound;
-    Load_XString(0);
-    varXString = &varDestructibleStage->breakNotify;
-    Load_XString(0);
-    varXString = &varDestructibleStage->loopSound;
-    Load_XString(0);
-    varXModelPtr = varDestructibleStage->spawnModel;
-    Load_XModelPtrArray(0, 3);
-    varPhysPresetPtr = &varDestructibleStage->physPreset;
-    Load_PhysPresetPtr(0);
+    varFxEffectDefHandle32 = &varDestructibleStage->breakEffect;
+    Load_FxEffectDefHandle32(0);
+    varXString32 = &varDestructibleStage->breakSound;
+    Load_XString32(0);
+    varXString32 = &varDestructibleStage->breakNotify;
+    Load_XString32(0);
+    varXString32 = &varDestructibleStage->loopSound;
+    Load_XString32(0);
+    varXModelPtr32 = varDestructibleStage->spawnModel;
+    Load_XModelPtrArray32(0, 3);
+    varPhysPresetPtr32 = &varDestructibleStage->physPreset;
+    Load_PhysPresetPtr32(0);
 }
 
 void __cdecl Load_DestructibleStageArray(bool atStreamStart, int count)
@@ -6437,12 +6661,12 @@ void __cdecl Load_DestructiblePiece(bool atStreamStart)
     Load_DestructibleStageArray(0, 5);
     varPhysConstraintsPtr = &varDestructiblePiece->physConstraints;
     Load_PhysConstraintsPtr(0);
-    varXString = &varDestructiblePiece->damageSound;
-    Load_XString(0);
-    varFxEffectDefHandle = &varDestructiblePiece->burnEffect;
-    Load_FxEffectDefHandle(0);
-    varXString = &varDestructiblePiece->burnSound;
-    Load_XString(0);
+    varXString32 = &varDestructiblePiece->damageSound;
+    Load_XString32(0);
+    varFxEffectDefHandle32 = &varDestructiblePiece->burnEffect;
+    Load_FxEffectDefHandle32(0);
+    varXString32 = &varDestructiblePiece->burnSound;
+    Load_XString32(0);
     varScriptString = &varDestructiblePiece->enableLabel;
     Load_ScriptString(0);
 }
@@ -6466,12 +6690,12 @@ void __cdecl Load_DestructibleDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varDestructibleDef, 24);
     DB_PushStreamPos(4u);
-    varXString = &varDestructibleDef->name;
-    Load_XString(0);
-    varXModelPtr = &varDestructibleDef->model;
-    Load_XModelPtr(0);
-    varXModelPtr = &varDestructibleDef->pristineModel;
-    Load_XModelPtr(0);
+    varXString32 = &varDestructibleDef->name;
+    Load_XString32(0);
+    varXModelPtr32 = &varDestructibleDef->model;
+    Load_XModelPtr32(0);
+    varXModelPtr32 = &varDestructibleDef->pristineModel;
+    Load_XModelPtr32(0);
     if ( varDestructibleDef->pieces )
     {
         varDestructibleDef->pieces = (DestructiblePiece *)AllocLoad_FxElemVisStateSample();
@@ -6483,26 +6707,26 @@ void __cdecl Load_DestructibleDef(bool atStreamStart)
 
 void __cdecl Load_DestructibleDefPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varDestructibleDefPtr, 4);
     DB_PushStreamPos(0);
     if ( *varDestructibleDefPtr )
     {
-        value = (unsigned int)*varDestructibleDefPtr;
-        if ( *varDestructibleDefPtr == (DestructibleDef *)-1 || value == -2 )
+        value = PTR32_RAW(*varDestructibleDefPtr);
+        if ( *varDestructibleDefPtr == (DestructibleDef *)-1 || value == 0xFFFFFFFEu )
         {
             *varDestructibleDefPtr = (DestructibleDef *)AllocLoad_FxElemVisStateSample();
             varDestructibleDef = *varDestructibleDefPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_DestructibleDef(1);
-            Load_DestructibleDefAsset((XAssetHeader *)varDestructibleDefPtr);
+            Load_DestructibleDefAsset32(varDestructibleDefPtr);
             if ( inserted )
-                *inserted = *varDestructibleDefPtr;
+                *inserted = PTR32_RAW(*varDestructibleDefPtr);
         }
         else
         {
@@ -6516,12 +6740,12 @@ void __cdecl Mark_DestructibleStage()
 {
     varScriptString = &varDestructibleStage->showBone;
     Mark_ScriptString();
-    varFxEffectDefHandle = &varDestructibleStage->breakEffect;
-    Mark_FxEffectDefHandle();
-    varXModelPtr = varDestructibleStage->spawnModel;
-    Mark_XModelPtrArray(3);
-    varPhysPresetPtr = &varDestructibleStage->physPreset;
-    Mark_PhysPresetPtr();
+    varFxEffectDefHandle32 = &varDestructibleStage->breakEffect;
+    Mark_FxEffectDefHandle32();
+    varXModelPtr32 = varDestructibleStage->spawnModel;
+    Mark_XModelPtrArray32(3);
+    varPhysPresetPtr32 = &varDestructibleStage->physPreset;
+    Mark_PhysPresetPtr32();
 }
 
 void __cdecl Mark_DestructibleStageArray(int count)
@@ -6544,8 +6768,8 @@ void __cdecl Mark_DestructiblePiece()
     Mark_DestructibleStageArray(5);
     varPhysConstraintsPtr = &varDestructiblePiece->physConstraints;
     Mark_PhysConstraintsPtr();
-    varFxEffectDefHandle = &varDestructiblePiece->burnEffect;
-    Mark_FxEffectDefHandle();
+    varFxEffectDefHandle32 = &varDestructiblePiece->burnEffect;
+    Mark_FxEffectDefHandle32();
     varScriptString = &varDestructiblePiece->enableLabel;
     Mark_ScriptString();
 }
@@ -6566,10 +6790,10 @@ void __cdecl Mark_DestructiblePieceArray(int count)
 
 void __cdecl Mark_DestructibleDef()
 {
-    varXModelPtr = &varDestructibleDef->model;
-    Mark_XModelPtr();
-    varXModelPtr = &varDestructibleDef->pristineModel;
-    Mark_XModelPtr();
+    varXModelPtr32 = &varDestructibleDef->model;
+    Mark_XModelPtr32();
+    varXModelPtr32 = &varDestructibleDef->pristineModel;
+    Mark_XModelPtr32();
     if ( varDestructibleDef->pieces )
     {
         varDestructiblePiece = varDestructibleDef->pieces;
@@ -7557,33 +7781,33 @@ void __cdecl Load_XGlobals(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varXGlobals, 40);
     DB_PushStreamPos(4u);
-    varXString = &varXGlobals->name;
-    Load_XString(0);
+    varXString32 = &varXGlobals->name;
+    Load_XString32(0);
     DB_PopStreamPos();
 }
 
 void __cdecl Load_XGlobalsPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varXGlobalsPtr, 4);
     DB_PushStreamPos(0);
     if ( *varXGlobalsPtr )
     {
-        value = (unsigned int)*varXGlobalsPtr;
-        if ( *varXGlobalsPtr == (XGlobals *)-1 || value == -2 )
+        value = PTR32_RAW(*varXGlobalsPtr);
+        if ( *varXGlobalsPtr == (XGlobals *)-1 || value == 0xFFFFFFFEu )
         {
             *varXGlobalsPtr = (XGlobals *)AllocLoad_FxElemVisStateSample();
             varXGlobals = *varXGlobalsPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_XGlobals(1);
-            Load_XGlobalsAsset((XAssetHeader *)varXGlobalsPtr);
+            Load_XGlobalsAsset32(varXGlobalsPtr);
             if ( inserted )
-                *inserted = *varXGlobalsPtr;
+                *inserted = PTR32_RAW(*varXGlobalsPtr);
         }
         else
         {
@@ -9280,24 +9504,24 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
     switch ( varXAsset->type )
     {
         case 1:
-            varPhysPresetPtr = (PhysPreset **)varXAssetHeader;
-            Load_PhysPresetPtr(atStreamStart);
+            varPhysPresetPtr32 = (PTR32(PhysPreset) *)varXAssetHeader;
+            Load_PhysPresetPtr32(atStreamStart);
             break;
         case 2:
-            varPhysConstraintsPtr = (PhysConstraints **)varXAssetHeader;
+            varPhysConstraintsPtr = (PTR32(PhysConstraints) *)varXAssetHeader;
             Load_PhysConstraintsPtr(atStreamStart);
             break;
         case 3:
-            varDestructibleDefPtr = (DestructibleDef **)varXAssetHeader;
+            varDestructibleDefPtr = (PTR32(DestructibleDef) *)varXAssetHeader;
             Load_DestructibleDefPtr(atStreamStart);
             break;
         case 4:
-            varXAnimPartsPtr = (XAnimParts **)varXAssetHeader;
+            varXAnimPartsPtr = (PTR32(XAnimParts) *)varXAssetHeader;
             Load_XAnimPartsPtr(atStreamStart);
             break;
         case 5:
-            varXModelPtr = (XModel **)varXAssetHeader;
-            Load_XModelPtr(atStreamStart);
+            varXModelPtr32 = (PTR32(XModel) *)varXAssetHeader;
+            Load_XModelPtr32(atStreamStart);
             break;
         case 6:
             varMaterialHandle32 = (PTR32(Material) *)varXAssetHeader;
@@ -9393,7 +9617,7 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_PackIndexPtr(atStreamStart);
             break;
         case 39:
-            varXGlobalsPtr = (XGlobals **)varXAssetHeader;
+            varXGlobalsPtr = (PTR32(XGlobals) *)varXAssetHeader;
             Load_XGlobalsPtr(atStreamStart);
             break;
         case 40:
@@ -9423,24 +9647,24 @@ void __cdecl Mark_XAssetHeader()
     switch ( varXAsset->type )
     {
         case ASSET_TYPE_PHYSPRESET:
-            varPhysPresetPtr = (PhysPreset **)varXAssetHeader;
-            Mark_PhysPresetPtr();
+            varPhysPresetPtr32 = (PTR32(PhysPreset) *)varXAssetHeader;
+            Mark_PhysPresetPtr32();
             break;
         case ASSET_TYPE_PHYSCONSTRAINTS:
-            varPhysConstraintsPtr = (PhysConstraints **)varXAssetHeader;
+            varPhysConstraintsPtr = (PTR32(PhysConstraints) *)varXAssetHeader;
             Mark_PhysConstraintsPtr();
             break;
         case ASSET_TYPE_DESTRUCTIBLEDEF:
-            varDestructibleDefPtr = (DestructibleDef **)varXAssetHeader;
+            varDestructibleDefPtr = (PTR32(DestructibleDef) *)varXAssetHeader;
             Mark_DestructibleDefPtr();
             break;
         case ASSET_TYPE_XANIMPARTS:
-            varXAnimPartsPtr = (XAnimParts **)varXAssetHeader;
+            varXAnimPartsPtr = (PTR32(XAnimParts) *)varXAssetHeader;
             Mark_XAnimPartsPtr();
             break;
         case ASSET_TYPE_XMODEL:
-            varXModelPtr = (XModel **)varXAssetHeader;
-            Mark_XModelPtr();
+            varXModelPtr32 = (PTR32(XModel) *)varXAssetHeader;
+            Mark_XModelPtr32();
             break;
         case ASSET_TYPE_MATERIAL:
             varMaterialHandle32 = (PTR32(Material) *)varXAssetHeader;
@@ -9536,7 +9760,7 @@ void __cdecl Mark_XAssetHeader()
             Mark_PackIndexPtr();
             break;
         case ASSET_TYPE_XGLOBALS:
-            varXGlobalsPtr = (XGlobals **)varXAssetHeader;
+            varXGlobalsPtr = (PTR32(XGlobals) *)varXAssetHeader;
             Mark_XGlobalsPtr();
             break;
         case ASSET_TYPE_DDL:

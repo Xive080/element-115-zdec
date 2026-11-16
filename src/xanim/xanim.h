@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <clientscript/cscr_main.h>
 #include "dobj.h"
 
@@ -16,9 +17,9 @@ struct XAnimParam // sizeof=0x14
 union XAnimIndices // sizeof=0x4
 {                                                                             // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+1808/w
                                                                                 // XAnimLoadFile(char const *,void * (*)(int),bool)+1840/w ...
-        unsigned __int8 *_1;
-        unsigned __int16 *_2;
-        void *data;
+        PTR32(unsigned __int8) _1;
+        PTR32(unsigned __int16) _2;
+        PTR32(char) data;
 };
 
 struct XAnimNotifyInfo // sizeof=0x8
@@ -29,11 +30,15 @@ struct XAnimNotifyInfo // sizeof=0x8
         float time;
 };
 
+typedef unsigned __int8 XAnimByteVec3[3];
+typedef unsigned __int16 XAnimUShortVec3[3];
+typedef __int16 XAnimQuat2[2];
+
 union XAnimDynamicFrames // sizeof=0x4
 {                                                                             // XREF: XAnimCalcNonLoopEnd+9ED/w
                                                                                 // XAnimCalcNonLoopEnd+9F3/r ...
-        unsigned __int8 (*_1)[3];
-        unsigned __int16 (*_2)[3];
+        PTR32(XAnimByteVec3) _1;
+        PTR32(XAnimUShortVec3) _2;
 };
 
 union XAnimDynamicIndices // sizeof=0x2
@@ -69,7 +74,7 @@ struct XAnimPartTrans // sizeof=0x24
 
 struct __declspec(align(4)) XAnimDeltaPartQuatDataFrames // sizeof=0x8
 {                                                                             // XREF: XAnimDeltaPartQuatData/r
-        __int16 (*frames)[2];
+        PTR32(XAnimQuat2) frames;
         XAnimDynamicIndices indices;
         // padding byte
         // padding byte
@@ -91,13 +96,13 @@ struct XAnimDeltaPartQuat // sizeof=0xC
 
 struct XAnimDeltaPart // sizeof=0x8
 {
-        XAnimPartTrans *trans;
-        XAnimDeltaPartQuat *quat;
+        PTR32(XAnimPartTrans) trans;
+        PTR32(XAnimDeltaPartQuat) quat;
 };
 
 struct XAnimParts // sizeof=0x68
 {                                                                             // XREF: XAssetPoolEntry<XAnimParts>/r
-        const char *name;
+        PTR32(const char) name;
         unsigned __int16 dataByteCount;
         unsigned __int16 dataShortCount;
         unsigned __int16 dataIntCount;
@@ -122,16 +127,16 @@ struct XAnimParts // sizeof=0x68
         float frequency;
         float primedLength;
         float loopEntryTime;
-        unsigned __int16 *names;
-        unsigned __int8 *dataByte;
-        __int16 *dataShort;
-        int *dataInt;
-        __int16 *randomDataShort;
-        unsigned __int8 *randomDataByte;
-        int *randomDataInt;
+        PTR32(unsigned __int16) names;
+        PTR32(unsigned __int8) dataByte;
+        PTR32(__int16) dataShort;
+        PTR32(int) dataInt;
+        PTR32(__int16) randomDataShort;
+        PTR32(unsigned __int8) randomDataByte;
+        PTR32(int) randomDataInt;
         XAnimIndices indices;
-        XAnimNotifyInfo *notify;
-        XAnimDeltaPart *deltaPart;
+        PTR32(XAnimNotifyInfo) notify;
+        PTR32(XAnimDeltaPart) deltaPart;
 };
 
 struct XAnimParent // sizeof=0x4
@@ -265,7 +270,7 @@ struct XSurface // sizeof=0x44
 
 struct Collmap // sizeof=0x4
 {
-        PhysGeomList *geomList;
+        PTR32(PhysGeomList) geomList;
 };
 
 struct XAnimSimpleRotPos // sizeof=0x18

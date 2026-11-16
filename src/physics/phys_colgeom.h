@@ -1,6 +1,7 @@
 #pragma once
 
 #include "phys_local.h"
+#include <universal/ptr32.h>
 #include <universal/q_shared.h>
 #include <qcommon/cm_trace.h>
 #include <qcommon/statmonitor.h>
@@ -255,23 +256,25 @@ struct __declspec(align(16)) gjk_aabb_t : gjk_base_t // sizeof=0x80
 };
 static_assert(sizeof(gjk_aabb_t) == 128);
 
+typedef float BrushWrapperVec3[3];
+
 struct BrushWrapper // sizeof=0x60
 {
         float mins[3];
         int contents;
         float maxs[3];
         unsigned int numsides;
-        cbrushside_t *sides;
+        PTR32(cbrushside_t) sides;
         int axial_cflags[2][3];
         int axial_sflags[2][3];
         unsigned int numverts;
-        float (*verts)[3];
-        cplane_s *planes;
+        PTR32(BrushWrapperVec3) verts;
+        PTR32(cplane_s) planes;
 };
 
 struct PhysGeomInfo // sizeof=0x44
 {
-        BrushWrapper *brush;
+        PTR32(BrushWrapper) brush;
         int type;
         float orientation[3][3];
         float offset[3];
@@ -281,7 +284,7 @@ struct PhysGeomInfo // sizeof=0x44
 struct PhysGeomList // sizeof=0xC
 {
         unsigned int count;
-        PhysGeomInfo *geoms;
+        PTR32(PhysGeomInfo) geoms;
         int contents;
 };
 
