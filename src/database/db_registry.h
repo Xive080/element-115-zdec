@@ -235,6 +235,9 @@ void __cdecl Mark_SndDriverGlobalsAsset(SndDriverGlobals *sndDriverGlobals);
 void __cdecl Load_FxEffectDefAsset(XAssetHeader *fx);
 void __cdecl Mark_FxEffectDefAsset(FxEffectDef *fx);
 void __cdecl Load_FxEffectDefFromName(const char **name);
+void __cdecl Load_FxEffectDefFromName32(PTR32(const char) *name); // PTR32: el hueco union name/handle pasa de nombre a handle
+void __cdecl Load_PackIndexAsset32(PTR32(PackIndex) *p);
+void __cdecl Load_GlassesAsset32(PTR32(Glasses) *p);
 void __cdecl Load_FxImpactTableAsset(XAssetHeader *impactFx);
 void __cdecl Mark_FxImpactTableAsset(FxImpactTable *impactFx);
 void __cdecl Load_RawFileAsset(XAssetHeader *rawfile);

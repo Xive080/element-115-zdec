@@ -1,6 +1,7 @@
 #pragma once
 #include <gfx_d3d/r_material.h>
 #include <gfx_d3d/fxprimitives.h>
+#include <universal/ptr32.h>
 
 struct GlassState // sizeof=0x4
 {                                       // XREF: GlassClient/r
@@ -27,26 +28,26 @@ struct GlassState // sizeof=0x4
 
 struct GlassDef // sizeof=0x3C
 {                                       // XREF: GlassDefLoad/r
-    const char *name;
+    PTR32(const char) name;
     int maxHealth;
     float thickness;
     float minShardSize;
     float maxShardSize;
     float shardLifeProbablility;
     int maxShards;
-    Material *pristineMaterial;
-    Material *crackedMaterial;
-    Material *shardMaterial;
-    const char *crackSound;
-    const char *shatterShound;
-    const char *autoShatterShound;
-    const FxEffectDef *crackEffect;
-    const FxEffectDef *shatterEffect;
+    PTR32(Material) pristineMaterial;
+    PTR32(Material) crackedMaterial;
+    PTR32(Material) shardMaterial;
+    PTR32(const char) crackSound;
+    PTR32(const char) shatterShound;
+    PTR32(const char) autoShatterShound;
+    PTR32(const FxEffectDef) crackEffect;
+    PTR32(const FxEffectDef) shatterEffect;
 };
 
 const struct Glass // sizeof=0x7C
 {
-    GlassDef *glassDef;
+    PTR32(GlassDef) glassDef;
     unsigned int index;
     unsigned int brushModel;
     float origin[3];
@@ -57,7 +58,7 @@ const struct Glass // sizeof=0x7C
     unsigned __int8 numOutlineVerts;
     // padding byte
     // padding byte
-    float (*outline)[2];
+    PTR32(float[2]) outline;
     float outlineAxis[3][3];
     float outlineOrigin[3];
     float uvScale;
@@ -66,10 +67,10 @@ const struct Glass // sizeof=0x7C
 
 struct Glasses // sizeof=0x38
 {                                       // XREF: .data:glasses/r
-    const char *name;                   // XREF: GetGlasses_LoadObj(void)+4A/w
+    PTR32(const char) name;             // XREF: GetGlasses_LoadObj(void)+4A/w
     unsigned int numGlasses;            // XREF: GetGlasses_LoadObj(void)+40/w
-    Glass *glasses;                     // XREF: GetGlasses_LoadObj(void)+3A/w
-    unsigned __int8 *workMemory;
+    PTR32(Glass) glasses;               // XREF: GetGlasses_LoadObj(void)+3A/w
+    PTRRT32(unsigned __int8) workMemory;
     unsigned int workMemorySize;
     unsigned int smallAllocatorBlocks;
     unsigned int maxGroups;
