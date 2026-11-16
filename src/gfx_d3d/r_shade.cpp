@@ -994,11 +994,11 @@ void __cdecl R_SetupPass(GfxCmdBufContext context, unsigned int passIndex)
         char name[128];
         _snprintf_s(name, _TRUNCATE, "%s:%s", material->info.name, context.state->technique->name ? context.state->technique->name : "?");
         BO1_ProfFirstUse(BO1_FIRST_PASS, (unsigned long long)(size_t)pass, name);
-        BO1_ProfFirstUse(BO1_FIRST_VS, (unsigned long long)(size_t)pass->vertexShader, 0);
-        BO1_ProfFirstUse(BO1_FIRST_PS, (unsigned long long)(size_t)pass->pixelShader, 0);
-        BO1_ProfFirstUse(BO1_FIRST_PAIR, ((unsigned long long)(size_t)pass->vertexShader << 32) | (size_t)pass->pixelShader, 0);
-        const unsigned int comboParts[5] = { (unsigned int)(size_t)pass->vertexShader, (unsigned int)(size_t)pass->pixelShader,
-            (unsigned int)(size_t)(pass->vertexDecl ? pass->vertexDecl->routing.decl[context.state->prim.vertDeclType] : 0),
+        BO1_ProfFirstUse(BO1_FIRST_VS, (unsigned long long)(size_t)(void *)pass->vertexShader, 0);
+        BO1_ProfFirstUse(BO1_FIRST_PS, (unsigned long long)(size_t)(void *)pass->pixelShader, 0);
+        BO1_ProfFirstUse(BO1_FIRST_PAIR, ((unsigned long long)(size_t)(void *)pass->vertexShader << 32) | (size_t)(void *)pass->pixelShader, 0);
+        const unsigned int comboParts[5] = { (unsigned int)(size_t)(void *)pass->vertexShader, (unsigned int)(size_t)(void *)pass->pixelShader,
+            (unsigned int)(size_t)(void *)(pass->vertexDecl ? pass->vertexDecl->routing.decl[context.state->prim.vertDeclType] : 0),
             stateBits[0], stateBits[1] };
         unsigned long long comboKey = 14695981039346656037ull;
         for (unsigned int part : comboParts)

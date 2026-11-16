@@ -21,7 +21,8 @@ struct __declspec(align(4)) FxGenerateVertsCmd // sizeof=0x50
     // padding byte
     // padding byte
 };
-static_assert(sizeof(FxGenerateVertsCmd) == 80);
+// 4 punteros nativos (no formato de fichero): +4 bytes cada uno en LP64
+static_assert(sizeof(FxGenerateVertsCmd) == 80 + 4 * (sizeof(void *) - 4));
 
 struct FxReflectParams // sizeof=0xC
 {                                       // XREF: FxDrawState/r

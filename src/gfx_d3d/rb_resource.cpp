@@ -109,7 +109,7 @@ void __cdecl RB_Resource_Callback(void (__cdecl *callback)())
         __debugbreak();
     }
     action->action = ACTION_CALLBACK;
-    action->resource = callback;
+    action->resource = (void *)callback;
     RB_Resource_Unlock();
 }
 
@@ -125,14 +125,14 @@ void __cdecl RB_Resource_CallbackParam(void (__cdecl *callback)(void *), void *d
         __debugbreak();
     }
     action->action = ACTION_CALLBACKPARAM;
-    action->resource = callback;
+    action->resource = (void *)callback;
     action->data = data;
     RB_Resource_Unlock();
 }
 
 void __cdecl RB_Resource_CreateVertexDeclaration(
                 _D3DVERTEXELEMENT9 *elements,
-                IDirect3DVertexDeclaration9 **declaration)
+                PTRRT32(IDirect3DVertexDeclaration9) *declaration)
 {
     r_resource_action *action; // [esp+0h] [ebp-8h]
 
@@ -149,7 +149,7 @@ void __cdecl RB_Resource_CreateVertexDeclaration(
     RB_Resource_Unlock();
 }
 
-void __cdecl RB_Resource_CreateVertexShader(unsigned int *function, IDirect3DVertexShader9 **shader)
+void __cdecl RB_Resource_CreateVertexShader(unsigned int *function, PTRRT32(IDirect3DVertexShader9) *shader)
 {
     r_resource_action *action; // [esp+0h] [ebp-8h]
 
@@ -166,7 +166,7 @@ void __cdecl RB_Resource_CreateVertexShader(unsigned int *function, IDirect3DVer
     RB_Resource_Unlock();
 }
 
-void __cdecl RB_Resource_CreatePixelShader(unsigned int *function, IDirect3DPixelShader9 **shader)
+void __cdecl RB_Resource_CreatePixelShader(unsigned int *function, PTRRT32(IDirect3DPixelShader9) *shader)
 {
     r_resource_action *action; // [esp+0h] [ebp-8h]
 
@@ -183,7 +183,7 @@ void __cdecl RB_Resource_CreatePixelShader(unsigned int *function, IDirect3DPixe
     RB_Resource_Unlock();
 }
 
-void __cdecl RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **vb, void *bufferData, int sizeInBytes)
+void __cdecl RB_Resource_LoadVertexBuffer(PTRRT32(IDirect3DVertexBuffer9) *vb, void *bufferData, int sizeInBytes)
 {
     r_resource_action *action; // [esp+0h] [ebp-8h]
 
@@ -238,7 +238,7 @@ void RB_Resource_Update_Internal()
     unsigned __int8 *indexBuffer; // [esp+2Ch] [ebp-94h]
     int rawIndexBytes; // [esp+30h] [ebp-90h]
     signed int indexBytes; // [esp+34h] [ebp-8Ch]
-    IDirect3DIndexBuffer9 **ib; // [esp+38h] [ebp-88h]
+    PTRRT32(IDirect3DIndexBuffer9) *ib; // [esp+38h] [ebp-88h]
     void *src; // [esp+3Ch] [ebp-84h]
     GfxImage *resource; // [esp+6Ch] [ebp-54h]
     GfxImageFileHeader *v12; // [esp+74h] [ebp-4Ch]
@@ -316,7 +316,7 @@ void RB_Resource_Update_Internal()
                 }
                 goto LABEL_2;
             case ACTION_RELEASE:
-                (*(void (__thiscall **)(void *, void *))(*(unsigned int *)action->resource + 8))(action->resource, action->resource);
+                ((IUnknown *)action->resource)->Release();
                 goto LABEL_2;
             case ACTION_LOADTEXTURE:
                 Image_LoadFromData(
@@ -351,12 +351,12 @@ void RB_Resource_Update_Internal()
             case ACTION_CREATEVERTEXDECL:
                 dx.device->CreateVertexDeclaration(
                     (const _D3DVERTEXELEMENT9 *)action->data,
-                    (IDirect3DVertexDeclaration9 **)action->resource);
+                    (PTRRT32(IDirect3DVertexDeclaration9) *)action->resource); // resource = slot PtrRt32<T>* (4 bytes) en LP64
                 goto LABEL_2;
             case ACTION_CREATEVERTEXSHADER:
                 dx.device->CreateVertexShader(
                     (const DWORD *)action->data,
-                    (IDirect3DVertexShader9 **)action->resource);
+                    (PTRRT32(IDirect3DVertexShader9) *)action->resource);
                 goto LABEL_2;
             case ACTION_CREATEPIXELSHADER:
                 //((void (__thiscall *)(IDirect3DDevice9 *, IDirect3DDevice9 *, void *, void *))dx.device->CreatePixelShader)(
@@ -364,13 +364,13 @@ void RB_Resource_Update_Internal()
                 //    dx.device,
                 //    action->data,
                 //    action->resource);
-                dx.device->CreatePixelShader((const DWORD*)action->data, (IDirect3DPixelShader9 **)action->resource);
+                dx.device->CreatePixelShader((const DWORD*)action->data, (PTRRT32(IDirect3DPixelShader9) *)action->resource);
                 goto LABEL_2;
             case ACTION_LOADVERTEXBUFFER:
-                Load_VertexBuffer((IDirect3DVertexBuffer9 **)action->resource, (unsigned __int8 *)action->data, action->p1);
+                Load_VertexBuffer((PTRRT32(IDirect3DVertexBuffer9) *)action->resource, (unsigned __int8 *)action->data, action->p1);
                 goto LABEL_2;
             case ACTION_LOADINDEXBUFFER:
-                ib = (IDirect3DIndexBuffer9 **)action->resource;
+                ib = (PTRRT32(IDirect3DIndexBuffer9) *)action->resource;
                 src = action->data;
                 rawIndexBytes = action->p1;
                 indexBytes = (rawIndexBytes + 31) & 0xFFFFFFE0;
@@ -380,7 +380,7 @@ void RB_Resource_Update_Internal()
                     return;
                 Com_Memcpy(indexBuffer, src, rawIndexBytes);
                 memset(&indexBuffer[rawIndexBytes], 0, indexBytes - rawIndexBytes);
-                R_FinishStaticIndexBuffer(*ib);
+                R_FinishStaticIndexBuffer(PTRRT32_LOAD(ib));
 LABEL_2:
                 ++resourceIndex;
                 break;

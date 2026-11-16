@@ -121,13 +121,22 @@ void *__cdecl R_LockIndexBuffer(
 void __cdecl R_UnlockIndexBuffer(IDirect3DIndexBuffer9 *handle);
 void *__cdecl R_AllocDynamicVertexBuffer(IDirect3DVertexBuffer9 **vb, int sizeInBytes);
 void *__cdecl R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **vb, int sizeInBytes);
+#if defined(__LP64__)
+void *__cdecl R_AllocStaticVertexBuffer(PtrRt32<IDirect3DVertexBuffer9> *vb, int sizeInBytes); // campo de 4 bytes (&surf->vb0)
+#endif
 void __cdecl R_FinishStaticVertexBuffer(IDirect3DVertexBuffer9 *vb);
 void __cdecl R_FreeStaticVertexBuffer(IDirect3DVertexBuffer9 *vb);
 void *__cdecl R_AllocDynamicIndexBuffer(IDirect3DIndexBuffer9 **ib, unsigned int sizeInBytes);
 void *__cdecl R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 **ib, int sizeInBytes);
+#if defined(__LP64__)
+void *__cdecl R_AllocStaticIndexBuffer(PtrRt32<IDirect3DIndexBuffer9> *ib, int sizeInBytes);
+#endif
 void __cdecl R_FinishStaticIndexBuffer(IDirect3DIndexBuffer9 *ib);
 void __cdecl R_FreeStaticIndexBuffer(IDirect3DIndexBuffer9 *ib);
+void __cdecl Load_VertexBuffer(PTRRT32(IDirect3DVertexBuffer9) *vb, unsigned __int8 *bufferData, int sizeInBytes);
+#if defined(__LP64__)
 void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **vb, unsigned __int8 *bufferData, int sizeInBytes);
+#endif
 void __cdecl R_InitDynamicVertexBufferState(GfxVertexBufferState *vb, int bytes);
 void __cdecl R_InitDynamicIndices(GfxDynamicIndices *ib, int indexCount);
 void __cdecl R_CreateDynamicBuffers();

@@ -5469,7 +5469,7 @@ void __cdecl RB_ExecuteRenderCommandsLoop(const void *cmds, int *ui3dTextureWind
         v3 = -1;
     while (1)
     {
-        if (((int)execState.cmd & 3) != 0
+        if ((((uintptr_t)execState.cmd) & 3) != 0
             && !Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_backend.cpp",
                 5999,

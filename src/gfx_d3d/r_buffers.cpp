@@ -279,7 +279,33 @@ void __cdecl R_FreeStaticIndexBuffer(IDirect3DIndexBuffer9 *ib)
     while ( alwaysfails );
 }
 
+#if defined(__LP64__)
+void *__cdecl R_AllocStaticVertexBuffer(PtrRt32<IDirect3DVertexBuffer9> *vb, int sizeInBytes)
+{
+    IDirect3DVertexBuffer9 *tmp = 0;
+    void *data = R_AllocStaticVertexBuffer(&tmp, sizeInBytes);
+    *vb = tmp;
+    return data;
+}
+
+void *__cdecl R_AllocStaticIndexBuffer(PtrRt32<IDirect3DIndexBuffer9> *ib, int sizeInBytes)
+{
+    IDirect3DIndexBuffer9 *tmp = 0;
+    void *data = R_AllocStaticIndexBuffer(&tmp, sizeInBytes);
+    *ib = tmp;
+    return data;
+}
+
+// Variante con puntero crudo: usa un handle temporal y lo resuelve (la cola de recursos guarda el slot PtrRt32 de 4 bytes).
 void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **vb, unsigned __int8 *bufferData, int sizeInBytes)
+{
+    PtrRt32<IDirect3DVertexBuffer9> h = 0;
+    Load_VertexBuffer(&h, bufferData, sizeInBytes);
+    *vb = h.get();
+}
+#endif
+
+void __cdecl Load_VertexBuffer(PTRRT32(IDirect3DVertexBuffer9) *vb, unsigned __int8 *bufferData, int sizeInBytes)
 {
     unsigned __int8 *v3; // eax
 
@@ -289,7 +315,7 @@ void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **vb, unsigned __int8 *buf
         {
             v3 = (unsigned __int8 *)R_AllocStaticVertexBuffer(vb, sizeInBytes);
             memcpy(v3, bufferData, sizeInBytes);
-            R_FinishStaticVertexBuffer(*vb);
+            R_FinishStaticVertexBuffer(PTRRT32_LOAD(vb));
         }
         else
         {

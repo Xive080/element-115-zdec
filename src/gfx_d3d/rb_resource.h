@@ -44,10 +44,10 @@ void __cdecl RB_Resource_Callback(void (__cdecl *callback)());
 void __cdecl RB_Resource_CallbackParam(void (__cdecl *callback)(void *), void *data);
 void __cdecl RB_Resource_CreateVertexDeclaration(
                 _D3DVERTEXELEMENT9 *elements,
-                IDirect3DVertexDeclaration9 **declaration);
-void __cdecl RB_Resource_CreateVertexShader(unsigned int *function, IDirect3DVertexShader9 **shader);
-void __cdecl RB_Resource_CreatePixelShader(unsigned int *function, IDirect3DPixelShader9 **shader);
-void __cdecl RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **vb, void *bufferData, int sizeInBytes);
+                PTRRT32(IDirect3DVertexDeclaration9) *declaration);
+void __cdecl RB_Resource_CreateVertexShader(unsigned int *function, PTRRT32(IDirect3DVertexShader9) *shader);
+void __cdecl RB_Resource_CreatePixelShader(unsigned int *function, PTRRT32(IDirect3DPixelShader9) *shader);
+void __cdecl RB_Resource_LoadVertexBuffer(PTRRT32(IDirect3DVertexBuffer9) *vb, void *bufferData, int sizeInBytes);
 void __cdecl RB_Resource_Update(int msec);
 void RB_Resource_Update_Internal();
 void __cdecl RB_Resource_Flush();

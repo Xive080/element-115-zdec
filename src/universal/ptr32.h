@@ -70,6 +70,7 @@ struct PtrRt32 {
     explicit operator bool() const { return idx != 0; }
 };
 #define PTRRT32(T) PtrRt32<T>
+#define PTRRT32_LOAD(pp) ((pp)->get())   // T* guardado en un PtrRt32<T>* (en 32 bits: *pp)
 #else
 #include <stdlib.h>
 inline void *Ptr32_ArenaAlloc(size_t size, size_t) { return calloc(1, size); }
@@ -77,5 +78,6 @@ inline void Ptr32_ArenaFree(void *p) { free(p); }
 inline const char *Ptr32_ArenaStrdup(const char *s) { return s; }
 #define PTR32(T) T *   // x86 de 32 bits: puntero normal, layout idéntico
 #define PTRRT32(T) T *
+#define PTRRT32_LOAD(pp) (*(pp))
 #endif
 static_assert(sizeof(uint32_t) == 4);

@@ -456,7 +456,7 @@ void __cdecl R_AddDObjToScene(
                 sceneModel->entnum = entnum;
                 scene.dpvs.sceneXModelIndex[entnum] = sceneEntIndex;
                 //sceneModel->cachedLightingHandle = (unsigned __int16 *)Ragdoll_HandleBody((int)pose);
-                sceneModel->cachedLightingHandle = (unsigned __int16 *)((int)pose);
+                sceneModel->cachedLightingHandle = (unsigned __int16 *)((uintptr_t)pose);
                 sceneModel->lightingOriginToleranceSq = lightingOriginToleranceSq;
                 radius = XModelGetRadius(model);
                 CG_GetPoseOrigin(pose, sceneModel->placement.base.origin);
@@ -1822,7 +1822,7 @@ void __cdecl R_AddDObjSurfacesCamera(
                         skinnedSurf->info.lightingHandle = lightingHandle;
                         skinnedSurf->info.dobjModelIndex = modelIndex;
                         surfId = (_BYTE *)modelSurf - (_BYTE *)frontEndDataOut;
-                        if ( (((_BYTE)modelSurf - (_BYTE)frontEndDataOut) & 3) != 0
+                        if ( ((((uintptr_t)modelSurf - (uintptr_t)frontEndDataOut)) & 3) != 0
                             && !Assert_MyHandler(
                                         "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                         1588,
@@ -2036,7 +2036,7 @@ LABEL_24:
                     HIDWORD(newDrawSurf.packed) = HIDWORD(newDrawSurf.packed) & 0xFE7FFFFF | 0x1000000;
                 }
                 surfId = (_BYTE *)modelSurf - (_BYTE *)frontEndDataOut;
-                if ( (((_BYTE)modelSurf - (_BYTE)frontEndDataOut) & 3) != 0
+                if ( ((((uintptr_t)modelSurf - (uintptr_t)frontEndDataOut)) & 3) != 0
                     && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                 1779,
@@ -5233,7 +5233,7 @@ void DrawOutdoorBoundsVolumeDebug()
             boxColor[3] = 1.0f;
             R_AddDebugBox(
                 &frontEndDataOut->debugGlobals,
-                (const float *)rgp.world->outdoorBounds,
+                (const float *)(GfxOutdoorBounds *)rgp.world->outdoorBounds,
                 rgp.world->outdoorBounds->bounds[1],
                 boxColor);
         }

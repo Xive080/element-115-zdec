@@ -470,7 +470,7 @@ void __cdecl Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *loadDef, Mate
         ProfLoad_Begin("Create pixel shader");
         if ( Sys_IsRenderThread() )
         {
-            hr = dx.device->CreatePixelShader((DWORD*)loadDef->program, (IDirect3DPixelShader9 **)&mtlShader->prog);
+            hr = dx.device->CreatePixelShader((DWORD*)loadDef->program, &mtlShader->prog.ps);
             if ( hr < 0 )
             {
                 g_hr = hr;
@@ -513,7 +513,7 @@ void __cdecl Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *loadDef, Ma
         {
             if ( r_logFile && r_logFile->current.integer )
                 RB_LogPrint("dx.device->CreateVertexShader( loadDef->program, &mtlShader->prog.vs )\n");
-            hr = dx.device->CreateVertexShader(loadDef->program, (IDirect3DVertexShader9 **)&mtlShader->prog);
+            hr = dx.device->CreateVertexShader(loadDef->program, &mtlShader->prog.vs);
             if ( hr < 0 )
             {
                 ++g_disableRendering;
@@ -646,8 +646,10 @@ IDirect3DVertexDeclaration9 *__cdecl Material_BuildVertexDecl(
         }
         else
         {
-            RB_Resource_CreateVertexDeclaration(elemTable, &decl);
+            PTRRT32(IDirect3DVertexDeclaration9) declHandle = 0; // slot de 4 bytes que rellena la cola de recursos
+            RB_Resource_CreateVertexDeclaration(elemTable, &declHandle);
             RB_Resource_Flush();
+            decl = declHandle;
         }
 
         iassert(decl);
@@ -713,7 +715,7 @@ MaterialTechniqueSet *__cdecl Material_FindTechniqueSet_FastFile(
 
     header.xmodelPieces = DB_FindXAssetHeader(ASSET_TYPE_TECHNIQUE_SET, (char*)name, 1, -1).xmodelPieces;
     if ( notFoundBehavior || !DB_IsXAssetDefault(ASSET_TYPE_TECHNIQUE_SET, name) )
-        return (MaterialTechniqueSet *)header.xmodelPieces;
+        return (MaterialTechniqueSet *)(void *)header.xmodelPieces;
     else
         return 0;
 }
@@ -836,7 +838,7 @@ void __cdecl Material_ReleasePassResources(MaterialPass *pass)
                 {
                     if ( r_logFile && r_logFile->current.integer )
                         RB_LogPrint("pass->vertexShader->prog.vs->Release()\n");
-                    var = (IDirect3DSurface9 *)pass->vertexShader->prog.vs;
+                    var = (IDirect3DSurface9 *)(IDirect3DVertexShader9 *)pass->vertexShader->prog.vs;
                     pass->vertexShader->prog.vs = 0;
                     R_ReleaseAndSetNULL<IDirect3DIndexBuffer9>(
                         var,
@@ -867,7 +869,7 @@ void __cdecl Material_ReleasePassResources(MaterialPass *pass)
                         {
                             if ( r_logFile && r_logFile->current.integer )
                                 RB_LogPrint("pass->vertexDecl->routing.decl[declIndex]->Release()\n");
-                            v1 = (IDirect3DSurface9 *)pass->vertexDecl->routing.decl[declIndexa];
+                            v1 = (IDirect3DSurface9 *)(IDirect3DVertexDeclaration9 *)pass->vertexDecl->routing.decl[declIndexa];
                             pass->vertexDecl->routing.decl[declIndexa] = 0;
                             R_ReleaseAndSetNULL<IDirect3DIndexBuffer9>(
                                 v1,
@@ -955,7 +957,7 @@ Material *__cdecl Material_Duplicate(Material *mtlCopy, char *name)
     unsigned int v3; // [esp+8h] [ebp-30h]
     const char *nameBackup; // [esp+18h] [ebp-20h]
     Material *mtlNewa; // [esp+1Ch] [ebp-1Ch]
-    unsigned __int8 *mtlNew; // [esp+1Ch] [ebp-1Ch]
+    Material *mtlNew; // [esp+1Ch] [ebp-1Ch]
     int constantTableSize; // [esp+24h] [ebp-14h]
     unsigned __int16 hashIndex[3]; // [esp+28h] [ebp-10h] BYREF
     bool exists; // [esp+2Fh] [ebp-9h] BYREF
@@ -982,27 +984,28 @@ Material *__cdecl Material_Duplicate(Material *mtlCopy, char *name)
     else
     {
         v3 = strlen(name);
-        mtlNew = Material_Alloc(v3 + 193);
-        memcpy(mtlNew, mtlCopy, 0xC0u);
-        *(unsigned int *)mtlNew = (unsigned int)(mtlNew + 192);
-        memcpy(*(unsigned __int8 **)mtlNew, (unsigned __int8 *)name, v3 + 1);
+        // sizeof(Material) == 192 (0xC0); el nombre va justo detras. Campos por nombre (en LP64 son Ptr32)
+        mtlNew = (Material *)Material_Alloc(v3 + 1 + sizeof(Material));
+        memcpy(mtlNew, mtlCopy, sizeof(Material));
+        mtlNew->info.name = (const char *)((unsigned __int8 *)mtlNew + sizeof(Material));
+        memcpy((void *)(const char *)mtlNew->info.name, (unsigned __int8 *)name, v3 + 1);
         stateBitsTableSize = 8 * mtlCopy->stateBitsCount;
-        *((unsigned int *)mtlNew + 47) = (unsigned int)Material_Alloc(stateBitsTableSize);
-        memcpy(*((unsigned __int8 **)mtlNew + 47), (unsigned __int8 *)mtlCopy->stateBitsTable, stateBitsTableSize);
+        mtlNew->stateBitsTable = (GfxStateBits *)Material_Alloc(stateBitsTableSize);
+        memcpy((void *)(GfxStateBits *)mtlNew->stateBitsTable, (unsigned __int8 *)(GfxStateBits *)mtlCopy->stateBitsTable, stateBitsTableSize);
         if ( mtlCopy->textureTable )
         {
             textureTableSize = 16 * mtlCopy->textureCount;
-            *((unsigned int *)mtlNew + 45) = (unsigned int)Material_Alloc(textureTableSize);
-            memcpy(*((unsigned __int8 **)mtlNew + 45), (unsigned __int8 *)mtlCopy->textureTable, textureTableSize);
+            mtlNew->textureTable = (MaterialTextureDef *)Material_Alloc(textureTableSize);
+            memcpy((void *)(MaterialTextureDef *)mtlNew->textureTable, (unsigned __int8 *)(MaterialTextureDef *)mtlCopy->textureTable, textureTableSize);
         }
         if ( mtlCopy->localConstantTable )
         {
             constantTableSize = 32 * mtlCopy->constantCount;
-            *((unsigned int *)mtlNew + 46) = (unsigned int)Material_Alloc(constantTableSize);
-            memcpy(*((unsigned __int8 **)mtlNew + 46), (unsigned __int8 *)mtlCopy->localConstantTable, constantTableSize);
+            mtlNew->localConstantTable = (MaterialConstantDef *)Material_Alloc(constantTableSize);
+            memcpy((void *)(MaterialConstantDef *)mtlNew->localConstantTable, (unsigned __int8 *)(MaterialConstantDef *)mtlCopy->localConstantTable, constantTableSize);
         }
-        Material_Add((Material *)mtlNew, hashIndex[0]);
-        return (Material *)mtlNew;
+        Material_Add(mtlNew, hashIndex[0]);
+        return mtlNew;
     }
 }
 
@@ -1197,7 +1200,7 @@ void __cdecl R_MaterialList_f()
 {
     const char *fmt; // [esp+8h] [ebp-8150h]
     unsigned int i; // [esp+138h] [ebp-8020h]
-    const char **p_name; // [esp+13Ch] [ebp-801Ch]
+    PTR32(const char) *p_name; // [esp+13Ch] [ebp-801Ch]
     int v3; // [esp+140h] [ebp-8018h]
     MaterialMemory *v4; // [esp+144h] [ebp-8014h]
     unsigned int inData; // [esp+148h] [ebp-8010h] BYREF
@@ -1234,7 +1237,7 @@ void __cdecl R_MaterialList_f()
         else
             fmt = "%6.1f";
         Com_Printf(8, fmt, v7);
-        Com_Printf(8, "     %s\n", *p_name);
+        Com_Printf(8, "     %s\n", (const char *)*p_name);
     }
     Com_Printf(8, "-----------------------\n");
     Com_Printf(8, "current total    %5.1f MB\n", (float)((float)v3 / 1048576.0));
@@ -1877,7 +1880,7 @@ unsigned int __cdecl Material_LoadFile(const char *filename, int *file)
 
 bool __cdecl IsValidMaterialHandle(Material *const handle)
 {
-    if ( ((unsigned __int8)handle & 3) != 0
+    if ( (((uintptr_t)handle) & 3) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                     2407,

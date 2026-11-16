@@ -2264,7 +2264,7 @@ void __cdecl R_HW_SetSamplerTexture(IDirect3DDevice9 *device, unsigned int sampl
     if ( r_logFile && r_logFile->current.integer )
         RB_LogPrint("device->SetTexture( samplerIndex, texture->basemap )\n");
     if ( g_bo1ProfOn ) // p1: bo1_frameperf first-use counts (measurement only)
-        BO1_ProfFirstUse(BO1_FIRST_TEXTURE, (unsigned long long)(size_t)texture->basemap, 0);
+        BO1_ProfFirstUse(BO1_FIRST_TEXTURE, (unsigned long long)(size_t)(void *)texture->basemap, 0);
     hr = device->SetTexture(samplerIndex, texture->basemap);
     if ( hr < 0 )
     {

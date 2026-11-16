@@ -88,7 +88,8 @@ void __cdecl R_GetImageList(ImageList *imageList)
 
 void __cdecl R_AddImageToList(XAssetHeader header, XAssetHeader *data)
 {
-    if ( (unsigned int)data->xmodelPieces >= sizeof(((ImageList *)0)->image) / sizeof(GfxImage *)
+    ImageList *imageList = (ImageList *)data; // 'data' es el ImageList* (count + image[]); en LP64 image[] son punteros de 8 bytes
+    if ( imageList->count >= sizeof(((ImageList *)0)->image) / sizeof(GfxImage *)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                     225,
@@ -98,7 +99,7 @@ void __cdecl R_AddImageToList(XAssetHeader header, XAssetHeader *data)
     {
         __debugbreak();
     }
-    data[(int)data->xmodelPieces++ + 1] = header;
+    imageList->image[imageList->count++] = (GfxImage *)header.image;
 }
 
 void __cdecl R_SumOfUsedImages(Image_MemUsage *usage)
@@ -279,7 +280,7 @@ void __cdecl Image_Construct(
     }
     if ( !image && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp", 409, 0, "%s", "image") )
         __debugbreak();
-    memcpy((unsigned __int8 *)image->name, (unsigned __int8 *)name, nameSize);
+    memcpy((unsigned __int8 *)(const char *)image->name, (unsigned __int8 *)name, nameSize);
     if ( !category
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
@@ -331,7 +332,7 @@ void __cdecl R_ShutdownImages()
     GfxImage *imagea; // [esp+0h] [ebp-2014h]
     int v2; // [esp+4h] [ebp-2010h]
     unsigned int i; // [esp+8h] [ebp-200Ch]
-    unsigned int v4[2049]; // [esp+Ch] [ebp-2008h]
+    uintptr_t v4[2049]; // [esp+Ch] [ebp-2008h]
     int j; // [esp+2010h] [ebp-4h]
 
     RB_UnbindAllImages();
@@ -342,7 +343,7 @@ void __cdecl R_ShutdownImages()
         if ( image )
         {
             if ( Image_IsProg(image) )
-                v4[v2++] = (unsigned int)image;
+                v4[v2++] = (uintptr_t)image;
             else
                 Image_Free(imageGlobals.imageHashTable[i]);
         }
@@ -433,7 +434,7 @@ void __cdecl Image_Create2DTexture_PC(
                  usage,
                  imageFormat,
                  memPool,
-                 (IDirect3DTexture9 **)image,
+                 &image->texture.map,
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)width * height >> 10));
@@ -524,7 +525,7 @@ void __cdecl Image_Create3DTexture_PC(
                  volumeUsage,
                  imageFormat,
                  volumePool,
-                 (IDirect3DVolumeTexture9 **)image,
+                 &image->texture.volmap,
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)width * height * depth >> 10));
@@ -592,7 +593,7 @@ void __cdecl Image_CreateCubeTexture_PC(
                  cubeUsage,
                  imageFormat,
                  cubePool,
-                 (IDirect3DCubeTexture9 **)image,
+                 &image->texture.cubemap,
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)edgeLen * edgeLen * 6 >> 10));
@@ -709,12 +710,12 @@ void __cdecl R_DelayLoadImage(XAssetHeader header, void *data)
     if (image->delayLoadPixels)
     {
         image->delayLoadPixels = 0;
-        externalDataSize = (const char *)image->cardMemory.platform[0];
+        externalDataSize = (const char *)(uintptr_t)image->cardMemory.platform[0];
         image->cardMemory.platform[0] = 0;
         image->cardMemory.platform[1] = 0;
         if (r_loadForRenderer->current.enabled && !Image_LoadFromFile(image, 0))
             Image_AssignDefaultTexture(image);
-        DB_LoadedExternalData((unsigned int)externalDataSize);
+        DB_LoadedExternalData((unsigned int)(uintptr_t)externalDataSize);
     }
 }
 
@@ -997,12 +998,12 @@ void __cdecl R_ReloadLostImages()
 
 void __cdecl R_RebuildLostImage(XAssetHeader header)
 {
-    if ( !header.xmodelPieces
+    if ( !header.image
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp", 1309, 0, "%s", "image") )
     {
         __debugbreak();
     }
-    if ( !BYTE2(header.xmodelPieces->numpieces)
+    if ( !header.image->category
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                     1310,
@@ -1012,20 +1013,20 @@ void __cdecl R_RebuildLostImage(XAssetHeader header)
     {
         __debugbreak();
     }
-    if ( !header.xmodelPieces->name )
+    if ( !header.image->texture.basemap )
     {
-        if ( BYTE2(header.xmodelPieces->numpieces) < 5u )
+        if ( header.image->category < 5u )
         {
-            if ( BYTE2(header.xmodelPieces->numpieces) == 3 )
+            if ( header.image->category == 3 )
             {
-                if ( !HIBYTE(header.xmodelPieces->numpieces)
-                    && !Image_LoadFromFile(header.image, LOBYTE(header.xmodelPieces[3].numpieces) == 0)
+                if ( !header.image->delayLoadPixels
+                    && !Image_LoadFromFile(header.image, header.image->skippedMipLevels == 0)
                     && !Image_AssignDefaultTexture(header.image) )
                 {
                     Com_Error(
                         ERR_DROP,
                         "Couldn't load image '%s' to recover from a lost device",
-                        (const char *)header.xmodelPieces[3].pieces);
+                        (const char *)header.image->name);
                 }
             }
             else
@@ -1033,7 +1034,7 @@ void __cdecl R_RebuildLostImage(XAssetHeader header)
                 Com_Error(
                     ERR_DROP,
                     "No way to recover image '%s' from a lost device",
-                    (const char *)header.xmodelPieces[3].pieces);
+                    (const char *)header.image->name);
             }
         }
         else if ( !Image_IsProg(header.image) )
@@ -1325,7 +1326,7 @@ GfxImage *R_InitRawImage()
                                                      1,
                                                      "%s",
                                                      "rgp.rawImage");
-        if ( !(_BYTE)result )
+        if ( !(_BYTE)(uintptr_t)result )
             __debugbreak();
     }
     return result;
@@ -1425,7 +1426,7 @@ GfxImage *R_InitCodeImages()
                                                      1,
                                                      "%s",
                                                      "rgp.r32fWhiteImage");
-        if ( !(_BYTE)result )
+        if ( !(_BYTE)(uintptr_t)result )
             __debugbreak();
     }
     rgp.heatMapImage = 0;
