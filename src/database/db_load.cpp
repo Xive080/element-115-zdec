@@ -688,15 +688,10 @@ static void LoadGfxImageArray32(PTR32(GfxImage) *slots, int count)
 }
 // Hueco de 4 bytes de un IDirect3DVertexBuffer9* (recurso del renderer, no del .ff). En LP64 el valor debe ser un
 // handle de 32 bits (en el renderer Android un id GL); un puntero real de 64 bits aborta.
-static void LoadVertexBuffer32(PTR32(IDirect3DVertexBuffer9) *slot, unsigned __int8 *bufferData, int sizeInBytes)
+static void LoadVertexBuffer32(PTRRT32(IDirect3DVertexBuffer9) *slot, unsigned __int8 *bufferData, int sizeInBytes)
 {
     Load_Stream(false, (unsigned __int8 *)slot, 4);
-    IDirect3DVertexBuffer9 *vb = 0;
-    Load_VertexBuffer(&vb, bufferData, sizeInBytes);
-    uintptr_t v = (uintptr_t)vb;
-    if ( (uint64_t)v >> 32 )
-        __debugbreak();
-    *(unsigned int *)slot = (unsigned int)v;
+    Load_VertexBuffer(slot, bufferData, sizeInBytes);   // el hueco guarda un handle PtrRt32 (indice de tabla), no un puntero
 }
 static void LoadXModelPieces32(PTR32(XModelPieces) *slot)
 {

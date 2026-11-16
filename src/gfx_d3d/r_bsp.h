@@ -225,13 +225,13 @@ struct GfxCell // sizeof=0x38
 struct GfxWorldVertexData // sizeof=0x8
 {                                       // XREF: GfxWorldDraw/r
     PTR32(GfxWorldVertex) vertices;           // XREF: R_LoadSurfaces+151/w
-    PTR32(IDirect3DVertexBuffer9) worldVb;    // XREF: R_LoadSurfaces+C0F/o
+    PTRRT32(IDirect3DVertexBuffer9) worldVb;    // XREF: R_LoadSurfaces+C0F/o
 };
 
 struct GfxWorldVertexLayerData // sizeof=0x8
 {                                       // XREF: GfxWorldDraw/r
     PTR32(unsigned __int8) data;              // XREF: R_LoadSurfaces+10B/w
-    PTR32(IDirect3DVertexBuffer9) layerVb;    // XREF: R_LoadSurfaces+C29/o
+    PTRRT32(IDirect3DVertexBuffer9) layerVb;    // XREF: R_LoadSurfaces+C29/o
 };
 
 union GfxTexture;

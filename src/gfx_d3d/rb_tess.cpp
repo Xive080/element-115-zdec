@@ -1121,7 +1121,7 @@ void __cdecl R_DrawXModelSkinnedUncached(GfxCmdBufContext context, XSurface *xsu
     args.triCount = XSurfaceGetNumTris(xsurf);
     args.vertexCount = XSurfaceGetNumVerts(xsurf);
     context.state->prim.frameStats.geoIndexCount += 3 * args.triCount;
-    args.baseIndex = R_SetIndexData(&context.state->prim, (unsigned __int8 *)xsurf->triIndices, args.triCount);
+    args.baseIndex = R_SetIndexData(&context.state->prim, (unsigned __int8 *)xsurf->triIndices.get(), args.triCount);
     R_CheckVertexDataOverflow(32 * args.vertexCount);
     vertexOffset = R_SetVertexData(context.state, skinnedVert, args.vertexCount, 32);
     vb = gfxBuf.dynamicVertexBuffer->buffer;
@@ -2399,7 +2399,7 @@ unsigned int __cdecl R_TessBModel(const GfxDrawSurfListArgs *listArgs, GfxCmdBuf
             changed = (commonSource->objectPlacement - bmodelSurf->placement)
                 | (LODWORD(bmodelSurf->bmodelFadeAmt) - LODWORD(fade))
                 | (LODWORD(bmodelSurf->bmodelBurnAmt) - LODWORD(burn))
-                | ((char *)bmodelSurf->shaderConstSet - (char *)constantSet);
+                | ((char *)bmodelSurf->shaderConstSet.get() - (char *)constantSet);
             if (3 * tris->triCount + gfxBuf.dynamicIndexBuffer->used > gfxBuf.dynamicIndexBuffer->total)
             {
                 if (args.triCount > 0)
