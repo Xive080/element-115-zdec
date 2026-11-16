@@ -114,14 +114,14 @@ struct __declspec(align(2)) usercmd_s // sizeof=0x34
         unsigned __int16 weapon;
         unsigned __int16 offHandIndex;
         unsigned __int16 lastWeaponAltModeSwitch;
-        char forwardmove;                                     // XREF: CG_RadiantCamCalcView(int)+73/r
+        signed char forwardmove;  // Android arm64: char sin signo; el original (MSVC x86) es con signo (atras/izquierda < 0)                                     // XREF: CG_RadiantCamCalcView(int)+73/r
                                                                                 // CG_CheckPlayerMovement:loc_49A9CE/r
-        char rightmove;                                         // XREF: CG_RadiantCamCalcView(int)+81/r
+        signed char rightmove;                                         // XREF: CG_RadiantCamCalcView(int)+81/r
                                                                                 // CG_CheckPlayerMovement+26/r
-        char upmove;
-        char pitchmove;                                         // XREF: CG_CalcVehicleViewValues(int)+1516/r
+        signed char upmove;
+        signed char pitchmove;                                         // XREF: CG_CalcVehicleViewValues(int)+1516/r
                                                                                 // CG_Calc3rdPersonVehicleViewValues(int)+249/r ...
-        char yawmove;                                             // XREF: CG_CalcVehicleViewValues(int)+130D/r
+        signed char yawmove;                                             // XREF: CG_CalcVehicleViewValues(int)+130D/r
                                                                                 // CG_CalcVehicleViewValues(int)+131D/r ...
         // padding byte
         float meleeChargeYaw;
