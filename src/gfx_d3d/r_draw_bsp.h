@@ -26,6 +26,7 @@ struct GfxTrianglesDrawStream // sizeof=0x20
     int hasSunDirChanged;               // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+D4/w
 };
 
+extern bool (*g_bspTrisHook)(GfxCmdBufPrimState *state, const srfTriangles_t *tris, unsigned int triCount);   // T10
 void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *state, const srfTriangles_t *tris);
 void __cdecl R_DrawBspDrawSurfsLit(
                 const unsigned int *primDrawSurfPos,

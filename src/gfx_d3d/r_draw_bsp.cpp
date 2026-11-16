@@ -367,9 +367,15 @@ void __cdecl R_DrawTrianglesLit(
     drawStream->lightmapSecondaryTextureB = lightmapSecondaryTextureB;
 }
 
+// Gancho opcional (T10): si devuelve true, el llamador ya dibujo los triangulos (IB estatico del mundo, sin R_SetIndexData).
+bool (*g_bspTrisHook)(GfxCmdBufPrimState *state, const srfTriangles_t *tris, unsigned int triCount) = 0;
+
 void __cdecl R_DrawBspTris(GfxCmdBufPrimState *state, const srfTriangles_t *tris, unsigned int triCount)
 {
     GfxDrawPrimArgs args; // [esp+0h] [ebp-Ch] BYREF
+
+    if ( g_bspTrisHook && g_bspTrisHook(state, tris, triCount) )
+        return;
 
     args.vertexCount = tris->vertexCount;
     args.triCount = triCount;
