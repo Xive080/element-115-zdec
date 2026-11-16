@@ -426,3 +426,7 @@ FodyWeavers.xsd
 .idea/*
 Debug/*
 __BO1Zombies
+# H0 arm64 port: datos de juego y salidas locales
+/gamedata/
+gamedata/
+out/
