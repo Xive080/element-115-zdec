@@ -184,8 +184,8 @@ struct XAnimTree_s // sizeof=0x8
 struct XSurfaceVertexInfo // sizeof=0x10
 {                                                                             // XREF: XSurface/r
         __int16 vertCount[4];
-        unsigned __int16 *vertsBlend;
-        float *tensionData;
+        PTR32(unsigned __int16) vertsBlend;
+        PTR32(float) tensionData;
 };
 
 struct XSurfaceCollisionAabb // sizeof=0xC
@@ -211,9 +211,9 @@ struct XSurfaceCollisionTree // sizeof=0x28
         float trans[3];
         float scale[3];
         unsigned int nodeCount;
-        XSurfaceCollisionNode *nodes;
+        PTR32(XSurfaceCollisionNode) nodes;
         unsigned int leafCount;
-        XSurfaceCollisionLeaf *leafs;
+        PTR32(XSurfaceCollisionLeaf) leafs;
 };
 
 struct XRigidVertList // sizeof=0xC
@@ -225,7 +225,7 @@ struct XRigidVertList // sizeof=0xC
                                                                                 // XModelReadSurface(XModel *,uchar const * *,void * (*)(int),XSurface *,int,char const *)+F9C/r
         unsigned __int16 triCount;                    // XREF: XModelReadSurface(XModel *,uchar const * *,void * (*)(int),XSurface *,int,char const *)+1027/w
                                                                                 // XModelReadSurface(XModel *,uchar const * *,void * (*)(int),XSurface *,int,char const *)+1038/r
-        XSurfaceCollisionTree *collisionTree;
+        PTR32(XSurfaceCollisionTree) collisionTree;
 };
 
 struct GfxPackedVertex // sizeof=0x20
@@ -259,14 +259,16 @@ struct XSurface // sizeof=0x44
         unsigned __int16 triCount;
         unsigned __int16 baseTriIndex;
         unsigned __int16 baseVertIndex;
-        unsigned __int16 *triIndices;
+        PTR32(unsigned __int16) triIndices;
         XSurfaceVertexInfo vertInfo;
-        GfxPackedVertex *verts0;
-        IDirect3DVertexBuffer9 *vb0;
-        XRigidVertList *vertList;
-        IDirect3DIndexBuffer9 *indexBuffer;
+        PTR32(GfxPackedVertex) verts0;
+        PTRRT32(IDirect3DVertexBuffer9) vb0;   // puntero de runtime (no esta en el .ff): indice de handle
+        PTR32(XRigidVertList) vertList;
+        PTRRT32(IDirect3DIndexBuffer9) indexBuffer;
         int partBits[5];
 };
+
+static_assert(sizeof(XSurfaceVertexInfo) == 0x10 && sizeof(XSurfaceCollisionTree) == 0x28 && sizeof(XRigidVertList) == 0xC && sizeof(XSurface) == 0x44, "XSurface layout (.ff)");
 
 struct Collmap // sizeof=0x4
 {

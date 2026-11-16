@@ -11,6 +11,7 @@
 #include <physics/physconstraints_load_obj.h>
 #include <glass/glass.h>
 #include "db_load.h"
+#include <stringed/stringed_hooks.h>
 #include <bgame/bg_weapons.h>
 #include <bgame/bg_local.h>
 #include <gfx_d3d/r_bsp_load_obj.h>
@@ -364,12 +365,12 @@ void __cdecl DB_ImageSetName(XAssetHeader *header, const char *name)
 
 const char *__cdecl DB_LocalizeEntryGetName(const XAssetHeader *header)
 {
-    return (const char *)header->xmodelPieces->numpieces;
+    return header->localize->name; // arm64: name es PTR32 (el original lo leia como int en offset 4 via XModelPieces)
 }
 
 void __cdecl DB_LocalizeEntrySetName(XAssetHeader *header, const char *name)
 {
-    header->xmodelPieces->numpieces = (int)(intptr_t)name;
+    header->localize->name = name;
 }
 
 void __cdecl DB_DDLSetname(XAssetHeader *header, const char *name)

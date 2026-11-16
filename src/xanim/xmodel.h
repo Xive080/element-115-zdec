@@ -195,7 +195,7 @@ struct XModelPartsLoad // sizeof=0x1C
 
 struct XModelSurfs // sizeof=0x18
 {                                                                             // XREF: XModelLoadFile/r
-        XSurface *surfs;                                        // XREF: XModelLoadFile+B47/r
+        PTR32(XSurface) surfs;                                        // XREF: XModelLoadFile+B47/r
         int partBits[5];                                        // XREF: XModelLoadFile+926/r
 };
 
