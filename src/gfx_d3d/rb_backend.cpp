@@ -958,8 +958,8 @@ void __cdecl RB_StretchPicCmd(GfxRenderCommandExecState *execState)
 
     cmd = (const GfxCmdStretchPic *)execState->cmd;
 
-    if ( **((unsigned int **)execState->cmd + 1) )
-        v1 = va("\"%s\"", cmd->material->info.name);
+    if ( cmd->material->info.name )   // antes: primer dword del Material (offset x86 de material en el cmd)
+        v1 = va("\"%s\"", (const char *)cmd->material->info.name);
     else
         v1 = va("\"%s\"", "noname");
 
@@ -984,17 +984,18 @@ void __cdecl RB_StretchPicCmd(GfxRenderCommandExecState *execState)
 
 void __cdecl RB_StretchPicCmdFlipST(GfxRenderCommandExecState *execState)
 {
+    const GfxCmdStretchPic *cmd = (const GfxCmdStretchPic *)execState->cmd; // mismo layout que StretchPic (w0 no se usa)
     RB_DrawStretchPicFlipST(
-        *((const Material **)execState->cmd + 1),
-        *((float *)execState->cmd + 2),
-        *((float *)execState->cmd + 3),
-        *((float *)execState->cmd + 5),
-        *((float *)execState->cmd + 6),
-        *((float *)execState->cmd + 7),
-        *((float *)execState->cmd + 8),
-        *((float *)execState->cmd + 9),
-        *((float *)execState->cmd + 10),
-        *((unsigned int *)execState->cmd + 11),
+        cmd->material,
+        cmd->x,
+        cmd->y,
+        cmd->w,
+        cmd->h,
+        cmd->s0,
+        cmd->t0,
+        cmd->s1,
+        cmd->t1,
+        cmd->color.packed,
         GFX_PRIM_STATS_HUD);
     execState->cmd = (char *)execState->cmd + *(unsigned __int16 *)execState->cmd;
 }

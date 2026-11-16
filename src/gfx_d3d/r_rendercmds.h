@@ -821,6 +821,9 @@ void __cdecl R_ClearClientCmdList2D();
 void __cdecl R_BeginSharedCmdList();
 void __cdecl R_BeginCompositingCmdList();
 void __cdecl R_AddCmdEndOfList();
+// Alineacion de cada comando en el bufer: 4 en 32 bits (layout original), 8 en LP64 (punteros de 8 bytes en los comandos)
+#define GFXCMD_ALIGN ((int)(sizeof(void *) > 4 ? 8 : 4))
+inline int GfxCmd_RoundBytes(int bytes) { return (bytes + (GFXCMD_ALIGN - 1)) & ~(GFXCMD_ALIGN - 1); }
 GfxCmdHeader *__cdecl R_GetCommandBuffer(GfxRenderCommand renderCmd, int bytes);
 void R_ToggleSmpFrame();
 void R_FreeTempSkinBuffer();
