@@ -225,6 +225,7 @@ void __cdecl DB_RemoveWindowFocus(windowDef_t *window);
 void __cdecl Load_LocalizeEntryAsset(XAssetHeader *localize);
 void __cdecl Mark_LocalizeEntryAsset(LocalizeEntry *localize);
 void __cdecl Load_WeaponVariantDefAsset(XAssetHeader *weapon);
+void __cdecl Load_WeaponVariantDefAsset32(PTR32(WeaponVariantDef) *p);
 void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon);
 void __cdecl Load_SndDriverGlobalsAsset(SndDriverGlobals **sndDriverGlobals);
 void __cdecl Mark_SndDriverGlobalsAsset(SndDriverGlobals *sndDriverGlobals);

@@ -199,19 +199,19 @@ struct flameTable // sizeof=0x1DC
         float flameVar_smokeOriginOffset;
         float flameVar_collisionSpeedScale;
         float flameVar_collisionVolumeScale;
-        const char *name;
-        Material *fire;
-        Material *smoke;
-        Material *heat;
-        Material *drips;
-        Material *streamFuel;
-        Material *streamFuel2;
-        Material *streamFlame;
-        Material *streamFlame2;
-        const char *flameOffLoopSound;
-        const char *flameIgniteSound;
-        const char *flameOnLoopSound;
-        const char *flameCooldownSound;
+        PTR32(const char) name;
+        PTR32(Material) fire;
+        PTR32(Material) smoke;
+        PTR32(Material) heat;
+        PTR32(Material) drips;
+        PTR32(Material) streamFuel;
+        PTR32(Material) streamFuel2;
+        PTR32(Material) streamFlame;
+        PTR32(Material) streamFlame2;
+        PTR32(const char) flameOffLoopSound;
+        PTR32(const char) flameIgniteSound;
+        PTR32(const char) flameOnLoopSound;
+        PTR32(const char) flameCooldownSound;
 };
 
 struct flameWeaponConfig_t // sizeof=0x44

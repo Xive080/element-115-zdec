@@ -934,6 +934,12 @@ void __cdecl Load_WeaponVariantDefAsset(XAssetHeader *weapon)
     weapon->xmodelPieces = DB_AddXAsset(ASSET_TYPE_WEAPON, (XAssetHeader)weapon->xmodelPieces).xmodelPieces;
 }
 
+void __cdecl Load_WeaponVariantDefAsset32(PTR32(WeaponVariantDef) *p)
+{
+    XAssetHeader h; h.weapon = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_WEAPON, h).weapon;
+}
+
 void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon)
 {
     DB_GetXAsset(ASSET_TYPE_WEAPON, (XAssetHeader)weapon);
