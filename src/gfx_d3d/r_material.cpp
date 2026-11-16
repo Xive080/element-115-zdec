@@ -540,7 +540,7 @@ void __cdecl Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *loadDef, Ma
     }
 }
 
-void __cdecl Load_BuildVertexDecl(MaterialVertexDeclaration **mtlVertDecl)
+void __cdecl Load_BuildVertexDecl(PTR32(MaterialVertexDeclaration) *mtlVertDecl)
 {
     IDirect3DVertexDeclaration9 *v1; // eax
     MaterialStreamRouting data[16]; // [esp+8h] [ebp-28h] BYREF

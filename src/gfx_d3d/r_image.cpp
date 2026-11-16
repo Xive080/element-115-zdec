@@ -756,8 +756,8 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
     _D3DFORMAT imageFormat; // [esp+60h] [ebp-8h]
     int mipLevel; // [esp+64h] [ebp-4h]
 
-    loadDef = (GfxImageLoadDef *)remoteLoadDef->basemap;
-    if ( remoteLoadDef->basemap != image->texture.basemap
+    loadDef = remoteLoadDef->loadDef;
+    if ( remoteLoadDef->loadDef != image->texture.loadDef
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                     945,

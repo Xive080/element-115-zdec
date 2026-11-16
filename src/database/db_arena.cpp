@@ -33,4 +33,33 @@ void Ptr32_AssertInArena(const void *p)
         abort();
     }
 }
+
+// Tabla de manejadores para PtrRt32 (punteros de runtime en campos de 4 bytes de los assets)
+#include <mutex>
+#include <unordered_map>
+static const size_t kRtMax = 1u << 20;
+static void *g_rtTable[kRtMax];
+static uint32_t g_rtCount = 0;
+static std::mutex g_rtLock;
+static std::unordered_map<const void *, uint32_t> g_rtMap;
+
+uint32_t PtrRt32_Register(const void *p)
+{
+    if (!p)
+        return 0;
+    std::lock_guard<std::mutex> g(g_rtLock);
+    auto it = g_rtMap.find(p);
+    if (it != g_rtMap.end())
+        return it->second;
+    if (g_rtCount + 1 >= kRtMax)
+    {
+        fprintf(stderr, "PtrRt32_Register: tabla llena\n");
+        abort();
+    }
+    g_rtTable[++g_rtCount] = (void *)p;
+    g_rtMap[p] = g_rtCount;
+    return g_rtCount;
+}
+
+void *PtrRt32_Resolve(uint32_t idx) { return idx ? g_rtTable[idx] : nullptr; }
 #endif

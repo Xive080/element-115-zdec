@@ -130,38 +130,39 @@ XSurfaceVertexInfo *varXSurfaceVertexInfo;
 unsigned __int16 *varr_index_t;
 unsigned __int16 *varr_index16_t;
 XSurface *varXSurface;
-GfxImageLoadDef **varGfxTextureLoad;
+PTR32(GfxImageLoadDef) *varGfxTextureLoad;
 GfxImageLoadDef *varGfxImageLoadDef;
 GfxImage *varGfxImage;
 GfxImage **varGfxImagePtr;
+PTR32(GfxImage) *varGfxImagePtr32;
 GfxTexture *varGfxRawTexture;
 water_t *varwater_t;
 GfxVertexShaderLoadDef *varGfxVertexShaderLoadDef;
 GfxPixelShaderLoadDef *varGfxPixelShaderLoadDef;
 MaterialVertexShaderProgram *varMaterialVertexShaderProgram;
 MaterialVertexShader *varMaterialVertexShader;
-MaterialVertexShader **varMaterialVertexShaderPtr;
+PTR32(MaterialVertexShader) *varMaterialVertexShaderPtr;
 MaterialPixelShaderProgram *varMaterialPixelShaderProgram;
 MaterialPixelShader *varMaterialPixelShader;
-MaterialPixelShader **varMaterialPixelShaderPtr;
+PTR32(MaterialPixelShader) *varMaterialPixelShaderPtr;
 MaterialVertexDeclaration *varMaterialVertexDeclaration;
 MaterialArgumentCodeConst *varMaterialArgumentCodeConst;
 MaterialShaderArgument *varMaterialShaderArgument;
 MaterialArgumentDef *varMaterialArgumentDef;
 GfxStateBits *varGfxStateBits;
-MaterialVertexDeclaration **varMaterialPass;
+MaterialPass *varMaterialPass;
 MaterialTechnique *varMaterialTechnique;
 MaterialTextureDef *varMaterialTextureDef;
-water_t **varMaterialTextureDefInfo;
+PTR32(water_t) *varMaterialTextureDefInfo;
 MaterialConstantDef *varMaterialConstantDef;
-MaterialTechnique **varMaterialTechniquePtr;
+PTR32(MaterialTechnique) *varMaterialTechniquePtr;
 MaterialTechniqueSet *varMaterialTechniqueSet;
-MaterialTechniqueSet **varMaterialTechniqueSetPtr;
+PTR32(MaterialTechniqueSet) *varMaterialTechniqueSetPtr;
 Material *varMaterial;
 Material **varMaterialHandle;
 GfxLightImage *varGfxLightImage;
 GfxLightDef *varGfxLightDef;
-GfxLightDef **varGfxLightDefPtr;
+PTR32(GfxLightDef) *varGfxLightDefPtr;
 GfxLight *varGfxLight;
 GfxSurface *varGfxSurface;
 GfxLightmapArray *varGfxLightmapArray;
@@ -1727,8 +1728,8 @@ void __cdecl Mark_SndPatchPtr()
 void __cdecl Load_MaterialInfo(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialInfo, 40);
-    varXString = &varMaterialInfo->name;
-    Load_XString(0);
+    varXString32 = &varMaterialInfo->name;
+    Load_XString32(0);
 }
 
 void __cdecl Load_GfxWorldVertex0Array(bool atStreamStart, int count)
@@ -1931,26 +1932,23 @@ void __cdecl Load_XSurfaceArray(bool atStreamStart, int count)
 
 void __cdecl Load_GfxTextureLoad(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varGfxTextureLoad, 4);
     DB_PushStreamPos(0);
     if ( *varGfxTextureLoad )
     {
-        value = (unsigned int)*varGfxTextureLoad;
-        if ( *varGfxTextureLoad == (GfxImageLoadDef *)-1 || value == -2 )
+        value = PTR32_RAW(*varGfxTextureLoad);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varGfxTextureLoad = (GfxImageLoadDef *)AllocLoad_FxElemVisStateSample();
             varGfxImageLoadDef = *varGfxTextureLoad;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
-            else
-                inserted = 0;
+            inserted = (value == 0xFFFFFFFEu) ? DB_InsertPointer32() : 0;
             Load_GfxImageLoadDef(1);
             Load_Texture((GfxTexture *)varGfxTextureLoad, varGfxImage);
             if ( inserted )
-                *inserted = *varGfxTextureLoad;
+                *inserted = PTR32_RAW(*varGfxTextureLoad);
         }
         else
         {
@@ -1996,11 +1994,77 @@ void __cdecl Load_GfxImage(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGfxImage, 52);
     DB_PushStreamPos(4u);
-    varXString = &varGfxImage->name;
-    Load_XString(0);
-    varGfxTextureLoad = (GfxImageLoadDef **)varGfxImage;
+    varXString32 = &varGfxImage->name;
+    Load_XString32(0);
+    varGfxTextureLoad = &varGfxImage->texture.loadDef;
     Load_GfxTextureLoad(0);
     DB_PopStreamPos();
+}
+
+void __cdecl Load_GfxImagePtr32(bool atStreamStart)
+{
+    unsigned int *inserted;
+    unsigned int value;
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varGfxImagePtr32, 4);
+    DB_PushStreamPos(0);
+    if ( *varGfxImagePtr32 )
+    {
+        value = PTR32_RAW(*varGfxImagePtr32);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
+        {
+            *varGfxImagePtr32 = (GfxImage *)AllocLoad_FxElemVisStateSample();
+            varGfxImage = *varGfxImagePtr32;
+            inserted = (value == 0xFFFFFFFEu) ? DB_InsertPointer32() : 0;
+            Load_GfxImage(1);
+            Load_GfxImageAsset32(varGfxImagePtr32);
+            if ( inserted )
+                *inserted = PTR32_RAW(*varGfxImagePtr32);
+        }
+        else
+        {
+            DB_ConvertOffsetToAlias((unsigned int *)varGfxImagePtr32);
+        }
+    }
+    DB_PopStreamPos();
+}
+
+void __cdecl Load_GfxImagePtrArray32(bool atStreamStart, int count)
+{
+    PTR32(GfxImage) *var;
+    int i;
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varGfxImagePtr32, 4 * count);
+    var = varGfxImagePtr32;
+    for ( i = 0; i < count; ++i )
+    {
+        varGfxImagePtr32 = var;
+        Load_GfxImagePtr32(0);
+        ++var;
+    }
+}
+
+void __cdecl Mark_GfxImagePtr32()
+{
+    if ( *varGfxImagePtr32 )
+    {
+        varGfxImage = *varGfxImagePtr32;
+        Mark_GfxImageAsset(varGfxImage);
+    }
+}
+
+void __cdecl Mark_GfxImagePtrArray32(int count)
+{
+    PTR32(GfxImage) *var;
+    int i;
+
+    var = varGfxImagePtr32;
+    for ( i = 0; i < count; ++i )
+    {
+        varGfxImagePtr32 = var;
+        Mark_GfxImagePtr32();
+        ++var;
+    }
 }
 
 void __cdecl Load_GfxImagePtr(bool atStreamStart)
@@ -2087,14 +2151,14 @@ void __cdecl Load_water_t(bool atStreamStart)
         varfloat = varwater_t->wTerm;
         Load_floatArray(1, varwater_t->N * varwater_t->M);
     }
-    varGfxImagePtr = &varwater_t->image;
-    Load_GfxImagePtr(0);
+    varGfxImagePtr32 = &varwater_t->image;
+    Load_GfxImagePtr32(0);
 }
 
 void __cdecl Mark_water_t()
 {
-    varGfxImagePtr = &varwater_t->image;
-    Mark_GfxImagePtr();
+    varGfxImagePtr32 = &varwater_t->image;
+    Mark_GfxImagePtr32();
 }
 
 void __cdecl Load_GfxVertexShaderLoadDef(bool atStreamStart)
@@ -2138,8 +2202,8 @@ void __cdecl Load_MaterialPixelShaderProgram(bool atStreamStart)
 void __cdecl Load_MaterialVertexShader(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialVertexShader, 16);
-    varXString = &varMaterialVertexShader->name;
-    Load_XString(0);
+    varXString32 = &varMaterialVertexShader->name;
+    Load_XString32(0);
     varMaterialVertexShaderProgram = &varMaterialVertexShader->prog;
     Load_MaterialVertexShaderProgram(0);
 }
@@ -2149,7 +2213,7 @@ void __cdecl Load_MaterialVertexShaderPtr(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialVertexShaderPtr, 4);
     if ( *varMaterialVertexShaderPtr )
     {
-        if ( *varMaterialVertexShaderPtr == (MaterialVertexShader *)-1 )
+        if ( PTR32_RAW(*varMaterialVertexShaderPtr) == 0xFFFFFFFFu )
         {
             *varMaterialVertexShaderPtr = (MaterialVertexShader *)AllocLoad_FxElemVisStateSample();
             varMaterialVertexShader = *varMaterialVertexShaderPtr;
@@ -2165,8 +2229,8 @@ void __cdecl Load_MaterialVertexShaderPtr(bool atStreamStart)
 void __cdecl Load_MaterialPixelShader(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialPixelShader, 16);
-    varXString = &varMaterialPixelShader->name;
-    Load_XString(0);
+    varXString32 = &varMaterialPixelShader->name;
+    Load_XString32(0);
     varMaterialPixelShaderProgram = &varMaterialPixelShader->prog;
     Load_MaterialPixelShaderProgram(0);
 }
@@ -2176,7 +2240,7 @@ void __cdecl Load_MaterialPixelShaderPtr(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialPixelShaderPtr, 4);
     if ( *varMaterialPixelShaderPtr )
     {
-        if ( *varMaterialPixelShaderPtr == (MaterialPixelShader *)-1 )
+        if ( PTR32_RAW(*varMaterialPixelShaderPtr) == 0xFFFFFFFFu )
         {
             *varMaterialPixelShaderPtr = (MaterialPixelShader *)AllocLoad_FxElemVisStateSample();
             varMaterialPixelShader = *varMaterialPixelShaderPtr;
@@ -2207,10 +2271,10 @@ void __cdecl Load_MaterialArgumentDef(bool atStreamStart)
         case 7u:
             if ( varMaterialArgumentDef->codeSampler )
             {
-                if ( varMaterialArgumentDef->codeSampler == -1 )
+                if ( varMaterialArgumentDef->codeSampler == 0xFFFFFFFFu )
                 {
-                    varMaterialArgumentDef->codeSampler = (unsigned int)AllocLoad_FxElemVisStateSample();
-                    varfloat = (float *)varMaterialArgumentDef->codeSampler;
+                    varMaterialArgumentDef->literalConst = (const float *)AllocLoad_FxElemVisStateSample();
+                    varfloat = (float *)(const float *)varMaterialArgumentDef->literalConst;
                     Load_floatArray(1, 4);
                 }
                 else
@@ -2274,33 +2338,31 @@ void __cdecl Load_GfxStateBitsArray(bool atStreamStart, int count)
 void __cdecl Load_MaterialPass(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialPass, 20);
-    if ( *varMaterialPass )
+    if ( varMaterialPass->vertexDecl )
     {
-        if ( *varMaterialPass == (MaterialVertexDeclaration *)-1 )
+        if ( PTR32_RAW(varMaterialPass->vertexDecl) == 0xFFFFFFFFu )
         {
-            *varMaterialPass = (MaterialVertexDeclaration *)AllocLoad_FxElemVisStateSample();
-            varMaterialVertexDeclaration = *varMaterialPass;
+            varMaterialPass->vertexDecl = (MaterialVertexDeclaration *)AllocLoad_FxElemVisStateSample();
+            varMaterialVertexDeclaration = varMaterialPass->vertexDecl;
             Load_MaterialVertexDeclaration(1);
-            Load_BuildVertexDecl(varMaterialPass);
+            Load_BuildVertexDecl(&varMaterialPass->vertexDecl);
         }
         else
         {
-            DB_ConvertOffsetToPointer((unsigned int *)varMaterialPass);
+            DB_ConvertOffsetToPointer((unsigned int *)&varMaterialPass->vertexDecl);
         }
     }
-    varMaterialVertexShaderPtr = (MaterialVertexShader **)(varMaterialPass + 1);
+    varMaterialVertexShaderPtr = &varMaterialPass->vertexShader;
     Load_MaterialVertexShaderPtr(0);
-    varMaterialPixelShaderPtr = (MaterialPixelShader **)(varMaterialPass + 2);
+    varMaterialPixelShaderPtr = &varMaterialPass->pixelShader;
     Load_MaterialPixelShaderPtr(0);
-    if ( varMaterialPass[4] )
+    if ( varMaterialPass->args )
     {
-        varMaterialPass[4] = (MaterialVertexDeclaration *)AllocLoad_FxElemVisStateSample();
-        varMaterialShaderArgument = (MaterialShaderArgument *)varMaterialPass[4];
+        varMaterialPass->args = (MaterialShaderArgument *)AllocLoad_FxElemVisStateSample();
+        varMaterialShaderArgument = varMaterialPass->args;
         Load_MaterialShaderArgumentArray(
             1,
-            *((unsigned __int8 *)varMaterialPass + 14)
-        + *((unsigned __int8 *)varMaterialPass + 13)
-        + *((unsigned __int8 *)varMaterialPass + 12));
+            varMaterialPass->perPrimArgCount + varMaterialPass->perObjArgCount + varMaterialPass->stableArgCount);
     }
 }
 
@@ -2310,10 +2372,10 @@ void __cdecl Load_MaterialPassArray(bool atStreamStart, int count)
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialPass, 20 * count);
-    var = (MaterialPass *)varMaterialPass;
+    var = varMaterialPass;
     for ( i = 0; i < count; ++i )
     {
-        varMaterialPass = &var->vertexDecl;
+        varMaterialPass = var;
         Load_MaterialPass(0);
         ++var;
     }
@@ -2342,10 +2404,10 @@ void __cdecl Load_MaterialTechnique(bool atStreamStart)
     {
         __debugbreak();
     }
-    varMaterialPass = &varMaterialTechnique->passArray[0].vertexDecl;
+    varMaterialPass = &varMaterialTechnique->passArray[0];
     Load_MaterialPassArray(1, varMaterialTechnique->passCount);
-    varXString = &varMaterialTechnique->name;
-    Load_XString(0);
+    varXString32 = &varMaterialTechnique->name;
+    Load_XString32(0);
 }
 
 void __cdecl Load_MaterialTextureDefInfo(bool atStreamStart)
@@ -2354,7 +2416,7 @@ void __cdecl Load_MaterialTextureDefInfo(bool atStreamStart)
     {
         if ( *varMaterialTextureDefInfo )
         {
-            if ( *varMaterialTextureDefInfo == (water_t *)-1 )
+            if ( PTR32_RAW(*varMaterialTextureDefInfo) == 0xFFFFFFFFu )
             {
                 *varMaterialTextureDefInfo = (water_t *)AllocLoad_FxElemVisStateSample();
                 varwater_t = *varMaterialTextureDefInfo;
@@ -2369,15 +2431,15 @@ void __cdecl Load_MaterialTextureDefInfo(bool atStreamStart)
     }
     else
     {
-        varGfxImagePtr = (GfxImage **)varMaterialTextureDefInfo;
-        Load_GfxImagePtr(atStreamStart);
+        varGfxImagePtr32 = (PTR32(GfxImage) *)varMaterialTextureDefInfo;
+        Load_GfxImagePtr32(atStreamStart);
     }
 }
 
 void __cdecl Load_MaterialTextureDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialTextureDef, 16);
-    varMaterialTextureDefInfo = (water_t **)&varMaterialTextureDef->u;
+    varMaterialTextureDefInfo = (PTR32(water_t) *)&varMaterialTextureDef->u;
     Load_MaterialTextureDefInfo(0);
 }
 
@@ -2406,7 +2468,7 @@ void __cdecl Load_MaterialTechniquePtr(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialTechniquePtr, 4);
     if ( *varMaterialTechniquePtr )
     {
-        if ( *varMaterialTechniquePtr == (MaterialTechnique *)-1 )
+        if ( PTR32_RAW(*varMaterialTechniquePtr) == 0xFFFFFFFFu )
         {
             *varMaterialTechniquePtr = (MaterialTechnique *)AllocLoad_FxElemVisStateSample();
             varMaterialTechnique = *varMaterialTechniquePtr;
@@ -2421,7 +2483,7 @@ void __cdecl Load_MaterialTechniquePtr(bool atStreamStart)
 
 void __cdecl Load_MaterialTechniquePtrArray(bool atStreamStart, int count)
 {
-    MaterialTechnique **var; // [esp+0h] [ebp-8h]
+    PTR32(MaterialTechnique) *var;
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialTechniquePtr, 4 * count);
@@ -2439,8 +2501,8 @@ void __cdecl Load_MaterialTechniqueSet(bool atStreamStart)
     static_assert(sizeof(MaterialTechniqueSet) == 528);
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialTechniqueSet, sizeof(MaterialTechniqueSet));
     DB_PushStreamPos(4u);
-    varXString = &varMaterialTechniqueSet->name;
-    Load_XString(0);
+    varXString32 = &varMaterialTechniqueSet->name;
+    Load_XString32(0);
     varMaterialTechniquePtr = varMaterialTechniqueSet->techniques;
     Load_MaterialTechniquePtrArray(0, 130);
     DB_PopStreamPos();
@@ -2448,26 +2510,23 @@ void __cdecl Load_MaterialTechniqueSet(bool atStreamStart)
 
 void __cdecl Load_MaterialTechniqueSetPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialTechniqueSetPtr, 4);
     DB_PushStreamPos(0);
     if ( *varMaterialTechniqueSetPtr )
     {
-        value = (unsigned int)*varMaterialTechniqueSetPtr;
-        if ( *varMaterialTechniqueSetPtr == (MaterialTechniqueSet *)-1 || value == -2 )
+        value = PTR32_RAW(*varMaterialTechniqueSetPtr);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varMaterialTechniqueSetPtr = (MaterialTechniqueSet *)AllocLoad_FxElemVisStateSample();
             varMaterialTechniqueSet = *varMaterialTechniqueSetPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
-            else
-                inserted = 0;
+            inserted = (value == 0xFFFFFFFEu) ? DB_InsertPointer32() : 0;
             Load_MaterialTechniqueSet(1);
-            Load_MaterialTechniqueSetAsset((XAssetHeader *)varMaterialTechniqueSetPtr);
+            Load_MaterialTechniqueSetAsset32(varMaterialTechniqueSetPtr);
             if ( inserted )
-                *inserted = *varMaterialTechniqueSetPtr;
+                *inserted = PTR32_RAW(*varMaterialTechniqueSetPtr);
         }
         else
         {
@@ -2487,7 +2546,7 @@ void __cdecl Load_Material(bool atStreamStart)
     Load_MaterialTechniqueSetPtr(0);
     if ( varMaterial->textureTable )
     {
-        if ( varMaterial->textureTable == (MaterialTextureDef *)-1 )
+        if ( PTR32_RAW(varMaterial->textureTable) == 0xFFFFFFFFu )
         {
             varMaterial->textureTable = (MaterialTextureDef *)AllocLoad_FxElemVisStateSample();
             varMaterialTextureDef = varMaterial->textureTable;
@@ -2500,7 +2559,7 @@ void __cdecl Load_Material(bool atStreamStart)
     }
     if ( varMaterial->localConstantTable )
     {
-        if ( varMaterial->localConstantTable == (MaterialConstantDef *)-1 )
+        if ( PTR32_RAW(varMaterial->localConstantTable) == 0xFFFFFFFFu )
         {
             varMaterial->localConstantTable = (MaterialConstantDef *)AllocLoad_GfxPackedVertex0();
             varMaterialConstantDef = varMaterial->localConstantTable;
@@ -2513,7 +2572,7 @@ void __cdecl Load_Material(bool atStreamStart)
     }
     if ( varMaterial->stateBitsTable )
     {
-        if ( varMaterial->stateBitsTable == (GfxStateBits *)-1 )
+        if ( PTR32_RAW(varMaterial->stateBitsTable) == 0xFFFFFFFFu )
         {
             varMaterial->stateBitsTable = (GfxStateBits *)AllocLoad_FxElemVisStateSample();
             varGfxStateBits = varMaterial->stateBitsTable;
@@ -2620,14 +2679,14 @@ void __cdecl Mark_MaterialTextureDefInfo()
     }
     else
     {
-        varGfxImagePtr = (GfxImage **)varMaterialTextureDefInfo;
-        Mark_GfxImagePtr();
+        varGfxImagePtr32 = (PTR32(GfxImage) *)varMaterialTextureDefInfo;
+        Mark_GfxImagePtr32();
     }
 }
 
 void __cdecl Mark_MaterialTextureDef()
 {
-    varMaterialTextureDefInfo = (water_t **)&varMaterialTextureDef->u;
+    varMaterialTextureDefInfo = (PTR32(water_t) *)&varMaterialTextureDef->u;
     Mark_MaterialTextureDefInfo();
 }
 
@@ -2665,6 +2724,45 @@ void __cdecl Mark_Material()
     }
 }
 
+void __cdecl Mark_MaterialHandle32()
+{
+    if ( *varMaterialHandle32 )
+    {
+        varMaterial = *varMaterialHandle32;
+        Mark_MaterialAsset(varMaterial);
+        Mark_Material();
+    }
+}
+
+void __cdecl Load_MaterialHandleArray32(bool atStreamStart, int count)
+{
+    PTR32(Material) *var;
+    int i;
+
+    Load_Stream(atStreamStart, (unsigned __int8 *)varMaterialHandle32, 4 * count);
+    var = varMaterialHandle32;
+    for ( i = 0; i < count; ++i )
+    {
+        varMaterialHandle32 = var;
+        Load_MaterialHandle32(0);
+        ++var;
+    }
+}
+
+void __cdecl Mark_MaterialHandleArray32(int count)
+{
+    PTR32(Material) *var;
+    int i;
+
+    var = varMaterialHandle32;
+    for ( i = 0; i < count; ++i )
+    {
+        varMaterialHandle32 = var;
+        Mark_MaterialHandle32();
+        ++var;
+    }
+}
+
 void __cdecl Mark_MaterialHandle()
 {
     if ( *varMaterialHandle )
@@ -2692,16 +2790,16 @@ void __cdecl Mark_MaterialHandleArray(int count)
 void __cdecl Load_GfxLightImage(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGfxLightImage, 8);
-    varGfxImagePtr = &varGfxLightImage->image;
-    Load_GfxImagePtr(0);
+    varGfxImagePtr32 = &varGfxLightImage->image;
+    Load_GfxImagePtr32(0);
 }
 
 void __cdecl Load_GfxLightDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGfxLightDef, 16);
     DB_PushStreamPos(4u);
-    varXString = &varGfxLightDef->name;
-    Load_XString(0);
+    varXString32 = &varGfxLightDef->name;
+    Load_XString32(0);
     varGfxLightImage = &varGfxLightDef->attenuation;
     Load_GfxLightImage(0);
     DB_PopStreamPos();
@@ -2709,26 +2807,23 @@ void __cdecl Load_GfxLightDef(bool atStreamStart)
 
 void __cdecl Load_GfxLightDefPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varGfxLightDefPtr, 4);
     DB_PushStreamPos(0);
     if ( *varGfxLightDefPtr )
     {
-        value = (unsigned int)*varGfxLightDefPtr;
-        if ( *varGfxLightDefPtr == (GfxLightDef *)-1 || value == -2 )
+        value = PTR32_RAW(*varGfxLightDefPtr);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varGfxLightDefPtr = (GfxLightDef *)AllocLoad_FxElemVisStateSample();
             varGfxLightDef = *varGfxLightDefPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
-            else
-                inserted = 0;
+            inserted = (value == 0xFFFFFFFEu) ? DB_InsertPointer32() : 0;
             Load_GfxLightDef(1);
-            Load_LightDefAsset((XAssetHeader *)varGfxLightDefPtr);
+            Load_LightDefAsset32(varGfxLightDefPtr);
             if ( inserted )
-                *inserted = *varGfxLightDefPtr;
+                *inserted = PTR32_RAW(*varGfxLightDefPtr);
         }
         else
         {
@@ -2747,8 +2842,8 @@ void __cdecl Load_GfxLight(bool atStreamStart)
 
 void __cdecl Mark_GfxLightImage()
 {
-    varGfxImagePtr = &varGfxLightImage->image;
-    Mark_GfxImagePtr();
+    varGfxImagePtr32 = &varGfxLightImage->image;
+    Mark_GfxImagePtr32();
 }
 
 void __cdecl Mark_GfxLightDef()
@@ -9205,16 +9300,16 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_XModelPtr(atStreamStart);
             break;
         case 6:
-            varMaterialHandle = (Material **)varXAssetHeader;
-            Load_MaterialHandle(atStreamStart);
+            varMaterialHandle32 = (PTR32(Material) *)varXAssetHeader;
+            Load_MaterialHandle32(atStreamStart);
             break;
         case 7:
-            varMaterialTechniqueSetPtr = (MaterialTechniqueSet **)varXAssetHeader;
+            varMaterialTechniqueSetPtr = (PTR32(MaterialTechniqueSet) *)varXAssetHeader;
             Load_MaterialTechniqueSetPtr(atStreamStart);
             break;
         case 8:
-            varGfxImagePtr = (GfxImage **)varXAssetHeader;
-            Load_GfxImagePtr(atStreamStart);
+            varGfxImagePtr32 = (PTR32(GfxImage) *)varXAssetHeader;
+            Load_GfxImagePtr32(atStreamStart);
             break;
         case 9:
             varSndBankPtr = (SndBank **)varXAssetHeader;
@@ -9250,7 +9345,7 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_GfxWorldPtr(atStreamStart);
             break;
         case 18:
-            varGfxLightDefPtr = (GfxLightDef **)varXAssetHeader;
+            varGfxLightDefPtr = (PTR32(GfxLightDef) *)varXAssetHeader;
             Load_GfxLightDefPtr(atStreamStart);
             break;
         case 20:
@@ -9348,16 +9443,16 @@ void __cdecl Mark_XAssetHeader()
             Mark_XModelPtr();
             break;
         case ASSET_TYPE_MATERIAL:
-            varMaterialHandle = (Material **)varXAssetHeader;
-            Mark_MaterialHandle();
+            varMaterialHandle32 = (PTR32(Material) *)varXAssetHeader;
+            Mark_MaterialHandle32();
             break;
         case ASSET_TYPE_TECHNIQUE_SET:
-            varMaterialTechniqueSetPtr = (MaterialTechniqueSet **)varXAssetHeader;
+            varMaterialTechniqueSetPtr = (PTR32(MaterialTechniqueSet) *)varXAssetHeader;
             Mark_MaterialTechniqueSetPtr();
             break;
         case ASSET_TYPE_IMAGE:
-            varGfxImagePtr = (GfxImage **)varXAssetHeader;
-            Mark_GfxImagePtr();
+            varGfxImagePtr32 = (PTR32(GfxImage) *)varXAssetHeader;
+            Mark_GfxImagePtr32();
             break;
         case ASSET_TYPE_SOUND:
             varSndBankPtr = (SndBank **)varXAssetHeader;
@@ -9393,7 +9488,7 @@ void __cdecl Mark_XAssetHeader()
             Mark_GfxWorldPtr();
             break;
         case ASSET_TYPE_LIGHT_DEF:
-            varGfxLightDefPtr = (GfxLightDef **)varXAssetHeader;
+            varGfxLightDefPtr = (PTR32(GfxLightDef) *)varXAssetHeader;
             Mark_GfxLightDefPtr();
             break;
         case ASSET_TYPE_FONT:
