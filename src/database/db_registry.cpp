@@ -628,6 +628,26 @@ void __cdecl Load_MaterialTechniqueSetAsset(XAssetHeader *techniqueSet)
     techniqueSet->xmodelPieces = DB_AddXAsset(ASSET_TYPE_TECHNIQUE_SET, (XAssetHeader)techniqueSet->xmodelPieces).xmodelPieces;
 }
 
+// Variantes para handles PTR32 (slot de 4 bytes), grupo Material/GfxImage/LightDef
+void __cdecl Load_MaterialTechniqueSetAsset32(PTR32(MaterialTechniqueSet) *p)
+{
+    XAssetHeader h; h.techniqueSet = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_TECHNIQUE_SET, h).techniqueSet;
+}
+
+void __cdecl Load_GfxImageAsset32(PTR32(GfxImage) *p)
+{
+    RB_Resource_Flush();
+    XAssetHeader h; h.image = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_IMAGE, h).image;
+}
+
+void __cdecl Load_LightDefAsset32(PTR32(GfxLightDef) *p)
+{
+    XAssetHeader h; h.lightDef = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_LIGHT_DEF, h).lightDef;
+}
+
 void __cdecl Mark_MaterialTechniqueSetAsset(MaterialTechniqueSet *techniqueSet)
 {
     DB_GetXAsset(ASSET_TYPE_TECHNIQUE_SET, (XAssetHeader)techniqueSet);

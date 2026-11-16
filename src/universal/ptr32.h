@@ -40,7 +40,29 @@ struct Ptr32 {
 };
 template <typename T> using Ptr32Of = Ptr32<T>;
 #define PTR32(T) Ptr32<T>
+
+// PtrRt32<T>: campo de 4 bytes dentro de un asset que en x86 guarda un puntero de RUNTIME (objeto D3D, etc.) que
+// vive fuera de la arena. Guarda un indice 1-based en una tabla de manejadores (0 = nulo); no se relocaliza ni se
+// carga desde el .ff (en el fichero es siempre 0 / basura que el cargador sobrescribe).
+uint32_t PtrRt32_Register(const void *p);
+void *PtrRt32_Resolve(uint32_t idx);
+template <typename T>
+struct PtrRt32 {
+    uint32_t idx;
+    PtrRt32() = default;
+    PtrRt32(std::nullptr_t) : idx(0) {}
+    PtrRt32(T *p) : idx(PtrRt32_Register(p)) {}
+    PtrRt32 &operator=(T *p) { idx = PtrRt32_Register(p); return *this; }
+    PtrRt32 &operator=(std::nullptr_t) { idx = 0; return *this; }
+    T *get() const { return (T *)PtrRt32_Resolve(idx); }
+    operator T *() const { return get(); }
+    T *operator->() const { return get(); }
+    T &operator*() const { return *get(); }
+    explicit operator bool() const { return idx != 0; }
+};
+#define PTRRT32(T) PtrRt32<T>
 #else
 #define PTR32(T) T *   // x86 de 32 bits: puntero normal, layout idéntico
+#define PTRRT32(T) T *
 #endif
 static_assert(sizeof(uint32_t) == 4);

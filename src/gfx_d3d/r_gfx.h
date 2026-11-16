@@ -1,5 +1,6 @@
 #pragma once
 #include <universal/com_math.h>
+#include <universal/ptr32.h>
 
 enum GfxDrawSceneMethod : __int32
 {                                                                             // XREF: GfxDrawMethod/r
@@ -195,7 +196,7 @@ struct GfxSModelDrawSurfLightingData // sizeof=0x28
 
 struct __declspec(align(4)) GfxLightImage // sizeof=0x8
 {                                                                             // XREF: GfxLightDef/r
-        struct GfxImage *image;
+        PTR32(struct GfxImage) image;
         unsigned __int8 samplerState;
         // padding byte
         // padding byte
@@ -204,7 +205,7 @@ struct __declspec(align(4)) GfxLightImage // sizeof=0x8
 
 struct GfxLightDef // sizeof=0x10
 {                                                                             // XREF: XAssetPoolEntry<GfxLightDef>/r
-        const char *name;
+        PTR32(const char) name;
         GfxLightImage attenuation;
         int lmapLookupStart;
 };
@@ -244,7 +245,7 @@ struct __declspec(align(16)) GfxLight // sizeof=0x170
         unsigned char pad_viewMatrix[4];
         float44 viewMatrix;
         float44 projMatrix;
-        GfxLightDef *def;
+        PTR32(GfxLightDef) def;
         // padding byte
         // padding byte
         // padding byte
