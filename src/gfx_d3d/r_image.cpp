@@ -62,7 +62,12 @@ struct //$240FF632105687D15E57E43F247C9BAA // sizeof=0x2014
 } imageGlobals;
 
 int Image_TrackBytes;
+#if defined(__LP64__)
+// arm64: GfxImage guarda Ptr32 (name, ...): el array debe vivir dentro de la arena de 4 GB (como cm/comWorld/s_world)
+GfxImage (&g_imageProgs)[29] = *reinterpret_cast<GfxImage (*)[29]>(Ptr32_ArenaAlloc(sizeof(GfxImage[29]), 64));
+#else
 GfxImage g_imageProgs[29];
+#endif
 
 void __cdecl Image_TrackTotalMemory(GfxImage *image, int platform, int memory)
 {
@@ -203,7 +208,7 @@ GfxImage *__cdecl Image_AllocProg(int imageProgType, unsigned __int8 category, u
     if ( !image && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp", 445, 1, "%s", "image") )
         __debugbreak();
     name = g_imageProgNames[imageProgType];
-    image->name = name;
+    image->name = Ptr32_ArenaStrdup(name);
     if ( !category
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
@@ -939,7 +944,7 @@ GfxImage *__cdecl Image_FindExisting_FastFile(const char *name)
 GfxImage *__cdecl Image_Register(char *imageName, unsigned __int8 semantic, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (GfxImage *)((int (__cdecl *)(char *, unsigned int, int))Image_Register_FastFile)(imageName, semantic, imageTrack);
+        return Image_Register_FastFile(imageName);
     else
         return Image_Register_LoadObj(imageName, semantic, imageTrack);
 }
