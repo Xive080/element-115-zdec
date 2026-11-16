@@ -56,4 +56,6 @@ struct bdQueue
     }
 };
 
+#ifndef __LP64__
 static_assert(sizeof(bdQueue<void *>) == 0x0C, "bdQueue size mismatch");
+#endif

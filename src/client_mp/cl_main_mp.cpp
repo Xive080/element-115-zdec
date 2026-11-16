@@ -370,7 +370,7 @@ void __cdecl CL_WriteDemoFromContinuousStateBuffer(int localClientNum, int conti
 
     v8 = 0;
     LocalClientConnection = CL_GetLocalClientConnection(localClientNum);
-    v4 = (int)&LocalClientConnection->demoContinuousStateBuffer[continuousStateBufferIndex];
+    v4 = (int)(intptr_t)&LocalClientConnection->demoContinuousStateBuffer[continuousStateBufferIndex];
     MSG_Init(&buf, data, 4096);
     count = 48;
     index = *(unsigned int *)(v4 + 16);
@@ -1262,12 +1262,12 @@ void __cdecl CL_ResetSkeletonCache(unsigned int localClientNum)
     v1 = &clients[localClientNum];
     if ( !++v1->skelTimeStamp )
         ++v1->skelTimeStamp;
-    v1->skelMemoryStart = (char *)((unsigned int)&v1->skelMemory[15] & 0xFFFFFFF0);
+    v1->skelMemoryStart = (char *)((uintptr_t)&v1->skelMemory[15] & ~(uintptr_t)0xF);
     // mod: bo1_mod_maxactors > 32 poses its skeletons in a 4x larger buffer outside clientActive_t
     extern int g_maxActors;
     extern char g_cl_modSkelMemory[][262144 * 24];
     if (g_maxActors > 32)
-        v1->skelMemoryStart = (char *)((unsigned int)&g_cl_modSkelMemory[localClientNum][15] & 0xFFFFFFF0);
+        v1->skelMemoryStart = (char *)((uintptr_t)&g_cl_modSkelMemory[localClientNum][15] & ~(uintptr_t)0xF);
     v1->skelMemPos = 0;
 }
 
@@ -1588,7 +1588,7 @@ void __cdecl CL_Setenv_f()
             I_strncat(buffer, 1024, v1);
             I_strncat(buffer, 1024, " ");
         }
-        _putenv(buffer);
+        putenv(buffer);
     }
 }
 
@@ -2694,7 +2694,7 @@ void __cdecl AllocatePerLocalClientMemory(int maxLocalClients, int maxClients, u
     CL_FreePerLocalClientMemory();
     mem_needed = (2449480 + CL_PARSE_ENTITIES_EXTRA_BYTES) * maxLocalClients; // mod (L43): + the larger parseEntities ring
     if ( (flags & 1) == 0 )
-        mem_needed += (int)SV_AllocateClientMemory_SizeRequired(maxLocalClients, maxClients);
+        mem_needed += (int)(intptr_t)SV_AllocateClientMemory_SizeRequired(maxLocalClients, maxClients);
     mem_neededa = mem_needed + CG_AllocateClientMemory_SizeRequired(maxLocalClients);
     mem_neededb = mem_neededa + FX_AllocateClientMemory_SizeRequired(maxLocalClients);
     PMem_BeginAlloc(PerLocalClientMemoryName, 1u, TRACK_CLIENT);
@@ -2963,7 +2963,7 @@ unsigned __int8 *__cdecl CL_DemoMemoryPoolAllocate(clientConnection_t *clc, int 
     unsigned __int8 *address; // [esp+4h] [ebp-8h]
     unsigned int newSize; // [esp+8h] [ebp-4h]
 
-    if ( (unsigned int)&clc->demoMemoryPool[clc->demoMemoryPoolEnd] % 4
+    if ( (uintptr_t)&clc->demoMemoryPool[clc->demoMemoryPoolEnd] % 4
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_mp.cpp",
                     644,
@@ -4829,7 +4829,7 @@ int __cdecl CL_UpdateDirtyPings(int localClientNum, unsigned int source)
     if ( cls.lastServerPinged >= *count )
         cls.lastServerPinged = 0;
     firstPingedIndex = cls.lastServerPinged;
-    if ( cls.lastServerPinged >= (unsigned int)count
+    if ( cls.lastServerPinged >= (unsigned int)(uintptr_t)count
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_mp.cpp",
                     8050,
@@ -4847,7 +4847,7 @@ int __cdecl CL_UpdateDirtyPings(int localClientNum, unsigned int source)
         slot = cls.lastServerPinged++;
         if ( cls.lastServerPinged >= *count )
             cls.lastServerPinged = 0;
-        if ( slot >= (unsigned int)count
+        if ( slot >= (unsigned int)(uintptr_t)count
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_main_mp.cpp",
                         8062,

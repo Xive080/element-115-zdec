@@ -161,4 +161,6 @@ struct bdLinkedList
     }
 };
 
+#ifndef __LP64__
 static_assert(sizeof(bdLinkedList<void *>) == 0x0C, "bdLinkedList size mismatch");
+#endif

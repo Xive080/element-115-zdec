@@ -71,11 +71,13 @@ struct SPSaveGame
     bool suppressPrint;             // +0x104F0: no 'S' server command on commit
     bool callbackNow;               // +0x104F1: 0x0068BE40 calls the callback at once
 };
+#ifndef __LP64__ // punteros de 8 bytes en arm64: los layouts de guardado SP no se usan en el port
 static_assert(sizeof(MemoryFile) == 0x8024, "SP MemoryFile size");
 static_assert(offsetof(SPSaveGame, state) == 0x10048, "SP SaveGame layout");
 static_assert(offsetof(SPSaveGame, header) == 0x1004C, "SP SaveGame layout");
 static_assert(offsetof(SPSaveGame, isUsingGlobalBuffer) == 0x104EC, "SP SaveGame layout");
 static_assert(sizeof(SPSaveGame) == 0x104F4, "SP SaveGame size");
+#endif
 
 // The committed memory save's header ([0x01D04BA0] + 0x1004C, SP 0x00599F10). SP reads it without a
 // state check; an empty filename means nothing was ever committed.
