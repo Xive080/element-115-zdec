@@ -536,7 +536,7 @@ const char *g_expFunctionNames[457] =
 void __cdecl Expression_Free(ExpressionStatement *statement)
 {
     if ( statement->rpn )
-        Z_Free((char *)statement->rpn, 36);
+        Z_Free((char *)statement->rpn.get(), 36);
     if ( statement->filename )
         Z_Free(statement->filename, 36);
     statement->rpn = 0;
@@ -919,7 +919,7 @@ LABEL_40:
     Com_EndParseSession();
     rpn = MakeRPN(head, &statement->numRpn);
     statement->rpn = (expressionRpn *)Expression_Alloc(allocState, 12 * statement->numRpn);
-    memcpy((unsigned __int8 *)statement->rpn, (unsigned __int8 *)rpn, 12 * statement->numRpn);
+    memcpy((unsigned __int8 *)statement->rpn.get(), (unsigned __int8 *)rpn, 12 * statement->numRpn);
     return 1;
 }
 
@@ -1026,7 +1026,7 @@ expressionEntry *__cdecl Expression_StringOperand(const char *str, ExpressionAll
     entry->next = 0;
     entry->type = 1;
     entry->data.op = OP_MULTIPLY;
-    entry->data.operand.internals.intVal = (int)&entry[1];
+    entry->data.operand.internals.intVal = (int)(intptr_t)&entry[1]; // LP64: solo parser de texto (no se usa con menus de zona); la cadena queda truncada
     v5 = str;
     intVal = (_BYTE *)entry->data.operand.internals.intVal;
     do

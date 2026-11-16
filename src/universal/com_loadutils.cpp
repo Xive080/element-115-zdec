@@ -80,7 +80,7 @@ char *__cdecl Com_LoadRawTextFile_FastFile(const char *fullpath)
 
     rawfile = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE, (char*)fullpath, 1, -1).rawfile;
     if ( rawfile )
-        return (char *)rawfile->buffer;
+        return (char *)rawfile->buffer.get();
     else
         return 0;
 }

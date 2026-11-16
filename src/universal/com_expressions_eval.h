@@ -7,6 +7,12 @@
 #include <ui/ui_main.h>
 #include <client/cl_milestone.h>
 
+#if defined(__LP64__)
+PTR32(const char) UiStr(const char *s);
+#else
+inline const char *UiStr(const char *s) { return s; }
+#endif
+
 struct OperandList // sizeof=0x54
 {                                       // XREF: OperandStack/r
     Operand operands[10];               // XREF: IsAttachmentAllowedOnItemIndex+5B/r
