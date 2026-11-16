@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/com_math.h>
 
 enum GfxDrawSceneMethod : __int32
@@ -209,7 +210,7 @@ struct GfxLightDef // sizeof=0x10
         int lmapLookupStart;
 };
 
-struct __declspec(align(16)) GfxLight // sizeof=0x170
+struct alignas(16) GfxLight // sizeof=0x170
 {                                                                             // XREF: refdef_s/r
                                                                                 // PointLightPartition/r ...
         unsigned __int8 type;
@@ -244,7 +245,7 @@ struct __declspec(align(16)) GfxLight // sizeof=0x170
         unsigned char pad_viewMatrix[4];
         float44 viewMatrix;
         float44 projMatrix;
-        GfxLightDef *def;
+        PTR32(GfxLightDef) def;
         // padding byte
         // padding byte
         // padding byte
@@ -506,7 +507,7 @@ struct GfxSurface // sizeof=0x50
 {                                       // XREF: ??$_Insertion_sort1@PAUGfxSurface@@P6A_NABU1@0@ZU1@@std@@YAXPAUGfxSurface@@0P6A_NABU1@1@Z0@Z/r
                                         // ??$_Adjust_heap@PAUGfxSurface@@HU1@P6A_NABU1@0@Z@std@@YAXPAUGfxSurface@@HHU1@P6A_NABU1@2@Z@Z/r ...
     srfTriangles_t tris;
-    Material *material;
+    PTR32(Material) material;
     unsigned __int8 lightmapIndex;
     unsigned __int8 reflectionProbeIndex;
     unsigned __int8 primaryLightIndex;
@@ -516,9 +517,9 @@ struct GfxSurface // sizeof=0x50
 
 struct GfxLightmapArray // sizeof=0xC
 {
-    GfxImage *primary;
-    GfxImage *secondary;
-    GfxImage *secondaryB;
+    PTR32(GfxImage) primary;
+    PTR32(GfxImage) secondary;
+    PTR32(GfxImage) secondaryB;
 };
 
 struct GfxSceneDef // sizeof=0x14
