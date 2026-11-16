@@ -161,6 +161,13 @@ struct clipMap_t;
 
 void __cdecl DB_InitSingleton(void *pool, int size);
 void __cdecl Load_PhysPresetAsset(XAssetHeader *physPreset);
+void __cdecl Load_PhysPresetAsset32(PTR32(PhysPreset) *p);
+void __cdecl Load_PhysConstraintsAsset32(PTR32(PhysConstraints) *p);
+void __cdecl Load_DestructibleDefAsset32(PTR32(DestructibleDef) *p);
+void __cdecl Load_XAnimPartsAsset32(PTR32(XAnimParts) *p);
+void __cdecl Load_XModelAsset32(PTR32(XModel) *p);
+void __cdecl Load_XGlobalsAsset32(PTR32(XGlobals) *p);
+void __cdecl Load_FxEffectDefAsset32(PTR32(const FxEffectDef) *p);
 void __cdecl Mark_PhysPresetAsset(PhysPreset *physPreset);
 void __cdecl Load_PhysConstraintsAsset(XAssetHeader *physConstraints);
 void __cdecl Mark_PhysConstraintsAsset(PhysConstraints *physConstraints);

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rigid_body.h"
 #include <qcommon/ent.h>
 
@@ -19,12 +20,12 @@ struct DestructibleStage // sizeof=0x30
     float breakHealth;
     float maxTime;
     unsigned int flags;
-    const struct FxEffectDef *breakEffect;
-    const char *breakSound;
-    const char *breakNotify;
-    const char *loopSound;
-    struct XModel *spawnModel[3];
-    struct PhysPreset *physPreset;
+    PTR32(const struct FxEffectDef) breakEffect;
+    PTR32(const char) breakSound;
+    PTR32(const char) breakNotify;
+    PTR32(const char) loopSound;
+    PTR32(struct XModel) spawnModel[3];
+    PTR32(struct PhysPreset) physPreset;
 };
 
 struct DestructiblePiece // sizeof=0x138
@@ -40,11 +41,11 @@ struct DestructiblePiece // sizeof=0x138
     float meleeDamageScale;
     float impactDamageScale;
     float entityDamageTransfer;
-    struct PhysConstraints *physConstraints;
+    PTR32(struct PhysConstraints) physConstraints;
     int health;
-    const char *damageSound;
-    const FxEffectDef *burnEffect;
-    const char *burnSound;
+    PTR32(const char) damageSound;
+    PTR32(const FxEffectDef) burnEffect;
+    PTR32(const char) burnSound;
     unsigned __int16 enableLabel;
     // padding byte
     // padding byte
@@ -53,11 +54,11 @@ struct DestructiblePiece // sizeof=0x138
 
 struct DestructibleDef // sizeof=0x18
 {                                       // XREF: XAssetPoolEntry<DestructibleDef>/r
-    const char *name;
-    struct XModel *model;
-    struct XModel *pristineModel;
+    PTR32(const char) name;
+    PTR32(struct XModel) model;
+    PTR32(struct XModel) pristineModel;
     int numPieces;
-    DestructiblePiece *pieces;
+    PTR32(DestructiblePiece) pieces;
     int clientOnly;
 };
 
