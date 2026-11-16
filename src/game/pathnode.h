@@ -1,5 +1,6 @@
 #pragma once
 #include "enthandle.h"
+#include <universal/ptr32.h>
 #include <clientscript/cscr_main.h>
 #include <physics/phys_local.h>
 #include <qcommon/common.h>
@@ -83,6 +84,9 @@ enum nodeType : __int32
     NODE_DONTLINK            = 0x15,
 };
 
+struct pathnode_t;
+struct pathnode_tree_t;
+
 struct pathnode_dynamic_t // sizeof=0x20
 {                                       // XREF: pathnode_t/r
     SentientHandle pOwner;
@@ -129,16 +133,16 @@ struct pathnode_constant_t // sizeof=0x44
     __int16 wChainDepth;
     __int16 wChainParent;
     unsigned __int16 totalLinkCount;
-    pathlink_s *Links;
+    PTR32(pathlink_s) Links;
 };
 
 struct pathnode_transient_t // sizeof=0x1C
 {                                       // XREF: pathnode_t/r
     int iSearchFrame;
-    pathnode_t *pNextOpen;              // XREF: Path_AStarAlgorithm_CustomSearchInfo_FindCloseNode_+129/w
+    PTR32(pathnode_t) pNextOpen;              // XREF: Path_AStarAlgorithm_CustomSearchInfo_FindCloseNode_+129/w
                                         // Path_AStarAlgorithm_CustomSearchInfo_FindCloseNode_:loc_90E13C/r ...
-    pathnode_t *pPrevOpen;
-    pathnode_t *pParent;
+    PTR32(pathnode_t) pPrevOpen;
+    PTR32(pathnode_t) pParent;
     float fCost;
     float fHeuristic;
     float costFactor;
@@ -181,12 +185,12 @@ struct pathsort_t // sizeof=0xC
 struct pathnode_tree_nodes_t // sizeof=0x8
 {                                       // XREF: pathnode_tree_info_t/r
     int nodeCount;
-    unsigned __int16 *nodes;
+    PTR32(unsigned __int16) nodes;
 };
 
 union pathnode_tree_info_t // sizeof=0x8
 {                                       // XREF: pathnode_tree_t/r
-    struct pathnode_tree_t *child[2];
+    PTR32(pathnode_tree_t) child[2];
     pathnode_tree_nodes_t s;
 };
 

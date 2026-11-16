@@ -95,7 +95,7 @@ static T *AddAssetViaHeader(T *p, F loadAsset)
 {
     XAssetHeader h((void *)p);
     loadAsset(&h);
-    return (T *)h.xmodelPieces;
+    return (T *)(void *)h.data;
 }
 
 // Alta de SndDriverGlobals (la funcion existente toma SndDriverGlobals **)

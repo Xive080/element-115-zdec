@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <universal/ptr32.h>
 
 enum XAssetType : __int32
 {                                                                             // XREF: XAsset/r
@@ -63,49 +64,86 @@ inline XAssetType operator++(XAssetType &t, int)
 }
 
 
+struct XModelPieces;
+struct PhysPreset;
+struct PhysConstraints;
+struct DestructibleDef;
+struct XAnimParts;
+struct XModel;
+struct Material;
+struct MaterialPixelShader;
+struct MaterialVertexShader;
+struct MaterialTechniqueSet;
+struct GfxImage;
+struct SndBank;
+struct SndPatch;
+struct clipMap_t;
+struct ComWorld;
+struct GameWorldSp;
+struct GameWorldMp;
+struct MapEnts;
+struct GfxWorld;
+struct GfxLightDef;
+struct Font_s;
+struct MenuList;
+struct menuDef_t;
+struct LocalizeEntry;
+struct WeaponVariantDef;
+struct SndDriverGlobals;
+struct FxEffectDef;
+struct FxImpactTable;
+struct RawFile;
+struct StringTable;
+struct PackIndex;
+struct XGlobals;
+struct ddlRoot_t;
+struct Glasses;
+struct TextureList;
+struct EmblemSet;
+
 union XAssetHeader // sizeof=0x4
 {                                                                             // XREF: CG_AddVisionSetMenuItem+13/r
-    struct XModelPieces *xmodelPieces;
-    struct PhysPreset *physPreset;
-    struct PhysConstraints *physConstraints;
-    struct DestructibleDef *destructibleDef;
-    struct XAnimParts *parts;
-    struct XModel *model;
-    struct Material *material;
-    struct MaterialPixelShader *pixelShader;
-    struct MaterialVertexShader *vertexShader;
-    struct MaterialTechniqueSet *techniqueSet;
-    struct GfxImage *image;
-    struct SndBank *sound;
-    struct SndPatch *soundPatch;
-    struct clipMap_t *clipMap;
-    struct ComWorld *comWorld;
-    struct GameWorldSp *gameWorldSp;
-    struct GameWorldMp *gameWorldMp;
-    struct MapEnts *mapEnts;
-    struct GfxWorld *gfxWorld;
-    struct GfxLightDef *lightDef;
-    struct Font_s *font;
-    struct MenuList *menuList;
-    struct menuDef_t *menu;
-    struct LocalizeEntry *localize;
-    struct WeaponVariantDef *weapon;
-    struct SndDriverGlobals *sndDriverGlobals;
-    struct FxEffectDef *fx;
-    struct FxImpactTable *impactFx;
-    struct RawFile *rawfile;
-    struct StringTable *stringTable;
-    struct PackIndex *packIndex;
-    struct XGlobals *xGlobals;
-    struct ddlRoot_t *ddlRoot;
-    struct Glasses *glasses;
-    struct TextureList *textureList;
-    struct EmblemSet *emblemSet;
-    void *data;
+    PTR32(XModelPieces) xmodelPieces;
+    PTR32(PhysPreset) physPreset;
+    PTR32(PhysConstraints) physConstraints;
+    PTR32(DestructibleDef) destructibleDef;
+    PTR32(XAnimParts) parts;
+    PTR32(XModel) model;
+    PTR32(Material) material;
+    PTR32(MaterialPixelShader) pixelShader;
+    PTR32(MaterialVertexShader) vertexShader;
+    PTR32(MaterialTechniqueSet) techniqueSet;
+    PTR32(GfxImage) image;
+    PTR32(SndBank) sound;
+    PTR32(SndPatch) soundPatch;
+    PTR32(clipMap_t) clipMap;
+    PTR32(ComWorld) comWorld;
+    PTR32(GameWorldSp) gameWorldSp;
+    PTR32(GameWorldMp) gameWorldMp;
+    PTR32(MapEnts) mapEnts;
+    PTR32(GfxWorld) gfxWorld;
+    PTR32(GfxLightDef) lightDef;
+    PTR32(Font_s) font;
+    PTR32(MenuList) menuList;
+    PTR32(menuDef_t) menu;
+    PTR32(LocalizeEntry) localize;
+    PTR32(WeaponVariantDef) weapon;
+    PTR32(SndDriverGlobals) sndDriverGlobals;
+    PTR32(FxEffectDef) fx;
+    PTR32(FxImpactTable) impactFx;
+    PTR32(RawFile) rawfile;
+    PTR32(StringTable) stringTable;
+    PTR32(PackIndex) packIndex;
+    PTR32(XGlobals) xGlobals;
+    PTR32(ddlRoot_t) ddlRoot;
+    PTR32(Glasses) glasses;
+    PTR32(TextureList) textureList;
+    PTR32(EmblemSet) emblemSet;
+    PTR32(void) data;
 
     XAssetHeader()
     {
-        data = NULL;
+        data = nullptr;
     }
 
     XAssetHeader(void *p)
