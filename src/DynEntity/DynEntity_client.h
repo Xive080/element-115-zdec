@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <gfx_d3d/fxprimitives.h>
 #include <xanim/xmodel.h>
 
@@ -53,14 +54,14 @@ const struct DynEntityDef // sizeof=0x54
 {
     DynEntityType type;
     GfxPlacement pose;
-    XModel *xModel;
-    XModel *destroyedxModel;
+    PTR32(XModel) xModel;
+    PTR32(XModel) destroyedxModel;
     unsigned __int16 brushModel;
     unsigned __int16 physicsBrushModel;
-    const FxEffectDef *destroyFx;
+    PTR32(const FxEffectDef) destroyFx;
     unsigned int destroySound;
-    XModelPieces *destroyPieces;
-    PhysPreset *physPreset;
+    PTR32(XModelPieces) destroyPieces;
+    PTR32(PhysPreset) physPreset;
     __int16 physConstraints[4];
     int health;
     int flags;

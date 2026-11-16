@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/q_shared.h>
 #include <game/teams.h>
 #include "snd_dsp.h"
@@ -468,19 +469,19 @@ static_assert(sizeof(snd_master) == 176);
 
 struct SndDriverGlobals // sizeof=0x34
 {                                                                             // XREF: XAssetPoolEntry<SndDriverGlobals>/r
-    const char *name;
+    PTR32(const char) name;
     unsigned int groupCount;
-    snd_group *groups; // hehe
+    PTR32(snd_group) groups; // hehe
     unsigned int curveCount;
-    snd_curve * curves;
+    PTR32(snd_curve) curves;
     unsigned int panCount;
-    snd_pan *pans;
+    PTR32(snd_pan) pans;
     unsigned int snapshotGroupCount;
-    snd_snapshot_group * snapshotGroups;
+    PTR32(snd_snapshot_group) snapshotGroups;
     unsigned int contextCount;
-    snd_context *contexts;
+    PTR32(snd_context) contexts;
     unsigned int masterCount;
-    snd_master * masters;
+    PTR32(snd_master) masters;
 };
 static_assert(sizeof(SndDriverGlobals) == 52);
 

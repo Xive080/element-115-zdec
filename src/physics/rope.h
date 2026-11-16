@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <gfx_d3d/r_material.h>
 
 enum rope_constraint_e : __int32
@@ -66,7 +67,7 @@ struct rope_client_verts_t // sizeof=0x4BC
     unsigned int frame_index;
 };
 
-struct __declspec(align(4)) rope_t // sizeof=0xC74
+struct alignas(4) rope_t // sizeof=0xC74
 {
     par_t m_particles[25];
     constraint_t m_constraints[30];
@@ -84,7 +85,7 @@ struct __declspec(align(4)) rope_t // sizeof=0xC74
     int m_visible;
     int m_dist_constraint;
     int m_flags;
-    const Material *m_material;
+    PTR32(const Material) m_material;
     float m_seglen;
     float m_length;
     float m_width;

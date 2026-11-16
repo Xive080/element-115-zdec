@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "phys_local.h"
 #include <universal/ptr32.h>
@@ -420,7 +421,7 @@ const struct CollisionPartition // sizeof=0x14
         int firstTri;
         int nuinds;
         int fuind;
-        CollisionBorder *borders;
+        PTR32(CollisionBorder) borders;
 };
 
 struct CollisionAabbTree;
