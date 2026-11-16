@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cscr_main.h"
+#include "cscr_ptr32.h"
 #include <universal/mem_userhunk.h>
 
 #undef GetObject // windows aids
@@ -74,7 +75,7 @@ struct ObjectInfo // sizeof=0x8
 
 struct __declspec(align(4)) VariableStackBuffer // sizeof=0x10
 {
-        const char *pos;
+        PTR32(const char) pos;   // LP64: desplazamiento de arena (offsetof(buf) == 13, como en x86)
         unsigned __int16 size;
         unsigned __int16 bufLen;
         unsigned int localId;
@@ -114,10 +115,11 @@ union VariableUnion // sizeof=0x4
     int intValue;
     float floatValue;
     unsigned int stringValue;
-    const float *vectorValue;
-    const char *codePosValue;
+    // LP64: punteros de 32 bits relativos a la arena (cscr_ptr32.h); sizeof(VariableUnion) == 4 como en x86
+    PTR32(const float) vectorValue;
+    PTR32(const char) codePosValue;
     unsigned int pointerValue;
-    VariableStackBuffer *stackValue;
+    PTR32(VariableStackBuffer) stackValue;
     unsigned int entityOffset;
 };
 

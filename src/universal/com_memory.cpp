@@ -797,7 +797,7 @@ unsigned __int8 *__cdecl Hunk_AllocAlign(unsigned int size, int alignment, const
     return buf;
 }
 
-unsigned int __cdecl Hunk_AllocateTempMemoryHigh(int size, const char *name)
+char *__cdecl Hunk_AllocateTempMemoryHigh(int size, const char *name)
 {
     unsigned int buf; // [esp+0h] [ebp-10h]
     unsigned __int8 *endBuf; // [esp+4h] [ebp-Ch]
@@ -839,7 +839,7 @@ unsigned int __cdecl Hunk_AllocateTempMemoryHigh(int size, const char *name)
     if ( endBuf != (unsigned __int8 *)(buf & 0xFFFFF000) )
         Z_VirtualCommit((char *)(buf & 0xFFFFF000), (int)&endBuf[-(int)(buf & 0xFFFFF000)], 11);
     track_temp_high_alloc(size, hunk_high.temp + hunk_low.temp, hunk_high.permanent, name);
-    return buf;
+    return (char *)buf;
 }
 
 void Hunk_ClearTempMemoryHigh()

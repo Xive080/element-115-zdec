@@ -34,7 +34,13 @@ const char *mt_type_names[23] =
 };
 
 
+#if defined(__LP64__) || defined(_WIN64)
+// LP64: el arbol de memoria (cadenas SL_*, vectores, pilas de hilos) vive en la arena: sus punteros se guardan
+// como desplazamientos de 32 bits en VariableUnion (cscr_ptr32.h)
+scrMemTreeGlob_t (&gScrMemTreeGlob)[2] = *(scrMemTreeGlob_t (*)[2])Ptr32_ArenaAlloc(sizeof(scrMemTreeGlob_t) * 2, 128);
+#else
 scrMemTreeGlob_t gScrMemTreeGlob[2];
+#endif
 scrMemTreePub_t gScrMemTreePub[2];
 scrMemTreeDebugGlob_t gScrMemTreeDebugGlob[2];
 

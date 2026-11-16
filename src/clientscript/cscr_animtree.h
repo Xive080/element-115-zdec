@@ -1,4 +1,5 @@
 #pragma once
+#include "cscr_ptr32.h"
 
 #include "cscr_main.h"
 #include "cscr_variable.h"
@@ -24,16 +25,20 @@ struct scr_anim_s // sizeof=0x4
             unsigned __int16 index;
             unsigned __int16 tree;
         };
-        const char *linkPointer;
+        PTR32(const char) linkPointer;   // LP64: 4 bytes como en x86 (en la practica guarda index/tree)
     };
 
     scr_anim_s()
     {
-        linkPointer = NULL;
+        linkPointer = nullptr;
     }
     scr_anim_s(int i)
     {
+#if defined(__LP64__) || defined(_WIN64)
+        linkPointer.off = (unsigned int)i; // BO1HACK (valor crudo de 4 bytes)
+#else
         linkPointer = (const char *)i; // BO1HACK
+#endif
     }
 };
 

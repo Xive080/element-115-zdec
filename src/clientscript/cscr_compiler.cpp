@@ -39,7 +39,7 @@ int __cdecl GetExpressionCount(sval_u exprlist)
     int expr_count; // [esp+4h] [ebp-4h]
 
     expr_count = 0;
-    for ( node = *(sval_u **)exprlist.stringValue; node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, exprlist.stringValue); node; node = node[1].node )
         ++expr_count;
     return expr_count;
 }
@@ -49,18 +49,18 @@ unsigned int __cdecl Scr_GetBuiltin(scriptInstance_t inst, sval_u func_name)
     sval_u func_namea; // [esp+Ch] [ebp+Ch]
     sval_u func_nameb; // [esp+Ch] [ebp+Ch]
 
-    if ( *(_BYTE *)func_name.stringValue != 28 )
+    if ( *SCR_U2P(_BYTE *, func_name.stringValue) != 28 )
         return 0;
-    func_namea = *(sval_u *)(func_name.stringValue + 4);
-    if ( *(_BYTE *)func_namea.stringValue != 20 )
+    func_namea = *SCR_U2P(sval_u *, (func_name.stringValue + 4));
+    if ( *SCR_U2P(_BYTE *, func_namea.stringValue) != 20 )
         return 0;
-    func_nameb = *(sval_u *)(func_namea.stringValue + 4);
-    if ( *(_BYTE *)func_nameb.stringValue != 22 )
+    func_nameb = *SCR_U2P(sval_u *, (func_namea.stringValue + 4));
+    if ( *SCR_U2P(_BYTE *, func_nameb.stringValue) != 22 )
         return 0;
     if ( gScrCompilePub[inst].developer_statement == 3
-        || !FindVariable(inst, gScrCompileGlob[inst].filePosId, *(unsigned int *)(func_nameb.stringValue + 4)) )
+        || !FindVariable(inst, gScrCompileGlob[inst].filePosId, *SCR_U2P(unsigned int *, (func_nameb.stringValue + 4))) )
     {
-        return *(unsigned int *)(func_nameb.stringValue + 4);
+        return *SCR_U2P(unsigned int *, (func_nameb.stringValue + 4));
     }
     return 0;
 }
@@ -122,7 +122,7 @@ void __cdecl ScriptCompile(
             "MAX_PRECACHE_ENTRIES exceeded.\nThis means that the script recursion is too deep.\nPlease see a coder.");
     gScrCompileGlob[inst].precachescriptList = precachescriptList;
     EmitIncludeList(inst, *val.node);
-    EmitThreadList(inst, *(sval_u *)(val.stringValue + 4));
+    EmitThreadList(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)));
     gScrCompilePub[inst].programLen = TempMallocAlignStrict(0) - gScrVarPub[inst].programBuffer;
     Scr_ShutdownAllocNode(inst);
     Hunk_ClearTempMemoryHigh();
@@ -262,16 +262,16 @@ void __cdecl LinkThread(scriptInstance_t inst, unsigned int threadCountId, Varia
                 }
                 if (type == 7)
                 {
-                    CompileError2(inst, (char *)value->next, "normal script cannot reference a function in a /# ... #/ comment");
+                    CompileError2(inst, SCR_U2P(char *, value->next), "normal script cannot reference a function in a /# ... #/ comment");
                     return;
                 }
             }
-            if (!pos->type || !allowFarCall && *(_DWORD *)value->next == 1)
+            if (!pos->type || !allowFarCall && *SCR_U2P(_DWORD *, value->next) == 1)
             {
-                CompileError2(inst, (char *)value->next, "unknown function");
+                CompileError2(inst, SCR_U2P(char *, value->next), "unknown function");
                 return;
             }
-            *(_DWORD *)value->next = pos->u.intValue;
+            *SCR_U2P(_DWORD *, value->next) = pos->u.intValue;
             RemoveVariable(inst, threadCountId, i + 1);
         }
         RemoveVariable(inst, threadCountId, 0);
@@ -335,7 +335,7 @@ void __cdecl LinkFile(scriptInstance_t inst, unsigned int filePosId, unsigned in
         else
         {
             // KB diagnostic: name the far function that no loaded file defines (the error below has no source).
-            Com_PrintError(23, "LinkFile: far function '%s' is not defined in its file\n", SL_ConvertToString(nameId, inst));
+            Com_PrintError(23, "LinkFile: far function '%s' is not defined in its file (%s)\n", SL_ConvertToString(nameId, inst), gScrParserPub[inst].scriptfilename ? gScrParserPub[inst].scriptfilename : "?");
             LinkThread(inst, threadCountId, &emptyValue, 1);
         }
     }
@@ -382,7 +382,7 @@ void __cdecl EmitThreadList(scriptInstance_t inst, sval_u val)
     sval_u *nodea; // [esp+0h] [ebp-4h]
 
     gScrCompileGlob[inst].in_developer_thread = 0;
-    for ( node = *(sval_u **)(*(unsigned int *)val.stringValue + 4); node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, val.stringValue) + 4)); node; node = node[1].node )
         SpecifyThread(inst, *node);
     if ( gScrCompileGlob[inst].in_developer_thread )
         CompileError(inst, gScrCompileGlob[inst].developer_thread_sourcePos, "/# has no matching #/");
@@ -398,7 +398,7 @@ void __cdecl EmitThreadList(scriptInstance_t inst, sval_u val)
     {
         __debugbreak();
     }
-    for ( nodea = *(sval_u **)(*(unsigned int *)val.stringValue + 4); nodea; nodea = nodea[1].node )
+    for ( nodea = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, val.stringValue) + 4)); nodea; nodea = nodea[1].node )
         EmitThread(inst, *nodea);
     if ( gScrCompileGlob[inst].in_developer_thread
         && !Assert_MyHandler(
@@ -420,14 +420,14 @@ void __cdecl SpecifyThread(scriptInstance_t inst, sval_u val)
     int v5; // [esp-4h] [ebp-8h]
     char v6; // [esp+0h] [ebp-4h]
 
-    v6 = *(_BYTE *)val.stringValue;
-    if ( *(_BYTE *)val.stringValue == ENUM_thread )
+    v6 = *SCR_U2P(_BYTE *, val.stringValue);
+    if ( *SCR_U2P(_BYTE *, val.stringValue) == ENUM_thread )
     {
         if ( !gScrCompileGlob[inst].in_developer_thread || gScrVarPub[inst].developer_script )
         {
             v5 = gScrCompileGlob[inst].in_developer_thread ? 12 : 7;
-            v4 = *(unsigned int *)(val.stringValue + 16);
-            v3 = *(unsigned int *)(val.stringValue + 4);
+            v4 = *SCR_U2P(unsigned int *, (val.stringValue + 16));
+            v3 = *SCR_U2P(unsigned int *, (val.stringValue + 4));
             Variable = GetVariable(inst, gScrCompileGlob[inst].filePosId, v3);
             SpecifyThreadPosition(inst, Variable, v3, v4, v5);
         }
@@ -436,12 +436,12 @@ void __cdecl SpecifyThread(scriptInstance_t inst, sval_u val)
     {
         if ( gScrCompileGlob[inst].in_developer_thread )
         {
-            CompileError(inst, *(unsigned int *)(val.stringValue + 4), "cannot recurse /#");
+            CompileError(inst, *SCR_U2P(unsigned int *, (val.stringValue + 4)), "cannot recurse /#");
         }
         else
         {
             gScrCompileGlob[inst].in_developer_thread = 1;
-            gScrCompileGlob[inst].developer_thread_sourcePos = *(unsigned int *)(val.stringValue + 4);
+            gScrCompileGlob[inst].developer_thread_sourcePos = *SCR_U2P(unsigned int *, (val.stringValue + 4));
         }
     }
     else if ( v6 == ENUM_end_developer_thread )
@@ -449,7 +449,7 @@ void __cdecl SpecifyThread(scriptInstance_t inst, sval_u val)
         if ( gScrCompileGlob[inst].in_developer_thread )
             gScrCompileGlob[inst].in_developer_thread = 0;
         else
-            CompileError(inst, *(unsigned int *)(val.stringValue + 4), "#/ has no matching /#");
+            CompileError(inst, *SCR_U2P(unsigned int *, (val.stringValue + 4)), "#/ has no matching /#");
     }
 }
 
@@ -474,18 +474,18 @@ void __cdecl EmitThread(scriptInstance_t inst, sval_u val)
     char *v2; // eax
     unsigned int v3; // [esp-4h] [ebp-8h]
 
-    switch ( *(_BYTE *)val.stringValue )
+    switch ( *SCR_U2P(_BYTE *, val.stringValue) )
     {
         case ENUM_thread:
             Scr_CalcLocalVarsThread(
                 inst,
-                *(sval_u *)(val.stringValue + 8),
-                *(sval_u *)(val.stringValue + 12),
-                (sval_u *)(val.stringValue + 24));
+                *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                SCR_U2P(sval_u *, (val.stringValue + 24)));
             if ( gScrCompileGlob[inst].in_developer_thread )
-                EmitDeveloperThread(inst, val, (sval_u *)(val.stringValue + 24));
+                EmitDeveloperThread(inst, val, SCR_U2P(sval_u *, (val.stringValue + 24)));
             else
-                EmitNormalThread(inst, val, (sval_u *)(val.stringValue + 24));
+                EmitNormalThread(inst, val, SCR_U2P(sval_u *, (val.stringValue + 24)));
             break;
         case ENUM_begin_developer_thread:
             if ( gScrCompileGlob[inst].in_developer_thread
@@ -516,14 +516,14 @@ void __cdecl EmitThread(scriptInstance_t inst, sval_u val)
         case ENUM_usingtree:
             if ( gScrCompileGlob[inst].in_developer_thread )
             {
-                CompileError(inst, *(unsigned int *)(val.stringValue + 8), "cannot put #using_animtree inside /# ... #/ comment");
+                CompileError(inst, *SCR_U2P(unsigned int *, (val.stringValue + 8)), "cannot put #using_animtree inside /# ... #/ comment");
             }
             else
             {
-                v3 = *(unsigned int *)(val.stringValue + 12);
-                v2 = SL_ConvertToString(*(unsigned int *)(val.stringValue + 4), inst);
+                v3 = *SCR_U2P(unsigned int *, (val.stringValue + 12));
+                v2 = SL_ConvertToString(*SCR_U2P(unsigned int *, (val.stringValue + 4)), inst);
                 Scr_UsingTree(inst, v2, v3);
-                Scr_CompileRemoveRefToString(inst, *(unsigned int *)(val.stringValue + 4));
+                Scr_CompileRemoveRefToString(inst, *SCR_U2P(unsigned int *, (val.stringValue + 4)));
             }
             break;
         default:
@@ -552,12 +552,12 @@ void __cdecl Scr_CalcLocalVarsThread(scriptInstance_t inst, sval_u exprlist, sva
     unsigned int *v4; // eax
 
     gScrCompileGlob[inst].forceNotCreate = 0;
-    stmttblock->stringValue = Hunk_AllocateTempMemoryHigh(536, "Scr_CalcLocalVarsThread");
-    *(unsigned int *)stmttblock->stringValue = 0;
-    *(unsigned int *)(stmttblock->stringValue + 4) = 0;
-    *(unsigned int *)(stmttblock->stringValue + 12) = 0;
-    *(unsigned int *)(stmttblock->stringValue + 8) = 0;
-    v4 = (unsigned int *)(stmttblock->stringValue + 16);
+    stmttblock->block = (scr_block_s *)Hunk_AllocateTempMemoryHigh(536, "Scr_CalcLocalVarsThread");
+    *SCR_U2P(unsigned int *, stmttblock->stringValue) = 0;
+    *SCR_U2P(unsigned int *, (stmttblock->stringValue + 4)) = 0;
+    *SCR_U2P(unsigned int *, (stmttblock->stringValue + 12)) = 0;
+    *SCR_U2P(unsigned int *, (stmttblock->stringValue + 8)) = 0;
+    v4 = SCR_U2P(unsigned int *, (stmttblock->stringValue + 16));
     *v4 = 0;
     v4[1] = 0;
     Scr_CalcLocalVarsFormalParameterList(exprlist, stmttblock->block);
@@ -568,16 +568,16 @@ void __cdecl Scr_CalcLocalVarsStatementList(scriptInstance_t inst, sval_u val, s
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    for ( node = *(sval_u **)(*(unsigned int *)val.stringValue + 4); node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, val.stringValue) + 4)); node; node = node[1].node )
         Scr_CalcLocalVarsStatement(inst, *node, block);
 }
 
 void __cdecl Scr_CalcLocalVarsStatement(scriptInstance_t inst, sval_u val, scr_block_s *block)
 {
-    switch ( *(_BYTE *)val.stringValue )
+    switch ( *SCR_U2P(_BYTE *, val.stringValue) )
     {
         case 2:
-            Scr_CalcLocalVarsAssignmentStatement(*(sval_u *)(val.stringValue + 4), *(sval_u *)(val.stringValue + 8), block);
+            Scr_CalcLocalVarsAssignmentStatement(*SCR_U2P(sval_u *, (val.stringValue + 4)), *SCR_U2P(sval_u *, (val.stringValue + 8)), block);
             break;
         case 0x1D:
         case 0x1E:
@@ -585,56 +585,56 @@ void __cdecl Scr_CalcLocalVarsStatement(scriptInstance_t inst, sval_u val, scr_b
                 block->abortLevel = 3;
             break;
         case 0x27:
-            Scr_CalcLocalVarsIfStatement(inst, *(sval_u *)(val.stringValue + 8), block, (sval_u *)(val.stringValue + 16));
+            Scr_CalcLocalVarsIfStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 8)), block, SCR_U2P(sval_u *, (val.stringValue + 16)));
             break;
         case 0x28:
             Scr_CalcLocalVarsIfElseStatement(
                 inst,
-                *(sval_u *)(val.stringValue + 8),
-                *(sval_u *)(val.stringValue + 12),
+                *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                *SCR_U2P(sval_u *, (val.stringValue + 12)),
                 block,
-                (sval_u *)(val.stringValue + 24),
-                (sval_u *)(val.stringValue + 28));
+                SCR_U2P(sval_u *, (val.stringValue + 24)),
+                SCR_U2P(sval_u *, (val.stringValue + 28)));
             break;
         case 0x29:
             Scr_CalcLocalVarsWhileStatement(
                 inst,
-                *(sval_u *)(val.stringValue + 4),
-                *(sval_u *)(val.stringValue + 8),
+                *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                *SCR_U2P(sval_u *, (val.stringValue + 8)),
                 block,
-                (sval_u *)(val.stringValue + 20));
+                SCR_U2P(sval_u *, (val.stringValue + 20)));
             break;
         case 0x2A:
             Scr_CalcLocalVarsForStatement(
                 inst,
-                *(sval_u *)(val.stringValue + 4),
-                *(sval_u *)(val.stringValue + 8),
-                *(sval_u *)(val.stringValue + 12),
-                *(sval_u *)(val.stringValue + 16),
+                *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                *SCR_U2P(sval_u *, (val.stringValue + 16)),
                 block,
-                (sval_u *)(val.stringValue + 28),
-                (sval_u *)(val.stringValue + 32));
+                SCR_U2P(sval_u *, (val.stringValue + 28)),
+                SCR_U2P(sval_u *, (val.stringValue + 32)));
             break;
         case 0x2B:
         case 0x2C:
         case 0x2D:
-            Scr_CalcLocalVarsIncStatement(*(sval_u *)(val.stringValue + 4), block);
+            Scr_CalcLocalVarsIncStatement(*SCR_U2P(sval_u *, (val.stringValue + 4)), block);
             break;
         case 0x2E:
-            Scr_CalcLocalVarsStatementList(inst, *(sval_u *)(val.stringValue + 4), block);
+            Scr_CalcLocalVarsStatementList(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), block);
             break;
         case 0x2F:
             Scr_CalcLocalVarsDeveloperStatementList(
                 inst,
-                *(sval_u *)(val.stringValue + 4),
+                *SCR_U2P(sval_u *, (val.stringValue + 4)),
                 block,
-                (sval_u *)(val.stringValue + 12));
+                SCR_U2P(sval_u *, (val.stringValue + 12)));
             break;
         case 0x39:
-            Scr_CalcLocalVarsWaittillStatement(*(sval_u *)(val.stringValue + 8), block);
+            Scr_CalcLocalVarsWaittillStatement(*SCR_U2P(sval_u *, (val.stringValue + 8)), block);
             break;
         case 0x3E:
-            Scr_CalcLocalVarsSwitchStatement(inst, *(sval_u *)(val.stringValue + 8), block);
+            Scr_CalcLocalVarsSwitchStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 8)), block);
             break;
         case 0x41:
             Scr_AddBreakBlock(inst, block);
@@ -658,13 +658,13 @@ void __cdecl Scr_CalcLocalVarsIncStatement(sval_u expr, scr_block_s *block)
 
 void __cdecl Scr_CalcLocalVarsVariableExpressionRef(sval_u expr, scr_block_s *block)
 {
-    if ( *(_BYTE *)expr.stringValue == 5 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 5 )
     {
-        Scr_CalcLocalVarsSafeSetVariableField(*(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), block);
+        Scr_CalcLocalVarsSafeSetVariableField(*SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), block);
     }
-    else if ( *(_BYTE *)expr.stringValue == 15 )
+    else if ( *SCR_U2P(_BYTE *, expr.stringValue) == 15 )
     {
-        Scr_CalcLocalVarsArrayVariableRef(*(sval_u *)(expr.stringValue + 4), block);
+        Scr_CalcLocalVarsArrayVariableRef(*SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
     }
 }
 
@@ -698,8 +698,8 @@ void __cdecl Scr_CalcLocalVarsArrayVariableRef(sval_u expr, scr_block_s *block)
 
 void __cdecl Scr_CalcLocalVarsArrayPrimitiveExpressionRef(sval_u expr, scr_block_s *block)
 {
-    if ( *(_BYTE *)expr.stringValue == 19 )
-        Scr_CalcLocalVarsVariableExpressionRef(*(sval_u *)(expr.stringValue + 4), block);
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 19 )
+        Scr_CalcLocalVarsVariableExpressionRef(*SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
 }
 
 void __cdecl Scr_CalcLocalVarsAssignmentStatement(sval_u lhs, sval_u rhs, scr_block_s *block)
@@ -709,12 +709,12 @@ void __cdecl Scr_CalcLocalVarsAssignmentStatement(sval_u lhs, sval_u rhs, scr_bl
 
 void __cdecl Scr_CalcLocalVarsIfStatement(scriptInstance_t inst, sval_u stmt, scr_block_s *block, sval_u *ifStatBlock)
 {
-    Scr_CopyBlock(block, (scr_block_s **)ifStatBlock);
+    Scr_CopyBlock(block, (scr_block_p *)ifStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt, ifStatBlock->block);
-    Scr_MergeChildBlocks((scr_block_s **)ifStatBlock, 1, block);
+    Scr_MergeChildBlocks((scr_block_p *)ifStatBlock, 1, block);
 }
 
-void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_s **to)
+void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_p *to)
 {
     if ( !*to )
         *to = (scr_block_s *)Hunk_AllocateTempMemoryHigh(536, "Scr_CopyBlock");
@@ -722,7 +722,7 @@ void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_s **to)
     (*to)->localVarsPublicCount = 0;
 }
 
-void __cdecl Scr_MergeChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block)
+void __cdecl Scr_MergeChildBlocks(scr_block_p *childBlocks, int childCount, scr_block_s *block)
 {
     unsigned int v3; // eax
     int j; // [esp+4h] [ebp-18h]
@@ -791,27 +791,27 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
                 sval_u *ifStatBlock,
                 sval_u *elseStatBlock)
 {
-    scr_block_s *childBlocks[2]; // [esp+0h] [ebp-10h] BYREF
+    scr_block_p childBlocks[2]; // [esp+0h] [ebp-10h] BYREF
     int childCount; // [esp+8h] [ebp-8h]
     int abortLevel; // [esp+Ch] [ebp-4h]
 
     childCount = 0;
     abortLevel = 3;
-    Scr_CopyBlock(block, (scr_block_s **)ifStatBlock);
+    Scr_CopyBlock(block, (scr_block_p *)ifStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt1, ifStatBlock->block);
-    if ( *(int *)ifStatBlock->stringValue <= 3 )
+    if ( *SCR_U2P(int *, ifStatBlock->stringValue) <= 3 )
     {
-        abortLevel = *(unsigned int *)ifStatBlock->stringValue;
+        abortLevel = *SCR_U2P(unsigned int *, ifStatBlock->stringValue);
         if ( !abortLevel )
-            childBlocks[childCount++] = (scr_block_s *)ifStatBlock->stringValue;
+            childBlocks[childCount++] = SCR_U2P(scr_block_s *, ifStatBlock->stringValue);
     }
-    Scr_CopyBlock(block, (scr_block_s **)elseStatBlock);
+    Scr_CopyBlock(block, (scr_block_p *)elseStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt2, elseStatBlock->block);
-    if ( *(unsigned int *)elseStatBlock->stringValue <= abortLevel )
+    if ( *SCR_U2P(unsigned int *, elseStatBlock->stringValue) <= abortLevel )
     {
-        abortLevel = *(unsigned int *)elseStatBlock->stringValue;
+        abortLevel = *SCR_U2P(unsigned int *, elseStatBlock->stringValue);
         if ( !abortLevel )
-            childBlocks[childCount++] = (scr_block_s *)elseStatBlock->stringValue;
+            childBlocks[childCount++] = SCR_U2P(scr_block_s *, elseStatBlock->stringValue);
     }
     if ( !block->abortLevel )
         block->abortLevel = abortLevel;
@@ -819,7 +819,7 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
     Scr_MergeChildBlocks(childBlocks, childCount, block);
 }
 
-void __cdecl Scr_AppendChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block)
+void __cdecl Scr_AppendChildBlocks(scr_block_p *childBlocks, int childCount, scr_block_s *block)
 {
     int localVarsCount; // ecx
     unsigned int localVar; // [esp+0h] [ebp-14h]
@@ -887,16 +887,16 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
 {
     int breakChildCount; // [esp+8h] [ebp-38h] BYREF
     int *oldBreakChildCount; // [esp+Ch] [ebp-34h]
-    scr_block_s **breakChildBlocks; // [esp+10h] [ebp-30h]
+    scr_block_p *breakChildBlocks; // [esp+10h] [ebp-30h]
     bool constConditional; // [esp+17h] [ebp-29h]
     int continueChildCount; // [esp+18h] [ebp-28h] BYREF
     int *oldContinueChildCount; // [esp+1Ch] [ebp-24h]
     VariableCompileValue constValue; // [esp+20h] [ebp-20h] BYREF
     int i; // [esp+2Ch] [ebp-14h]
-    scr_block_s **continueChildBlocks; // [esp+30h] [ebp-10h]
-    scr_block_s **oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
+    scr_block_p *continueChildBlocks; // [esp+30h] [ebp-10h]
+    scr_block_p *oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
     int abortLevel; // [esp+38h] [ebp-8h]
-    scr_block_s **oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
+    scr_block_p *oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
 
     constConditional = 0;
     if (EvalExpression(inst, expr, &constValue))
@@ -915,13 +915,13 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
     oldContinueChildCount = gScrCompileGlob[inst].continueChildCount;
     breakChildCount = 0;
     continueChildCount = 0;
-    continueChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement");
+    continueChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement");
     gScrCompileGlob[inst].continueChildBlocks = continueChildBlocks;
     gScrCompileGlob[inst].continueChildCount = &continueChildCount;
     abortLevel = block->abortLevel;
     if (constConditional)
     {
-        breakChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement");
+        breakChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement");
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -929,14 +929,14 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
         breakChildBlocks = 0;
     }
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
-    Scr_CopyBlock(block, (scr_block_s **)whileStatBlock);
+    Scr_CopyBlock(block, (scr_block_p *)whileStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt, whileStatBlock->block);
     Scr_AddContinueBlock(inst, whileStatBlock->block);
     for (i = 0; i < continueChildCount; ++i)
         Scr_AppendChildBlocks(&continueChildBlocks[i], 1, block);
     if (constConditional)
         Scr_AppendChildBlocks(breakChildBlocks, breakChildCount, block);
-    Scr_MergeChildBlocks((scr_block_s **)whileStatBlock, 1, block);
+    Scr_MergeChildBlocks((scr_block_p *)whileStatBlock, 1, block);
     gScrCompileGlob[inst].breakChildBlocks = oldBreakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = oldBreakChildCount;
     gScrCompileGlob[inst].continueChildBlocks = oldContinueChildBlocks;
@@ -945,15 +945,15 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
 
 char __cdecl EvalExpression(scriptInstance_t inst, sval_u expr, VariableCompileValue *constValue)
 {
-    if ( *(_BYTE *)expr.stringValue == 8 )
-        return EvalPrimitiveExpression(inst, *(sval_u *)(expr.stringValue + 4), constValue);
-    if ( *(_BYTE *)expr.stringValue == 51 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 8 )
+        return EvalPrimitiveExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), constValue);
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 51 )
         return EvalBinaryOperatorExpression(
                          inst,
-                         *(sval_u *)(expr.stringValue + 4),
-                         *(sval_u *)(expr.stringValue + 8),
-                         *(sval_u *)(expr.stringValue + 12),
-                         *(sval_u *)(expr.stringValue + 16),
+                         *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                         *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+                         *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+                         *SCR_U2P(sval_u *, (expr.stringValue + 16)),
                          constValue);
     return 0;
 }
@@ -962,14 +962,14 @@ char __cdecl EvalPrimitiveExpression(scriptInstance_t inst, sval_u expr, Variabl
 {
     char result; // al
 
-    switch ( *(_BYTE *)expr.stringValue )
+    switch ( *SCR_U2P(_BYTE *, expr.stringValue) )
     {
         case ENUM_integer:
-            EvalInteger(*(unsigned int *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), constValue);
+            EvalInteger(*SCR_U2P(unsigned int *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), constValue);
             result = 1;
             break;
         case ENUM_float:
-            EvalFloat(*(float *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), constValue);
+            EvalFloat(*SCR_U2P(float *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), constValue);
             result = 1;
             break;
         case ENUM_minus_integer:
@@ -979,34 +979,34 @@ char __cdecl EvalPrimitiveExpression(scriptInstance_t inst, sval_u expr, Variabl
             break;
         case 0xC:
             //EvalFloat(COERCE_FLOAT(*(unsigned int *)(expr.stringValue + 4) ^ _mask__NegFloat_), *(sval_u *)(expr.stringValue + 8),constValue);
-            EvalFloat(-expr.node[1].floatValue, *(sval_u *)(expr.stringValue + 8),constValue);
+            EvalFloat(-expr.node[1].floatValue, *SCR_U2P(sval_u *, (expr.stringValue + 8)),constValue);
             result = 1;
             break;
         case 0xD:
-            EvalString(*(unsigned int *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), constValue);
+            EvalString(*SCR_U2P(unsigned int *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), constValue);
             result = 1;
             break;
         case 0xE:
-            EvalIString(*(unsigned int *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), constValue);
+            EvalIString(*SCR_U2P(unsigned int *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), constValue);
             result = 1;
             break;
         case 0x21:
-            EvalUndefined(*(sval_u *)(expr.stringValue + 4), constValue);
+            EvalUndefined(*SCR_U2P(sval_u *, (expr.stringValue + 4)), constValue);
             result = 1;
             break;
         case 0x30:
             result = EvalPrimitiveExpressionList(
                                  inst,
-                                 *(sval_u *)(expr.stringValue + 4),
-                                 *(sval_u *)(expr.stringValue + 8),
+                                 *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                                 *SCR_U2P(sval_u *, (expr.stringValue + 8)),
                                  constValue);
             break;
         case 0x4A:
-            EvalInteger(0, *(sval_u *)(expr.stringValue + 4), constValue);
+            EvalInteger(0, *SCR_U2P(sval_u *, (expr.stringValue + 4)), constValue);
             result = 1;
             break;
         case 0x4B:
-            EvalInteger(1, *(sval_u *)(expr.stringValue + 4), constValue);
+            EvalInteger(1, *SCR_U2P(sval_u *, (expr.stringValue + 4)), constValue);
             result = 1;
             break;
         default:
@@ -1123,11 +1123,11 @@ char __cdecl EvalPrimitiveExpressionList(
     }
     expr_count = GetExpressionCount(exprlist);
     if ( expr_count == 1 )
-        return EvalExpression(inst, ***(sval_u ***)exprlist.stringValue, constValue);
+        return EvalExpression(inst, SCR_U2P(sval_u *, exprlist.stringValue)->node->node[0], constValue);
     if ( expr_count != 3 )
         return 0;
     i = 0;
-    for ( node = *(sval_u **)exprlist.stringValue; node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, exprlist.stringValue); node; node = node[1].node )
     {
         if ( !EvalExpression(inst, *node->node, &constValue2[i]) )
             return 0;
@@ -1162,7 +1162,7 @@ void __cdecl Scr_CreateVector(scriptInstance_t inst, VariableCompileValue *const
         }
     }
     value->type = 4;
-    value->u.intValue = (int)Scr_AllocVector(inst, vec);
+    value->u.vectorValue = Scr_AllocVector(inst, vec);
 }
 
 char __cdecl EvalBinaryOperatorExpression(
@@ -1209,22 +1209,22 @@ void __cdecl Scr_CalcLocalVarsForStatement(
 {
     int breakChildCount; // [esp+8h] [ebp-38h] BYREF
     int *oldBreakChildCount; // [esp+Ch] [ebp-34h]
-    scr_block_s **breakChildBlocks; // [esp+10h] [ebp-30h]
+    scr_block_p *breakChildBlocks; // [esp+10h] [ebp-30h]
     bool constConditional; // [esp+17h] [ebp-29h]
     int continueChildCount; // [esp+18h] [ebp-28h] BYREF
     int *oldContinueChildCount; // [esp+1Ch] [ebp-24h]
     VariableCompileValue constValue; // [esp+20h] [ebp-20h] BYREF
     int i; // [esp+2Ch] [ebp-14h]
-    scr_block_s **continueChildBlocks; // [esp+30h] [ebp-10h]
-    scr_block_s **oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
+    scr_block_p *continueChildBlocks; // [esp+30h] [ebp-10h]
+    scr_block_p *oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
     int abortLevel; // [esp+38h] [ebp-8h]
-    scr_block_s **oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
+    scr_block_p *oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
 
     Scr_CalcLocalVarsStatement(inst, stmt1, block);
-    if (*(_BYTE *)expr.stringValue == 67)
+    if (*SCR_U2P(_BYTE *, expr.stringValue) == 67)
     {
         constConditional = 0;
-        if (EvalExpression(inst, *(sval_u *)(expr.stringValue + 4), &constValue))
+        if (EvalExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), &constValue))
         {
             if (constValue.value.type == 6 || constValue.value.type == 5)
             {
@@ -1245,13 +1245,13 @@ void __cdecl Scr_CalcLocalVarsForStatement(
     oldContinueChildCount = gScrCompileGlob[inst].continueChildCount;
     breakChildCount = 0;
     continueChildCount = 0;
-    continueChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement");
+    continueChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement");
     gScrCompileGlob[inst].continueChildBlocks = continueChildBlocks;
     gScrCompileGlob[inst].continueChildCount = &continueChildCount;
     abortLevel = block->abortLevel;
     if (constConditional)
     {
-        breakChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement");
+        breakChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement");
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -1259,18 +1259,18 @@ void __cdecl Scr_CalcLocalVarsForStatement(
         breakChildBlocks = 0;
     }
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
-    Scr_CopyBlock(block, (scr_block_s **)forStatBlock);
-    Scr_CopyBlock(block, (scr_block_s **)forStatPostBlock);
+    Scr_CopyBlock(block, (scr_block_p *)forStatBlock);
+    Scr_CopyBlock(block, (scr_block_p *)forStatPostBlock);
     Scr_CalcLocalVarsStatement(inst, stmt, forStatBlock->block);
     Scr_AddContinueBlock(inst, forStatBlock->block);
     for (i = 0; i < continueChildCount; ++i)
         Scr_AppendChildBlocks(&continueChildBlocks[i], 1, block);
     Scr_CalcLocalVarsStatement(inst, stmt2, forStatPostBlock->block);
-    Scr_AppendChildBlocks((scr_block_s **)forStatPostBlock, 1, block);
-    Scr_MergeChildBlocks((scr_block_s **)forStatPostBlock, 1, block);
+    Scr_AppendChildBlocks((scr_block_p *)forStatPostBlock, 1, block);
+    Scr_MergeChildBlocks((scr_block_p *)forStatPostBlock, 1, block);
     if (constConditional)
         Scr_AppendChildBlocks(breakChildBlocks, breakChildCount, block);
-    Scr_MergeChildBlocks((scr_block_s **)forStatBlock, 1, block);
+    Scr_MergeChildBlocks((scr_block_p *)forStatBlock, 1, block);
     gScrCompileGlob[inst].breakChildBlocks = oldBreakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = oldBreakChildCount;
     gScrCompileGlob[inst].continueChildBlocks = oldContinueChildBlocks;
@@ -1280,7 +1280,7 @@ void __cdecl Scr_CalcLocalVarsWaittillStatement(sval_u exprlist, scr_block_s *bl
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    node = *(sval_u **)(*(unsigned int *)exprlist.stringValue + 4);
+    node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, exprlist.stringValue) + 4));
     if ( !node
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3721, 0, "%s", "node") )
     {
@@ -1296,7 +1296,7 @@ void __cdecl Scr_CalcLocalVarsFormalParameterListInternal(sval_u *node, scr_bloc
         node = node[1].node;
         if ( !node )
             break;
-        Scr_CalcLocalVarsSafeSetVariableField(*node->node, *(sval_u *)(node->stringValue + 4), block);
+        Scr_CalcLocalVarsSafeSetVariableField(*node->node, *SCR_U2P(sval_u *, (node->stringValue + 4)), block);
     }
 }
 
@@ -1309,12 +1309,12 @@ void __cdecl Scr_CalcLocalVarsSwitchStatement(scriptInstance_t inst, sval_u stmt
 {
     sval_u *node; // [esp+0h] [ebp-28h]
     int breakChildCount; // [esp+4h] [ebp-24h] BYREF
-    scr_block_s **breakChildBlocks; // [esp+8h] [ebp-20h]
+    scr_block_p *breakChildBlocks; // [esp+8h] [ebp-20h]
     int *oldBreakChildCount; // [esp+Ch] [ebp-1Ch]
     bool hasDefault; // [esp+13h] [ebp-15h]
-    scr_block_s *currentBlock; // [esp+14h] [ebp-14h] BYREF
-    scr_block_s **childBlocks; // [esp+18h] [ebp-10h]
-    scr_block_s **oldBreakChildBlocks; // [esp+1Ch] [ebp-Ch]
+    scr_block_p currentBlock; // [esp+14h] [ebp-14h] BYREF
+    scr_block_p *childBlocks; // [esp+18h] [ebp-10h]
+    scr_block_p *oldBreakChildBlocks; // [esp+1Ch] [ebp-Ch]
     int childCount; // [esp+20h] [ebp-8h]
     int abortLevel; // [esp+24h] [ebp-4h]
 
@@ -1322,26 +1322,26 @@ void __cdecl Scr_CalcLocalVarsSwitchStatement(scriptInstance_t inst, sval_u stmt
     oldBreakChildBlocks = gScrCompileGlob[inst].breakChildBlocks;
     oldBreakChildCount = gScrCompileGlob[inst].breakChildCount;
     breakChildCount = 0;
-    breakChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement");
+    breakChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement");
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     childCount = 0;
     currentBlock = 0;
     hasDefault = 0;
-    childBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement");
-    for (node = *(sval_u **)(*(_DWORD *)stmtlist.stringValue + 4); node; node = node[1].node)
+    childBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement");
+    for (node = *SCR_U2P(sval_p *, (*SCR_U2P(_DWORD *, stmtlist.stringValue) + 4)); node; node = node[1].node)
     {
-        if (*(_BYTE *)node->stringValue == 63 || *(_BYTE *)node->stringValue == 64)
+        if (*SCR_U2P(_BYTE *, node->stringValue) == 63 || *SCR_U2P(_BYTE *, node->stringValue) == 64)
         {
             currentBlock = 0;
             Scr_CopyBlock(block, &currentBlock);
-            if (*(_BYTE *)node->stringValue == 63)
+            if (*SCR_U2P(_BYTE *, node->stringValue) == 63)
             {
-                *(_DWORD *)(node->stringValue + 12) = (DWORD)currentBlock;
+                node->node[3].block = currentBlock;
             }
             else
             {
-                *(_DWORD *)(node->stringValue + 8) = (DWORD)currentBlock;
+                node->node[2].block = currentBlock;
                 hasDefault = 1;
             }
         }
@@ -1388,14 +1388,14 @@ void __cdecl Scr_CalcLocalVarsDeveloperStatementList(
                 scr_block_s *block,
                 sval_u *devStatBlock)
 {
-    Scr_CopyBlock(block, (scr_block_s **)devStatBlock);
+    Scr_CopyBlock(block, (scr_block_p *)devStatBlock);
     Scr_CalcLocalVarsStatementList(inst, val, devStatBlock->block);
-    Scr_MergeChildBlocks((scr_block_s **)devStatBlock, 1, block);
+    Scr_MergeChildBlocks((scr_block_p *)devStatBlock, 1, block);
 }
 
 void __cdecl Scr_CalcLocalVarsFormalParameterList(sval_u exprlist, scr_block_s *block)
 {
-    Scr_CalcLocalVarsFormalParameterListInternal(*(sval_u **)exprlist.stringValue, block);
+    Scr_CalcLocalVarsFormalParameterListInternal(*SCR_U2P(sval_p *, exprlist.stringValue), block);
 }
 
 void __cdecl EmitNormalThread(scriptInstance_t inst, sval_u val, sval_u *stmttblock)
@@ -1403,9 +1403,9 @@ void __cdecl EmitNormalThread(scriptInstance_t inst, sval_u val, sval_u *stmttbl
     unsigned int posId; // [esp+0h] [ebp-4h]
 
     InitThread(inst, 0);
-    posId = FindVariable(inst, gScrCompileGlob[inst].filePosId, *(unsigned int *)(val.stringValue + 4));
+    posId = FindVariable(inst, gScrCompileGlob[inst].filePosId, *SCR_U2P(unsigned int *, (val.stringValue + 4)));
     SetThreadPosition(inst, posId);
-    EmitThreadInternal(inst, val, *(sval_u *)(val.stringValue + 16), *(sval_u *)(val.stringValue + 20), stmttblock->block);
+    EmitThreadInternal(inst, val, *SCR_U2P(sval_u *, (val.stringValue + 16)), *SCR_U2P(sval_u *, (val.stringValue + 20)), stmttblock->block);
 }
 
 void __cdecl SetThreadPosition(scriptInstance_t inst, unsigned int posId)
@@ -1413,7 +1413,7 @@ void __cdecl SetThreadPosition(scriptInstance_t inst, unsigned int posId)
     char *v2; // esi
 
     v2 = TempMallocAlignStrict(0);
-    GetVariableValueAddress(inst, posId)->next = (unsigned int)v2;
+    GetVariableValueAddress(inst, posId)->next = SCR_P2U(v2);
 }
 
 void __cdecl EmitThreadInternal(
@@ -1427,9 +1427,9 @@ void __cdecl EmitThreadInternal(
     gScrCompileGlob[inst].cumulOffset = 0;
     gScrCompileGlob[inst].maxOffset = 0;
     gScrCompileGlob[inst].maxCallOffset = 0;
-    CompileTransferRefToString(inst, *(unsigned int *)(val.stringValue + 4), 2u);
-    EmitFormalParameterList(inst, *(sval_u *)(val.stringValue + 8), sourcePos, block);
-    EmitStatementList(inst, *(sval_u *)(val.stringValue + 12), 1, endSourcePos.stringValue, block);
+    CompileTransferRefToString(inst, *SCR_U2P(unsigned int *, (val.stringValue + 4)), 2u);
+    EmitFormalParameterList(inst, *SCR_U2P(sval_u *, (val.stringValue + 8)), sourcePos, block);
+    EmitStatementList(inst, *SCR_U2P(sval_u *, (val.stringValue + 12)), 1, endSourcePos.stringValue, block);
     EmitEnd(inst);
     AddOpcodePos(inst, endSourcePos.stringValue, 1);
     AddOpcodePos(inst, 0xFFFFFFFE, 0);
@@ -1779,13 +1779,20 @@ void __cdecl EmitGetInteger(scriptInstance_t inst, int value, sval_u sourcePos)
     }
     EmitOpcode(inst, 8u, 1, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 1);
-    EmitCodepos(inst, (const char *)value);
+    EmitCodeposInt(inst, value);
+}
+
+// LP64: el bytecode guarda 4 bytes. EmitCodeposInt para enteros (el decompilado los pasaba como (const char *)n);
+// EmitCodepos para posiciones de codigo reales: se guardan como desplazamiento de arena (SCR_P2U).
+void __cdecl EmitCodeposInt(scriptInstance_t inst, unsigned int value)
+{
+    gScrCompileGlob[inst].codePos = (unsigned __int8 *)TempMallocAlignStrict(4);
+    *(unsigned int *)gScrCompileGlob[inst].codePos = value;
 }
 
 void __cdecl EmitCodepos(scriptInstance_t inst, const char *pos)
 {
-    gScrCompileGlob[inst].codePos = (unsigned __int8 *)TempMallocAlignStrict(4);
-    *(unsigned int *)gScrCompileGlob[inst].codePos = (unsigned int)pos;
+    EmitCodeposInt(inst, SCR_P2U(pos));
 }
 
 void __cdecl EmitGetFloat(scriptInstance_t inst, float value, sval_u sourcePos)
@@ -1844,7 +1851,7 @@ void __cdecl EmitStatementList(
     sval_u *node; // [esp+4h] [ebp-8h]
     sval_u *nextNode; // [esp+8h] [ebp-4h]
 
-    for ( node = *(sval_u **)(*(unsigned int *)val.stringValue + 4); node; node = nextNode )
+    for ( node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, val.stringValue) + 4)); node; node = nextNode )
     {
         nextNode = node[1].node;
         if ( lastStatement && Scr_IsLastStatement(inst, nextNode) )
@@ -1864,7 +1871,7 @@ char __cdecl Scr_IsLastStatement(scriptInstance_t inst, sval_u *node)
 
     while ( node )
     {
-        if ( *(_BYTE *)node->stringValue != 47 )
+        if ( *SCR_U2P(_BYTE *, node->stringValue) != 47 )
             return 0;
         node = node[1].node;
     }
@@ -1880,7 +1887,7 @@ void __cdecl EmitStatement(
 {
     if ( gScrCompilePub[inst].developer_statement == 3 )
     {
-        switch ( *(_BYTE *)val.stringValue )
+        switch ( *SCR_U2P(_BYTE *, val.stringValue) )
         {
             case 2:
             case 0x1B:
@@ -1898,177 +1905,177 @@ void __cdecl EmitStatement(
     else
     {
 LABEL_3:
-        switch ( *(_BYTE *)val.stringValue )
+        switch ( *SCR_U2P(_BYTE *, val.stringValue) )
         {
             case 2:
                 EmitAssignmentStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block);
                 break;
             case 0x1B:
-                EmitCallExpressionStatement(inst, *(sval_u *)(val.stringValue + 4), block);
+                EmitCallExpressionStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), block);
                 break;
             case 0x1D:
-                EmitReturnStatement(inst, *(sval_u *)(val.stringValue + 4), *(sval_u *)(val.stringValue + 8), block);
+                EmitReturnStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), *SCR_U2P(sval_u *, (val.stringValue + 8)), block);
                 break;
             case 0x1E:
-                EmitEndStatement(inst, *(sval_u *)(val.stringValue + 4), block);
+                EmitEndStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), block);
                 break;
             case 0x1F:
                 EmitWaitStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
                     block);
                 break;
             case 0x27:
                 EmitIfStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
                     lastStatement,
                     endSourcePos,
                     block,
-                    (sval_u *)(val.stringValue + 16));
+                    SCR_U2P(sval_u *, (val.stringValue + 16)));
                 break;
             case 0x28:
                 EmitIfElseStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
-                    *(sval_u *)(val.stringValue + 20),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 20)),
                     lastStatement,
                     endSourcePos,
                     block,
-                    (sval_u *)(val.stringValue + 24),
-                    (sval_u *)(val.stringValue + 28));
+                    SCR_U2P(sval_u *, (val.stringValue + 24)),
+                    SCR_U2P(sval_u *, (val.stringValue + 28)));
                 break;
             case 0x29:
                 EmitWhileStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block,
-                    (sval_u *)(val.stringValue + 20));
+                    SCR_U2P(sval_u *, (val.stringValue + 20)));
                 break;
             case 0x2A:
                 EmitForStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
-                    *(sval_u *)(val.stringValue + 20),
-                    *(sval_u *)(val.stringValue + 24),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 20)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 24)),
                     block,
-                    (sval_u *)(val.stringValue + 28),
-                    (sval_u *)(val.stringValue + 32));
+                    SCR_U2P(sval_u *, (val.stringValue + 28)),
+                    SCR_U2P(sval_u *, (val.stringValue + 32)));
                 break;
             case 0x2B:
-                EmitIncStatement(inst, *(sval_u *)(val.stringValue + 4), *(sval_u *)(val.stringValue + 8), block);
+                EmitIncStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), *SCR_U2P(sval_u *, (val.stringValue + 8)), block);
                 break;
             case 0x2C:
-                EmitDecStatement(inst, *(sval_u *)(val.stringValue + 4), *(sval_u *)(val.stringValue + 8), block);
+                EmitDecStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), *SCR_U2P(sval_u *, (val.stringValue + 8)), block);
                 break;
             case 0x2D:
                 EmitBinaryEqualsOperatorExpression(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block);
                 break;
             case 0x2E:
-                EmitStatementList(inst, *(sval_u *)(val.stringValue + 4), lastStatement, endSourcePos, block);
+                EmitStatementList(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), lastStatement, endSourcePos, block);
                 break;
             case 0x2F:
                 EmitDeveloperStatementList(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
                     block,
-                    (sval_u *)(val.stringValue + 12));
+                    SCR_U2P(sval_u *, (val.stringValue + 12)));
                 break;
             case 0x39:
                 EmitWaittillStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block);
                 break;
             case 0x3A:
                 EmitWaittillmatchStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block);
                 break;
             case 0x3B:
-                EmitWaittillFrameEnd(inst, *(sval_u *)(val.stringValue + 4));
+                EmitWaittillFrameEnd(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)));
                 break;
             case 0x3C:
                 EmitNotifyStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block);
                 break;
             case 0x3D:
                 EmitEndOnStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
-                    *(sval_u *)(val.stringValue + 16),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 16)),
                     block);
                 break;
             case 0x3E:
                 EmitSwitchStatement(
                     inst,
-                    *(sval_u *)(val.stringValue + 4),
-                    *(sval_u *)(val.stringValue + 8),
-                    *(sval_u *)(val.stringValue + 12),
+                    *SCR_U2P(sval_u *, (val.stringValue + 4)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 8)),
+                    *SCR_U2P(sval_u *, (val.stringValue + 12)),
                     lastStatement,
                     endSourcePos,
                     block);
                 break;
             case 0x3F:
-                CompileError(inst, *(unsigned int *)(val.stringValue + 8), "illegal case statement");
+                CompileError(inst, *SCR_U2P(unsigned int *, (val.stringValue + 8)), "illegal case statement");
                 break;
             case 0x40:
-                CompileError(inst, *(unsigned int *)(val.stringValue + 4), "illegal default statement");
+                CompileError(inst, *SCR_U2P(unsigned int *, (val.stringValue + 4)), "illegal default statement");
                 break;
             case 0x41:
-                EmitBreakStatement(inst, *(sval_u *)(val.stringValue + 4), block);
+                EmitBreakStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), block);
                 break;
             case 0x42:
-                EmitContinueStatement(inst, *(sval_u *)(val.stringValue + 4), block);
+                EmitContinueStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), block);
                 break;
             case 0x4E:
-                EmitBreakpointStatement(inst, *(sval_u *)(val.stringValue + 4));
+                EmitBreakpointStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)));
                 break;
             case 0x4F:
-                EmitProfBeginStatement(inst, *(sval_u *)(val.stringValue + 4), *(sval_u *)(val.stringValue + 8));
+                EmitProfBeginStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), *SCR_U2P(sval_u *, (val.stringValue + 8)));
                 break;
             case 0x50:
-                EmitProfEndStatement(inst, *(sval_u *)(val.stringValue + 4), *(sval_u *)(val.stringValue + 8));
+                EmitProfEndStatement(inst, *SCR_U2P(sval_u *, (val.stringValue + 4)), *SCR_U2P(sval_u *, (val.stringValue + 8)));
                 break;
             default:
                 return;
@@ -2134,39 +2141,39 @@ void __cdecl EmitAssignmentPos(scriptInstance_t inst)
 
 void __cdecl EmitVariableExpression(scriptInstance_t inst, sval_u expr, scr_block_s *block)
 {
-    switch ( *(_BYTE *)expr.stringValue )
+    switch ( *SCR_U2P(_BYTE *, expr.stringValue) )
     {
         case 5:
-            EmitLocalVariable(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), block);
+            EmitLocalVariable(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), block);
             break;
         case 0xF:
             EmitArrayVariable(
                 inst,
-                *(sval_u *)(expr.stringValue + 4),
-                *(sval_u *)(expr.stringValue + 8),
-                *(sval_u *)(expr.stringValue + 12),
-                *(sval_u *)(expr.stringValue + 16),
+                *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 16)),
                 block);
             break;
         case 0x11:
             EmitFieldVariable(
                 inst,
-                *(sval_u *)(expr.stringValue + 4),
-                *(sval_u *)(expr.stringValue + 8),
-                *(sval_u *)(expr.stringValue + 12),
+                *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 12)),
                 block);
             break;
         case 0x37:
             if ( gScrCompilePub[inst].script_loading )
-                CompileError(inst, *(unsigned int *)(expr.stringValue + 8), "self field can only be used in the script debugger");
+                CompileError(inst, *SCR_U2P(unsigned int *, (expr.stringValue + 8)), "self field can only be used in the script debugger");
             else
                 CompileError(
                     inst,
-                    *(unsigned int *)(expr.stringValue + 8),
+                    *SCR_U2P(unsigned int *, (expr.stringValue + 8)),
                     "self field in assignment expression not currently supported");
             break;
         case 0x52:
-            EmitObject(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8));
+            EmitObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)));
             break;
         default:
             return;
@@ -2333,9 +2340,9 @@ void __cdecl EmitFieldVariable(scriptInstance_t inst, sval_u expr, sval_u field,
 void __cdecl EmitObject(scriptInstance_t inst, sval_u expr, sval_u sourcePos)
 {
     signed int ObjectType; // [esp+0h] [ebp-18h]
-    const char *classnum; // [esp+4h] [ebp-14h]
+    int classnum; // [esp+4h] [ebp-14h]   LP64: entero (era const char *)
     char *s; // [esp+Ch] [ebp-Ch]
-    const char *entnum; // [esp+10h] [ebp-8h]
+    int entnum; // [esp+10h] [ebp-8h]
     unsigned int idValue; // [esp+14h] [ebp-4h]
 
     if ( gScrCompilePub[inst].script_loading )
@@ -2369,15 +2376,15 @@ LABEL_17:
         CompileError(inst, sourcePos.stringValue, "argument expressions not supported in statements");
         return;
     }
-    classnum = (const char *)Scr_GetClassnumForCharId(inst, *s);
-    if ( (int)classnum < 0 )
+    classnum = Scr_GetClassnumForCharId(inst, *s);
+    if ( classnum < 0 )
         goto LABEL_17;
-    entnum = (const char *)atoi(s + 1);
+    entnum = atoi(s + 1);
     if ( !entnum && s[1] != 48 )
         goto LABEL_17;
     EmitOpcode(inst, 0x81u, 1, 0);
-    EmitCodepos(inst, classnum);
-    EmitCodepos(inst, entnum);
+    EmitCodeposInt(inst, classnum);
+    EmitCodeposInt(inst, entnum);
 }
 
 void __cdecl EmitArrayVariable(
@@ -2416,66 +2423,66 @@ char __cdecl EmitOrEvalPrimitiveExpression(
 {
     char result; // al
 
-    switch ( *(_BYTE *)expr.stringValue )
+    switch ( *SCR_U2P(_BYTE *, expr.stringValue) )
     {
         case 0x13:
-            EmitVariableExpression(inst, *(sval_u *)(expr.stringValue + 4), block);
+            EmitVariableExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
             result = 0;
             break;
         case 0x14:
-            EmitGetFunction(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8));
+            EmitGetFunction(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)));
             result = 0;
             break;
         case 0x15:
-            EmitCallExpression(inst, *(sval_u *)(expr.stringValue + 4), 0, block);
+            EmitCallExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), 0, block);
             result = 0;
             break;
         case 0x22:
-            EmitSelf(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitSelf(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             result = 0;
             break;
         case 0x24:
-            EmitLevel(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitLevel(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             result = 0;
             break;
         case 0x25:
-            EmitGame(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitGame(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             result = 0;
             break;
         case 0x26:
-            EmitAnim(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitAnim(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             result = 0;
             break;
         case 0x30:
             result = EmitOrEvalPrimitiveExpressionList(
                                  inst,
-                                 *(sval_u *)(expr.stringValue + 4),
-                                 *(sval_u *)(expr.stringValue + 8),
+                                 *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                                 *SCR_U2P(sval_u *, (expr.stringValue + 8)),
                                  constValue,
                                  block);
             break;
         case 0x36:
-            EmitSize(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), block);
+            EmitSize(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), block);
             result = 0;
             break;
         case 0x44:
-            EmitEmptyArray(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitEmptyArray(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             result = 0;
             break;
         case 0x45:
-            EmitAnimation(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8));
+            EmitAnimation(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)));
             result = 0;
             break;
         case 0x4C:
-            EmitAnimTree(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitAnimTree(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             result = 0;
             break;
         case 0x4D:
             EmitBreakOn(
                 inst,
-                *(sval_u *)(expr.stringValue + 4),
-                *(sval_u *)(expr.stringValue + 8),
-                *(sval_u *)(expr.stringValue + 12));
+                *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 12)));
             result = 0;
             break;
         default:
@@ -2534,7 +2541,7 @@ void __cdecl EmitAnimation(scriptInstance_t inst, sval_u anim, sval_u sourcePos)
 {
     EmitOpcode(inst, 0x13u, 1, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 1);
-    EmitCodepos(inst, (const char *)0xFFFFFFFF);
+    EmitCodeposInt(inst, 0xFFFFFFFF);
     if ( gScrCompilePub[inst].developer_statement != 2 )
         Scr_EmitAnimation(inst, (char *)gScrCompileGlob[inst].codePos, anim.stringValue, sourcePos.stringValue);
     Scr_CompileRemoveRefToString(inst, anim.stringValue);
@@ -2573,23 +2580,23 @@ void __cdecl EmitFunction(scriptInstance_t inst, sval_u func, sval_u sourcePos)
     }
     if (gScrCompilePub[inst].developer_statement == 2)
     {
-        Scr_CompileRemoveRefToString(inst, *(_DWORD *)(func.stringValue + 4));
-        if (*(_BYTE *)func.stringValue == ENUM_far_function)
+        Scr_CompileRemoveRefToString(inst, *SCR_U2P(_DWORD *, (func.stringValue + 4)));
+        if (*SCR_U2P(_BYTE *, func.stringValue) == ENUM_far_function)
         {
-            Scr_CompileRemoveRefToString(inst, *(_DWORD *)(func.stringValue + 8));
+            Scr_CompileRemoveRefToString(inst, *SCR_U2P(_DWORD *, (func.stringValue + 8)));
             --gScrCompilePub[inst].far_function_count;
         }
         return;
     }
 
-    if (*(_BYTE *)func.stringValue == ENUM_local_function)
+    if (*SCR_U2P(_BYTE *, func.stringValue) == ENUM_local_function)
     {
         scope = 0;
         fileCountId = gScrCompileGlob[inst].fileCountId;
-        threadName = *(_DWORD *)(func.stringValue + 4);
+        threadName = *SCR_U2P(_DWORD *, (func.stringValue + 4));
         CompileTransferRefToString(inst, threadName, 2u);
     EMIT:
-        EmitCodepos(inst, (const char *)scope);
+        EmitCodeposInt(inst, scope);
         Variable = GetVariable(inst, fileCountId, threadName);
         threadCountId = GetObject(inst, Variable);
         if (!threadCountId
@@ -2625,7 +2632,7 @@ void __cdecl EmitFunction(scriptInstance_t inst, sval_u func, sval_u sourcePos)
         }
 
         valueId = GetNewVariable(inst, threadCountId, count.u.intValue + 1);
-        value.u.intValue = (int)gScrCompileGlob[inst].codePos;
+        value.u.intValue = SCR_P2U(gScrCompileGlob[inst].codePos);
         if (gScrCompilePub[inst].developer_statement)
         {
             if (!gScrVarPub[inst].developer_script
@@ -2650,7 +2657,7 @@ void __cdecl EmitFunction(scriptInstance_t inst, sval_u func, sval_u sourcePos)
         AddOpcodePos(inst, sourcePos.stringValue, 0);
         return;
     }
-    if (*(_BYTE *)func.stringValue != 23
+    if (*SCR_U2P(_BYTE *, func.stringValue) != 23
         && !Assert_MyHandler(
             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
             1562,
@@ -2661,14 +2668,14 @@ void __cdecl EmitFunction(scriptInstance_t inst, sval_u func, sval_u sourcePos)
         __debugbreak();
     }
     scope = FUNC_SCOPE_FAR;
-    v3 = SL_ConvertToString(*(_DWORD *)(func.stringValue + 4), inst);
+    v3 = SL_ConvertToString(*SCR_U2P(_DWORD *, (func.stringValue + 4)), inst);
     filename = Scr_CreateCanonicalFilename(inst, v3);
-    Scr_CompileRemoveRefToString(inst, *(_DWORD *)(func.stringValue + 4));
+    Scr_CompileRemoveRefToString(inst, *SCR_U2P(_DWORD *, (func.stringValue + 4)));
     v4 = FindVariable(inst, gScrCompilePub[inst].loadedscripts, filename);
     value = Scr_EvalVariable(inst, v4);
     bExists = value.type != 0;
     AddFilePrecache(inst, filename, sourcePos.stringValue, 0, &filePosId, &fileCountId);
-    threadName = *(_DWORD *)(func.stringValue + 8);
+    threadName = *SCR_U2P(_DWORD *, (func.stringValue + 8));
     CompileTransferRefToString(inst, threadName, 2u);
     if (!bExists)
         goto EMIT;
@@ -2781,18 +2788,18 @@ void __cdecl AddFilePrecache(
 
 void __cdecl EmitCallExpression(scriptInstance_t inst, sval_u expr, bool bStatement, scr_block_s *block)
 {
-    if ( *(_BYTE *)expr.stringValue == 25 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 25 )
     {
-        EmitCall(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), bStatement, block);
+        EmitCall(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), bStatement, block);
     }
-    else if ( *(_BYTE *)expr.stringValue == 26 )
+    else if ( *SCR_U2P(_BYTE *, expr.stringValue) == 26 )
     {
         EmitMethod(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
-            *(sval_u *)(expr.stringValue + 16),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 16)),
             bStatement,
             block);
     }
@@ -2816,7 +2823,7 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
     if ( !name )
         goto script_function;
     pName = SL_ConvertToString(name, inst);
-    sourcePos = *(sval_u *)(func_name.stringValue + 8);
+    sourcePos = *SCR_U2P(sval_u *, (func_name.stringValue + 8));
     if ( gScrCompilePub[inst].developer_statement == 3 )
     {
         type = 0;
@@ -2829,7 +2836,7 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
         {
             value = Scr_EvalVariable(inst, funcId);
             type = Scr_GetUncacheType(value.type);
-            func = (void (__cdecl *)())value.u.intValue;
+            func = SCR_U2F(void (__cdecl *)(), value.u.intValue);
         }
         else
         {
@@ -2837,7 +2844,7 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
             func = GetFunction(inst, &pName, &type);
             funcId = GetNewVariable(inst, gScrCompilePub[inst].builtinFunc, name);
             value.type = Scr_GetCacheType(type);
-            value.u.intValue = (int)func;
+            value.u.intValue = SCR_F2U(func);
             SetVariableValue(inst, funcId, &value);
         }
     }
@@ -2857,7 +2864,7 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
             {
                 Scr_CompileRemoveRefToString(inst, name);
                 EmitCallBuiltinOpcode(inst, param_count, sourcePos);
-                v5 = AddFunction(inst, (int)func);
+                v5 = AddFunction(inst, (intptr_t)func);
                 EmitShort(inst, v5);
                 AddExpressionListOpcodePos(inst, params);
                 if ( bStatement )
@@ -2876,7 +2883,7 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
 script_function:
         if ( gScrCompilePub[inst].developer_statement == 3 )
         {
-            CompileError(inst, *(unsigned int *)(func_name.stringValue + 8), "unknown builtin function");
+            CompileError(inst, *SCR_U2P(unsigned int *, (func_name.stringValue + 8)), "unknown builtin function");
         }
         else
         {
@@ -2901,7 +2908,7 @@ int __cdecl EmitExpressionList(scriptInstance_t inst, sval_u exprlist, scr_block
     int expr_count; // [esp+4h] [ebp-4h]
 
     expr_count = 0;
-    for ( node = *(sval_u **)exprlist.stringValue; node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, exprlist.stringValue); node; node = node[1].node )
     {
         EmitExpression(inst, *node->node, block);
         ++expr_count;
@@ -2915,11 +2922,11 @@ void __cdecl AddExpressionListOpcodePos(scriptInstance_t inst, sval_u exprlist)
 
     if (gScrVarPub[inst].developer)
     {
-        for (node = *(sval_u **)exprlist.stringValue; node; node = node[1].node)
-            AddOpcodePos(inst, *(_DWORD *)(node->stringValue + 4), 0);
+        for (node = *SCR_U2P(sval_p *, exprlist.stringValue); node; node = node[1].node)
+            AddOpcodePos(inst, *SCR_U2P(_DWORD *, (node->stringValue + 4)), 0);
     }
 }
-int __cdecl AddFunction(scriptInstance_t inst, int func)
+int __cdecl AddFunction(scriptInstance_t inst, intptr_t func)
 {
     int i; // [esp+0h] [ebp-4h]
 
@@ -2947,7 +2954,7 @@ int __cdecl AddFunction(scriptInstance_t inst, int func)
 
 void __cdecl EmitPreFunctionCall(scriptInstance_t inst, sval_u func_name)
 {
-    if ( *(_BYTE *)func_name.stringValue == 28 )
+    if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 28 )
         EmitOpcode(inst, 0x4Eu, 1, 0);
 }
 
@@ -2958,25 +2965,25 @@ void __cdecl EmitPostFunctionCall(
                 bool bMethod,
                 scr_block_s *block)
 {
-    if ( *(_BYTE *)func_name.stringValue == 28 )
+    if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 28 )
     {
         EmitPostScriptFunctionCall(
             inst,
-            *(sval_u *)(func_name.stringValue + 4),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 4)),
             param_count,
             bMethod,
-            *(sval_u *)(func_name.stringValue + 8),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 8)),
             block);
     }
-    else if ( *(_BYTE *)func_name.stringValue == 32 )
+    else if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 32 )
     {
         EmitPostScriptThreadCall(
             inst,
-            *(sval_u *)(func_name.stringValue + 4),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 4)),
             param_count,
             bMethod,
-            *(sval_u *)(func_name.stringValue + 8),
-            *(sval_u *)(func_name.stringValue + 12),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 8)),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 12)),
             block);
     }
 }
@@ -2989,19 +2996,19 @@ void __cdecl EmitPostScriptFunctionCall(
                 sval_u nameSourcePos,
                 scr_block_s *block)
 {
-    if ( *(_BYTE *)func_name.stringValue == 20 )
+    if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 20 )
     {
-        EmitPostScriptFunction(inst, *(sval_u *)(func_name.stringValue + 4), param_count, bMethod, nameSourcePos);
+        EmitPostScriptFunction(inst, *SCR_U2P(sval_u *, (func_name.stringValue + 4)), param_count, bMethod, nameSourcePos);
     }
-    else if ( *(_BYTE *)func_name.stringValue == 24 )
+    else if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 24 )
     {
         EmitPostScriptFunctionPointer(
             inst,
-            *(sval_u *)(func_name.stringValue + 4),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 4)),
             param_count,
             bMethod,
             nameSourcePos,
-            *(sval_u *)(func_name.stringValue + 8),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 8)),
             block);
     }
 }
@@ -3048,18 +3055,18 @@ void __cdecl EmitPostScriptThreadCall(
                 sval_u nameSourcePos,
                 scr_block_s *block)
 {
-    if ( *(_BYTE *)func_name.stringValue == 20 )
+    if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 20 )
     {
-        EmitPostScriptThread(inst, *(sval_u *)(func_name.stringValue + 4), param_count, bMethod, nameSourcePos);
+        EmitPostScriptThread(inst, *SCR_U2P(sval_u *, (func_name.stringValue + 4)), param_count, bMethod, nameSourcePos);
     }
-    else if ( *(_BYTE *)func_name.stringValue == 24 )
+    else if ( *SCR_U2P(_BYTE *, func_name.stringValue) == 24 )
     {
         EmitPostScriptThreadPointer(
             inst,
-            *(sval_u *)(func_name.stringValue + 4),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 4)),
             param_count,
             bMethod,
-            *(sval_u *)(func_name.stringValue + 8),
+            *SCR_U2P(sval_u *, (func_name.stringValue + 8)),
             block);
     }
     AddOpcodePos(inst, sourcePos.stringValue, 0);
@@ -3073,7 +3080,7 @@ void __cdecl EmitPostScriptThread(scriptInstance_t inst, sval_u func, int param_
         EmitOpcode(inst, 0x54u, 1 - param_count, 2);
     AddOpcodePos(inst, sourcePos.stringValue, 3);
     EmitFunction(inst, func, sourcePos);
-    EmitCodepos(inst, (const char *)param_count);
+    EmitCodeposInt(inst, param_count);
 }
 
 void __cdecl EmitPostScriptThreadPointer(
@@ -3090,7 +3097,7 @@ void __cdecl EmitPostScriptThreadPointer(
     else
         EmitOpcode(inst, 0x55u, -param_count, 2);
     AddOpcodePos(inst, sourcePos.stringValue, 1);
-    EmitCodepos(inst, (const char *)param_count);
+    EmitCodeposInt(inst, param_count);
 }
 
 void __cdecl Scr_BeginDevScript(scriptInstance_t inst, int *type, char **savedPos)
@@ -3211,7 +3218,7 @@ void __cdecl EmitMethod(
     if ( !name )
         goto script_method;
     pName = SL_ConvertToString(name, inst);
-    sourcePos = *(sval_u *)(func_name.stringValue + 8);
+    sourcePos = *SCR_U2P(sval_u *, (func_name.stringValue + 8));
     if ( gScrCompilePub[inst].developer_statement == 3 )
     {
         type = 0;
@@ -3224,7 +3231,7 @@ void __cdecl EmitMethod(
         {
             value = Scr_EvalVariable(inst, methId);
             type = Scr_GetUncacheType(value.type);
-            meth = (void (__cdecl *)(scr_entref_t))value.u.intValue;
+            meth = SCR_U2F(void (__cdecl *)(scr_entref_t), value.u.intValue);
         }
         else
         {
@@ -3232,7 +3239,7 @@ void __cdecl EmitMethod(
             meth = GetMethod(inst, &pName, &type);
             methId = GetNewVariable(inst, gScrCompilePub[inst].builtinMeth, name);
             value.type = Scr_GetCacheType(type);
-            value.u.intValue = (int)meth;
+            value.u.intValue = SCR_F2U(meth);
             SetVariableValue(inst, methId, &value);
         }
     }
@@ -3253,7 +3260,7 @@ void __cdecl EmitMethod(
             {
                 Scr_CompileRemoveRefToString(inst, name);
                 EmitCallBuiltinMethodOpcode(inst, param_count, sourcePos);
-                v7 = AddFunction(inst, (int)meth);
+                v7 = AddFunction(inst, (intptr_t)meth);
                 EmitShort(inst, v7);
                 AddOpcodePos(inst, methodSourcePos.stringValue, 0);
                 AddExpressionListOpcodePos(inst, params);
@@ -3274,7 +3281,7 @@ void __cdecl EmitMethod(
 script_method:
         if ( gScrCompilePub[inst].developer_statement == 3 )
         {
-            CompileError(inst, *(unsigned int *)(func_name.stringValue + 8), "unknown builtin method");
+            CompileError(inst, *SCR_U2P(unsigned int *, (func_name.stringValue + 8)), "unknown builtin method");
         }
         else
         {
@@ -3339,11 +3346,11 @@ bool __cdecl EmitOrEvalPrimitiveExpressionList(
     }
     expr_count = GetExpressionCount(exprlist);
     if ( expr_count == 1 )
-        return EmitOrEvalExpression(inst, ***(sval_u ***)exprlist.stringValue, constValue, block);
+        return EmitOrEvalExpression(inst, SCR_U2P(sval_u *, exprlist.stringValue)->node->node[0], constValue, block);
     if ( expr_count == 3 )
     {
         success = 1;
-        for ( node = *(sval_u **)exprlist.stringValue; node; node = node[1].node )
+        for ( node = *SCR_U2P(sval_p *, exprlist.stringValue); node; node = node[1].node )
         {
             if ( success )
             {
@@ -3405,7 +3412,7 @@ char __cdecl EmitOrEvalExpression(
     char v4; // al
     char result; // [esp+7h] [ebp-1h]
 
-    switch (*(_BYTE *)expr.stringValue)
+    switch (*SCR_U2P(_BYTE *, expr.stringValue))
     {
     case 7:
         if (gScrCompileGlob[inst].bConstRefCount
@@ -3419,7 +3426,7 @@ char __cdecl EmitOrEvalExpression(
             __debugbreak();
         }
         gScrCompileGlob[inst].bConstRefCount = 1;
-        result = EmitOrEvalExpression(inst, *(sval_u *)(expr.stringValue + 4), constValue, block);
+        result = EmitOrEvalExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), constValue, block);
         if (!gScrCompileGlob[inst].bConstRefCount
             && !Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
@@ -3434,46 +3441,46 @@ char __cdecl EmitOrEvalExpression(
         v4 = result;
         break;
     case 8:
-        v4 = EmitOrEvalPrimitiveExpression(inst, *(sval_u *)(expr.stringValue + 4), constValue, block);
+        v4 = EmitOrEvalPrimitiveExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), constValue, block);
         break;
     case 0x31:
         EmitBoolOrExpression(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
-            *(sval_u *)(expr.stringValue + 16),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 16)),
             block);
         v4 = 0;
         break;
     case 0x32:
         EmitBoolAndExpression(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
-            *(sval_u *)(expr.stringValue + 16),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 16)),
             block);
         v4 = 0;
         break;
     case 0x33:
         v4 = EmitOrEvalBinaryOperatorExpression(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
-            *(sval_u *)(expr.stringValue + 16),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 16)),
             constValue,
             block);
         break;
     case 0x34:
-        EmitExpression(inst, *(sval_u *)(expr.stringValue + 4), block);
-        EmitBoolNot(inst, *(sval_u *)(expr.stringValue + 8));
+        EmitExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
+        EmitBoolNot(inst, *SCR_U2P(sval_u *, (expr.stringValue + 8)));
         v4 = 0;
         break;
     case 0x35:
-        EmitExpression(inst, *(sval_u *)(expr.stringValue + 4), block);
-        EmitBoolComplement(inst, *(sval_u *)(expr.stringValue + 8));
+        EmitExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
+        EmitBoolComplement(inst, *SCR_U2P(sval_u *, (expr.stringValue + 8)));
         v4 = 0;
         break;
     default:
@@ -3516,7 +3523,7 @@ void __cdecl EmitBoolOrExpression(
     EmitExpression(inst, expr2, block);
     EmitCastBool(inst, expr2sourcePos);
     offset = (char *)(TempMallocAlignStrict(0) - nextPos);
-    if ( (unsigned int)offset >= 0x10000
+    if ( (uintptr_t)offset >= 0x10000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     2564,
@@ -3526,7 +3533,7 @@ void __cdecl EmitBoolOrExpression(
     {
         __debugbreak();
     }
-    *(_WORD *)pos = (_WORD)offset;
+    *(_WORD *)pos = (_WORD)(uintptr_t)offset;
 }
 
 void __cdecl EmitCastBool(scriptInstance_t inst, sval_u sourcePos)
@@ -3556,7 +3563,7 @@ void __cdecl EmitBoolAndExpression(
     EmitExpression(inst, expr2, block);
     EmitCastBool(inst, expr2sourcePos);
     offset = (char *)(TempMallocAlignStrict(0) - nextPos);
-    if ( (unsigned int)offset >= 0x10000
+    if ( (uintptr_t)offset >= 0x10000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     2584,
@@ -3566,7 +3573,7 @@ void __cdecl EmitBoolAndExpression(
     {
         __debugbreak();
     }
-    *(_WORD *)pos = (_WORD)offset;
+    *(_WORD *)pos = (_WORD)(uintptr_t)offset;
 }
 
 char __cdecl EmitOrEvalBinaryOperatorExpression(
@@ -3633,7 +3640,7 @@ void __cdecl EmitExpression(scriptInstance_t inst, sval_u expr, scr_block_s *blo
 
 void __cdecl EmitVariableExpressionRef(scriptInstance_t inst, sval_u expr, scr_block_s *block)
 {
-    switch (*(_BYTE *)expr.stringValue)
+    switch (*SCR_U2P(_BYTE *, expr.stringValue))
     {
     case 4:
         if (gScrCompileGlob[inst].bConstRefCount
@@ -3647,7 +3654,7 @@ void __cdecl EmitVariableExpressionRef(scriptInstance_t inst, sval_u expr, scr_b
             __debugbreak();
         }
         gScrCompileGlob[inst].bConstRefCount = 1;
-        EmitVariableExpressionRef(inst, *(sval_u *)(expr.stringValue + 4), block);
+        EmitVariableExpressionRef(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
         if (!gScrCompileGlob[inst].bConstRefCount
             && !Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
@@ -3661,23 +3668,23 @@ void __cdecl EmitVariableExpressionRef(scriptInstance_t inst, sval_u expr, scr_b
         gScrCompileGlob[inst].bConstRefCount = 0;
         break;
     case 5:
-        EmitLocalVariableRef(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), block);
+        EmitLocalVariableRef(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), block);
         break;
     case 0xF:
         EmitArrayVariableRef(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
-            *(sval_u *)(expr.stringValue + 16),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 16)),
             block);
         break;
     case 0x11:
         EmitFieldVariableRef(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
             block);
         break;
     case 0x37:
@@ -3685,10 +3692,10 @@ void __cdecl EmitVariableExpressionRef(scriptInstance_t inst, sval_u expr, scr_b
         if (gScrCompilePub[inst].script_loading)
             CompileError(
                 inst,
-                *(_DWORD *)(expr.stringValue + 8),
+                *SCR_U2P(_DWORD *, (expr.stringValue + 8)),
                 "$ and self field can only be used in the script debugger");
         else
-            CompileError(inst, *(_DWORD *)(expr.stringValue + 8), "not an lvalue");
+            CompileError(inst, *SCR_U2P(_DWORD *, (expr.stringValue + 8)), "not an lvalue");
         break;
     default:
         return;
@@ -3749,13 +3756,13 @@ void __cdecl EmitEvalArrayRef(scriptInstance_t inst, sval_u sourcePos, sval_u in
 
 void __cdecl EmitArrayPrimitiveExpressionRef(scriptInstance_t inst, sval_u expr, sval_u sourcePos, scr_block_s *block)
 {
-    if ( *(_BYTE *)expr.stringValue == 19 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 19 )
     {
-        EmitVariableExpressionRef(inst, *(sval_u *)(expr.stringValue + 4), block);
+        EmitVariableExpressionRef(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
     }
-    else if ( *(_BYTE *)expr.stringValue == 37 )
+    else if ( *SCR_U2P(_BYTE *, expr.stringValue) == 37 )
     {
-        EmitGameRef(inst, *(sval_u *)(expr.stringValue + 4));
+        EmitGameRef(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
     }
     else
     {
@@ -3776,26 +3783,26 @@ void __cdecl EmitPrimitiveExpressionFieldObject(
                 sval_u sourcePos,
                 scr_block_s *block)
 {
-    switch ( *(_BYTE *)expr.stringValue )
+    switch ( *SCR_U2P(_BYTE *, expr.stringValue) )
     {
         case 0x13:
-            EmitVariableExpression(inst, *(sval_u *)(expr.stringValue + 4), block);
-            EmitCastFieldObject(inst, *(sval_u *)(expr.stringValue + 8));
+            EmitVariableExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
+            EmitCastFieldObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 8)));
             break;
         case 0x15:
-            EmitCallExpressionFieldObject(inst, *(sval_u *)(expr.stringValue + 4), block);
+            EmitCallExpressionFieldObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), block);
             break;
         case 0x22:
-            EmitSelfObject(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitSelfObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             break;
         case 0x24:
-            EmitLevelObject(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitLevelObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             break;
         case 0x26:
-            EmitAnimObject(inst, *(sval_u *)(expr.stringValue + 4));
+            EmitAnimObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)));
             break;
         case 0x30:
-            EmitExpressionListFieldObject(inst, *(sval_u *)(expr.stringValue + 4), sourcePos, block);
+            EmitExpressionListFieldObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), sourcePos, block);
             break;
         default:
             CompileError(inst, sourcePos.stringValue, "not an object");
@@ -3833,22 +3840,22 @@ void __cdecl EmitCastFieldObject(scriptInstance_t inst, sval_u sourcePos)
 
 void __cdecl EmitCallExpressionFieldObject(scriptInstance_t inst, sval_u expr, scr_block_s *block)
 {
-    if ( *(_BYTE *)expr.stringValue == 25 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 25 )
     {
-        EmitCall(inst, *(sval_u *)(expr.stringValue + 4), *(sval_u *)(expr.stringValue + 8), 0, block);
-        EmitCastFieldObject(inst, *(sval_u *)(expr.stringValue + 12));
+        EmitCall(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), *SCR_U2P(sval_u *, (expr.stringValue + 8)), 0, block);
+        EmitCastFieldObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 12)));
     }
-    else if ( *(_BYTE *)expr.stringValue == 26 )
+    else if ( *SCR_U2P(_BYTE *, expr.stringValue) == 26 )
     {
         EmitMethod(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
-            *(sval_u *)(expr.stringValue + 12),
-            *(sval_u *)(expr.stringValue + 16),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 16)),
             0,
             block);
-        EmitCastFieldObject(inst, *(sval_u *)(expr.stringValue + 20));
+        EmitCastFieldObject(inst, *SCR_U2P(sval_u *, (expr.stringValue + 20)));
     }
 }
 
@@ -3862,27 +3869,27 @@ void __cdecl EmitExpressionListFieldObject(
 
     node = GetSingleParameter(exprlist);
     if ( node )
-        EmitExpressionFieldObject(inst, *node->node, *(sval_u *)(node->stringValue + 4), block);
+        EmitExpressionFieldObject(inst, *node->node, *SCR_U2P(sval_u *, (node->stringValue + 4)), block);
     else
         CompileError(inst, sourcePos.stringValue, "not an object");
 }
 
 sval_u *__cdecl GetSingleParameter(sval_u exprlist)
 {
-    if ( !*(unsigned int *)exprlist.stringValue )
+    if ( !*SCR_U2P(unsigned int *, exprlist.stringValue) )
         return 0;
-    if ( *(unsigned int *)(*(unsigned int *)exprlist.stringValue + 4) )
+    if ( *SCR_U2P(unsigned int *, (*SCR_U2P(unsigned int *, exprlist.stringValue) + 4)) )
         return 0;
-    return *(sval_u **)exprlist.stringValue;
+    return *SCR_U2P(sval_p *, exprlist.stringValue);
 }
 
 void __cdecl EmitExpressionFieldObject(scriptInstance_t inst, sval_u expr, sval_u sourcePos, scr_block_s *block)
 {
-    if ( *(_BYTE *)expr.stringValue == 8 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 8 )
         EmitPrimitiveExpressionFieldObject(
             inst,
-            *(sval_u *)(expr.stringValue + 4),
-            *(sval_u *)(expr.stringValue + 8),
+            *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+            *SCR_U2P(sval_u *, (expr.stringValue + 8)),
             block);
     else
         CompileError(inst, sourcePos.stringValue, "not an object");
@@ -3906,35 +3913,35 @@ void __cdecl EmitAssignmentStatement(
 
 bool __cdecl IsUndefinedExpression(sval_u expr)
 {
-    return *(_BYTE *)expr.stringValue == 8 && IsUndefinedPrimitiveExpression(*(sval_u *)(expr.stringValue + 4));
+    return *SCR_U2P(_BYTE *, expr.stringValue) == 8 && IsUndefinedPrimitiveExpression(*SCR_U2P(sval_u *, (expr.stringValue + 4)));
 }
 
 bool __cdecl IsUndefinedPrimitiveExpression(sval_u expr)
 {
-    return *(_BYTE *)expr.stringValue == 33;
+    return *SCR_U2P(_BYTE *, expr.stringValue) == 33;
 }
 
 char __cdecl EmitClearVariableExpression(scriptInstance_t inst, sval_u expr, sval_u rhsSourcePos, scr_block_s *block)
 {
-    switch ( *(_BYTE *)expr.stringValue )
+    switch ( *SCR_U2P(_BYTE *, expr.stringValue) )
     {
         case 5:
             return 0;
         case 0xF:
             EmitClearArrayVariable(
                 inst,
-                *(sval_u *)(expr.stringValue + 4),
-                *(sval_u *)(expr.stringValue + 8),
-                *(sval_u *)(expr.stringValue + 12),
-                *(sval_u *)(expr.stringValue + 16),
+                *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 12)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 16)),
                 block);
             return 1;
         case 0x11:
             EmitClearFieldVariable(
                 inst,
-                *(sval_u *)(expr.stringValue + 4),
-                *(sval_u *)(expr.stringValue + 8),
-                *(sval_u *)(expr.stringValue + 12),
+                *SCR_U2P(sval_u *, (expr.stringValue + 4)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 8)),
+                *SCR_U2P(sval_u *, (expr.stringValue + 12)),
                 rhsSourcePos,
                 block);
             return 1;
@@ -3943,10 +3950,10 @@ char __cdecl EmitClearVariableExpression(scriptInstance_t inst, sval_u expr, sva
             if ( gScrCompilePub[inst].script_loading )
                 CompileError(
                     inst,
-                    *(unsigned int *)(expr.stringValue + 8),
+                    *SCR_U2P(unsigned int *, (expr.stringValue + 8)),
                     "$ and self field can only be used in the script debugger");
             else
-                CompileError(inst, *(unsigned int *)(expr.stringValue + 8), "not an lvalue");
+                CompileError(inst, *SCR_U2P(unsigned int *, (expr.stringValue + 8)), "not an lvalue");
             return 1;
         default:
             return 1;
@@ -4060,7 +4067,7 @@ void __cdecl EmitIfStatement(
     nextPos = TempMallocAlignStrict(0);
     Scr_TransferBlock(block, ifStatBlock->block);
     EmitStatement(inst, stmt, lastStatement, endSourcePos, ifStatBlock->block);
-    if ( *(unsigned int *)(ifStatBlock->stringValue + 8) != block->localVarsCreateCount
+    if ( *SCR_U2P(unsigned int *, (ifStatBlock->stringValue + 8)) != block->localVarsCreateCount
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     3017,
@@ -4072,7 +4079,7 @@ void __cdecl EmitIfStatement(
     }
     EmitNOP2(inst, lastStatement, endSourcePos, ifStatBlock->block);
     offset = (char *)(TempMallocAlignStrict(0) - nextPos);
-    if ( (unsigned int)offset >= 0x10000
+    if ( (uintptr_t)offset >= 0x10000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     3020,
@@ -4082,7 +4089,7 @@ void __cdecl EmitIfStatement(
     {
         __debugbreak();
     }
-    *(_WORD *)pos = (_WORD)offset;
+    *(_WORD *)pos = (_WORD)(uintptr_t)offset;
 }
 
 void __cdecl EmitNOP2(scriptInstance_t inst, bool lastStatement, unsigned int endSourcePos, scr_block_s *block)
@@ -4230,7 +4237,7 @@ void __cdecl EmitIfElseStatement(
     char *offset; // [esp+4h] [ebp-20h]
     const char *nextPos1; // [esp+8h] [ebp-1Ch]
     unsigned __int8 *pos1; // [esp+Ch] [ebp-18h]
-    scr_block_s *childBlocks[2]; // [esp+10h] [ebp-14h] BYREF
+    scr_block_p childBlocks[2]; // [esp+10h] [ebp-14h] BYREF
     const char *nextPos2; // [esp+18h] [ebp-Ch]
     int childCount; // [esp+1Ch] [ebp-8h]
     const char *pos2; // [esp+20h] [ebp-4h]
@@ -4245,8 +4252,8 @@ void __cdecl EmitIfElseStatement(
     Scr_TransferBlock(block, ifStatBlock->block);
     EmitStatement(inst, stmt1, lastStatement, endSourcePos, ifStatBlock->block);
     EmitRemoveLocalVars(inst, ifStatBlock->block, ifStatBlock->block);
-    if (!*(_DWORD *)ifStatBlock->stringValue)
-        childBlocks[childCount++] = (scr_block_s *)ifStatBlock->stringValue;
+    if (!*SCR_U2P(_DWORD *, ifStatBlock->stringValue))
+        childBlocks[childCount++] = SCR_U2P(scr_block_s *, ifStatBlock->stringValue);
     checksum = gScrVarPub[inst].checksum;
     if (lastStatement)
     {
@@ -4266,7 +4273,7 @@ void __cdecl EmitIfElseStatement(
     }
     gScrVarPub[inst].checksum = checksum + 1;
     offset = (char *)(TempMallocAlignStrict(0) - nextPos1);
-    if ((unsigned int)offset >= 0x10000
+    if ((uintptr_t)offset >= 0x10000
         && !Assert_MyHandler(
             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
             3084,
@@ -4276,18 +4283,18 @@ void __cdecl EmitIfElseStatement(
     {
         __debugbreak();
     }
-    *(_WORD *)pos1 = (_WORD)offset;
+    *(_WORD *)pos1 = (_WORD)(uintptr_t)offset;
     Scr_TransferBlock(block, elseStatBlock->block);
     EmitStatement(inst, stmt2, lastStatement, endSourcePos, elseStatBlock->block);
     EmitNOP2(inst, lastStatement, endSourcePos, elseStatBlock->block);
-    if (!*(_DWORD *)elseStatBlock->stringValue)
-        childBlocks[childCount++] = (scr_block_s *)elseStatBlock->stringValue;
+    if (!*SCR_U2P(_DWORD *, elseStatBlock->stringValue))
+        childBlocks[childCount++] = SCR_U2P(scr_block_s *, elseStatBlock->stringValue);
     if (!lastStatement)
         *(_DWORD *)pos2 = TempMallocAlignStrict(0) - nextPos2;
     Scr_InitFromChildBlocks(childBlocks, childCount, block);
 }
 
-void __cdecl Scr_InitFromChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block)
+void __cdecl Scr_InitFromChildBlocks(scr_block_p *childBlocks, int childCount, scr_block_s *block)
 {
     scr_block_s *childBlock; // [esp+0h] [ebp-14h]
     scr_block_s *childBlocka; // [esp+0h] [ebp-14h]
@@ -4398,7 +4405,7 @@ void __cdecl EmitWhileStatement(
     ContinueStatementInfo *oldContinueStatement; // [esp+0h] [ebp-48h]
     int breakChildCount; // [esp+4h] [ebp-44h] BYREF
     int *oldBreakChildCount; // [esp+8h] [ebp-40h]
-    scr_block_s **breakChildBlocks; // [esp+Ch] [ebp-3Ch]
+    scr_block_p *breakChildBlocks; // [esp+Ch] [ebp-3Ch]
     BreakStatementInfo *oldBreakStatement; // [esp+10h] [ebp-38h]
     bool constConditional; // [esp+17h] [ebp-31h]
     unsigned int offset; // [esp+18h] [ebp-30h]
@@ -4408,9 +4415,9 @@ void __cdecl EmitWhileStatement(
     VariableCompileValue constValue; // [esp+24h] [ebp-24h] BYREF
     const char *pos1; // [esp+30h] [ebp-18h]
     const char *nextPos2; // [esp+34h] [ebp-14h]
-    scr_block_s **oldBreakChildBlocks; // [esp+38h] [ebp-10h]
+    scr_block_p *oldBreakChildBlocks; // [esp+38h] [ebp-10h]
     const char *pos2; // [esp+3Ch] [ebp-Ch]
-    scr_block_s **oldContinueChildBlocks; // [esp+40h] [ebp-8h]
+    scr_block_p *oldContinueChildBlocks; // [esp+40h] [ebp-8h]
     scr_block_s *oldBreakBlock; // [esp+44h] [ebp-4h]
 
     bOldCanBreak = gScrCompileGlob[inst].bCanBreak;
@@ -4421,7 +4428,7 @@ void __cdecl EmitWhileStatement(
     gScrCompileGlob[inst].bCanContinue = 0;
     Scr_TransferBlock(block, whileStatBlock->block);
     EmitCreateLocalVars(inst, whileStatBlock->block);
-    if (*(_DWORD *)(whileStatBlock->stringValue + 4) > block->localVarsCount
+    if (*SCR_U2P(_DWORD *, (whileStatBlock->stringValue + 4)) > block->localVarsCount
         && !Assert_MyHandler(
             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
             3201,
@@ -4431,7 +4438,7 @@ void __cdecl EmitWhileStatement(
     {
         __debugbreak();
     }
-    block->localVarsCreateCount = *(_DWORD *)(whileStatBlock->stringValue + 4);
+    block->localVarsCreateCount = *SCR_U2P(_DWORD *, (whileStatBlock->stringValue + 4));
     pos1 = TempMallocAlignStrict(0);
     constConditional = 0;
     if (EmitOrEvalExpression(inst, expr, &constValue, block))
@@ -4460,7 +4467,7 @@ void __cdecl EmitWhileStatement(
     {
         pos2 = 0;
         nextPos2 = 0;
-        breakChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "EmitWhileStatement");
+        breakChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "EmitWhileStatement");
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -4478,15 +4485,15 @@ void __cdecl EmitWhileStatement(
     gScrCompileGlob[inst].bCanContinue = 1;
     gScrCompileGlob[inst].currentContinueStatement = 0;
     EmitStatement(inst, stmt, 0, 0, whileStatBlock->block);
-    if (*(_DWORD *)whileStatBlock->stringValue != 3)
-        *(_DWORD *)whileStatBlock->stringValue = 0;
+    if (*SCR_U2P(_DWORD *, whileStatBlock->stringValue) != 3)
+        *SCR_U2P(_DWORD *, whileStatBlock->stringValue) = 0;
     gScrCompileGlob[inst].bCanBreak = 0;
     gScrCompileGlob[inst].bCanContinue = 0;
     ConnectContinueStatements(inst);
     EmitOpcode(inst, 0x63u, 0, 0);
     AddOpcodePos(inst, whileSourcePos.stringValue, 0);
-    if (*(_BYTE *)stmt.stringValue == 46)
-        AddOpcodePos(inst, *(_DWORD *)(stmt.stringValue + 12), 1);
+    if (*SCR_U2P(_BYTE *, stmt.stringValue) == 46)
+        AddOpcodePos(inst, *SCR_U2P(_DWORD *, (stmt.stringValue + 12)), 1);
     EmitShort(inst, 0);
     offset = TempMallocAlignStrict(0) - pos1;
     if (offset >= 0x10000
@@ -4604,7 +4611,7 @@ void __cdecl EmitForStatement(
     ContinueStatementInfo *oldContinueStatement; // [esp+0h] [ebp-50h]
     int breakChildCount; // [esp+4h] [ebp-4Ch] BYREF
     int *oldBreakChildCount; // [esp+8h] [ebp-48h]
-    scr_block_s **breakChildBlocks; // [esp+Ch] [ebp-44h]
+    scr_block_p *breakChildBlocks; // [esp+Ch] [ebp-44h]
     BreakStatementInfo *oldBreakStatement; // [esp+10h] [ebp-40h]
     bool constConditional; // [esp+17h] [ebp-39h]
     unsigned int offset; // [esp+18h] [ebp-38h]
@@ -4615,10 +4622,10 @@ void __cdecl EmitForStatement(
     VariableCompileValue constValue; // [esp+28h] [ebp-28h] BYREF
     const char *pos1; // [esp+34h] [ebp-1Ch]
     const char *nextPos2; // [esp+38h] [ebp-18h]
-    scr_block_s **continueChildBlocks; // [esp+3Ch] [ebp-14h]
-    scr_block_s **oldBreakChildBlocks; // [esp+40h] [ebp-10h]
+    scr_block_p *continueChildBlocks; // [esp+3Ch] [ebp-14h]
+    scr_block_p *oldBreakChildBlocks; // [esp+40h] [ebp-10h]
     const char *pos2; // [esp+44h] [ebp-Ch]
-    scr_block_s **oldContinueChildBlocks; // [esp+48h] [ebp-8h]
+    scr_block_p *oldContinueChildBlocks; // [esp+48h] [ebp-8h]
     scr_block_s *oldBreakBlock; // [esp+4Ch] [ebp-4h]
 
     bOldCanBreak = gScrCompileGlob[inst].bCanBreak;
@@ -4630,7 +4637,7 @@ void __cdecl EmitForStatement(
     EmitStatement(inst, stmt1, 0, 0, block);
     Scr_TransferBlock(block, forStatBlock->block);
     EmitCreateLocalVars(inst, forStatBlock->block);
-    if (*(_DWORD *)(forStatBlock->stringValue + 4) > block->localVarsCount
+    if (*SCR_U2P(_DWORD *, (forStatBlock->stringValue + 4)) > block->localVarsCount
         && !Assert_MyHandler(
             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
             3417,
@@ -4640,13 +4647,13 @@ void __cdecl EmitForStatement(
     {
         __debugbreak();
     }
-    block->localVarsCreateCount = *(_DWORD *)(forStatBlock->stringValue + 4);
+    block->localVarsCreateCount = *SCR_U2P(_DWORD *, (forStatBlock->stringValue + 4));
     Scr_TransferBlock(block, forStatPostBlock->block);
     pos1 = TempMallocAlignStrict(0);
-    if (*(_BYTE *)expr.stringValue == 67)
+    if (*SCR_U2P(_BYTE *, expr.stringValue) == 67)
     {
         constConditional = 0;
-        if (EmitOrEvalExpression(inst, *(sval_u *)(expr.stringValue + 4), &constValue, block))
+        if (EmitOrEvalExpression(inst, *SCR_U2P(sval_u *, (expr.stringValue + 4)), &constValue, block))
         {
             if (constValue.value.type == 6 || constValue.value.type == 5)
             {
@@ -4672,7 +4679,7 @@ void __cdecl EmitForStatement(
     oldContinueChildCount = gScrCompileGlob[inst].continueChildCount;
     breakChildCount = 0;
     continueChildCount = 0;
-    continueChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement");
+    continueChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement");
     gScrCompileGlob[inst].continueChildBlocks = continueChildBlocks;
     gScrCompileGlob[inst].continueChildCount = &continueChildCount;
     gScrCompileGlob[inst].breakBlock = forStatBlock->block;
@@ -4680,7 +4687,7 @@ void __cdecl EmitForStatement(
     {
         pos2 = 0;
         nextPos2 = 0;
-        breakChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement");
+        breakChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement");
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -4706,8 +4713,8 @@ void __cdecl EmitForStatement(
     EmitStatement(inst, stmt2, 0, 0, forStatPostBlock->block);
     EmitOpcode(inst, 0x63u, 0, 0);
     AddOpcodePos(inst, forSourcePos.stringValue, 0);
-    if (*(_BYTE *)stmt.stringValue == 46)
-        AddOpcodePos(inst, *(_DWORD *)(stmt.stringValue + 12), 1);
+    if (*SCR_U2P(_BYTE *, stmt.stringValue) == 46)
+        AddOpcodePos(inst, *SCR_U2P(_DWORD *, (stmt.stringValue + 12)), 1);
     EmitShort(inst, 0);
     offset = TempMallocAlignStrict(0) - pos1;
     if (offset >= 0x10000
@@ -4820,7 +4827,7 @@ void __cdecl EmitWaittillStatement(
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    node = *(sval_u **)(*(unsigned int *)exprlist.stringValue + 4);
+    node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, exprlist.stringValue) + 4));
     if ( !node
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3700, 0, "%s", "node") )
     {
@@ -4832,7 +4839,7 @@ void __cdecl EmitWaittillStatement(
     AddOpcodePos(inst, waitSourcePos.stringValue, 0);
     AddOpcodePos(inst, waitSourcePos.stringValue, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 0);
-    AddOpcodePos(inst, *(unsigned int *)(node->stringValue + 4), 0);
+    AddOpcodePos(inst, *SCR_U2P(unsigned int *, (node->stringValue + 4)), 0);
     EmitFormalWaittillParameterListRefInternal(inst, node, block);
     EmitOpcode(inst, 0x34u, 0, 0);
 }
@@ -4844,7 +4851,7 @@ void __cdecl EmitFormalWaittillParameterListRefInternal(scriptInstance_t inst, s
         node = node[1].node;
         if ( !node )
             break;
-        EmitSafeSetWaittillVariableField(inst, *node->node, *(sval_u *)(node->stringValue + 4), block);
+        EmitSafeSetWaittillVariableField(inst, *node->node, *SCR_U2P(sval_u *, (node->stringValue + 4)), block);
     }
 }
 
@@ -4872,7 +4879,7 @@ void __cdecl EmitWaittillmatchStatement(
     sval_u *nodea; // [esp+0h] [ebp-8h]
     int exprCount; // [esp+4h] [ebp-4h]
 
-    node = *(sval_u **)(*(unsigned int *)exprlist.stringValue + 4);
+    node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, exprlist.stringValue) + 4));
     if ( !node
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3732, 0, "%s", "node") )
     {
@@ -4885,7 +4892,7 @@ void __cdecl EmitWaittillmatchStatement(
             break;
         EmitExpression(inst, *node->node, block);
     }
-    nodea = *(sval_u **)(*(unsigned int *)exprlist.stringValue + 4);
+    nodea = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, exprlist.stringValue) + 4));
     if ( !nodea
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3746, 0, "%s", "node") )
     {
@@ -4897,13 +4904,13 @@ void __cdecl EmitWaittillmatchStatement(
     AddOpcodePos(inst, waitSourcePos.stringValue, 0);
     AddOpcodePos(inst, waitSourcePos.stringValue, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 0);
-    AddOpcodePos(inst, *(unsigned int *)(nodea->stringValue + 4), 0);
+    AddOpcodePos(inst, *SCR_U2P(unsigned int *, (nodea->stringValue + 4)), 0);
     while ( 1 )
     {
         nodea = nodea[1].node;
         if ( !nodea )
             break;
-        AddOpcodePos(inst, *(unsigned int *)(nodea->stringValue + 4), 0);
+        AddOpcodePos(inst, *SCR_U2P(unsigned int *, (nodea->stringValue + 4)), 0);
     }
     if ( exprCount >= 256
         && !Assert_MyHandler(
@@ -4935,7 +4942,7 @@ void __cdecl EmitNotifyStatement(
     AddOpcodePos(inst, sourcePos.stringValue, 1);
     expr_count = 0;
     start_node = 0;
-    for ( node = *(sval_u **)exprlist.stringValue; node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, exprlist.stringValue); node; node = node[1].node )
     {
         start_node = node;
         EmitExpression(inst, *node->node, block);
@@ -4954,7 +4961,7 @@ void __cdecl EmitNotifyStatement(
     EmitPrimitiveExpression(inst, obj, block);
     EmitOpcode(inst, 0x79u, -expr_count - 2, 0);
     AddOpcodePos(inst, notifySourcePos.stringValue, 16);
-    AddOpcodePos(inst, *(unsigned int *)(start_node->stringValue + 4), 0);
+    AddOpcodePos(inst, *SCR_U2P(unsigned int *, (start_node->stringValue + 4)), 0);
     AddOpcodePos(inst, sourcePos.stringValue, 0);
 }
 
@@ -5015,7 +5022,7 @@ void __cdecl EmitSwitchStatement(
     caseStatement = gScrCompileGlob[inst].currentCaseStatement;
     while (caseStatement)
     {
-        EmitCodepos(inst, (const char *)caseStatement->name);
+        EmitCodeposInt(inst, caseStatement->name);
         EmitCodepos(inst, caseStatement->codePos);
         caseStatement = caseStatement->next;
         ++num;
@@ -5056,25 +5063,25 @@ void __cdecl EmitSwitchStatementList(
     sval_u *node; // [esp+4h] [ebp-20h]
     sval_u *nextNode; // [esp+8h] [ebp-1Ch]
     int breakChildCount; // [esp+Ch] [ebp-18h] BYREF
-    scr_block_s **breakChildBlocks; // [esp+10h] [ebp-14h]
+    scr_block_p *breakChildBlocks; // [esp+10h] [ebp-14h]
     int *oldBreakChildCount; // [esp+14h] [ebp-10h]
     bool hasDefault; // [esp+1Bh] [ebp-9h]
-    scr_block_s **oldBreakChildBlocks; // [esp+1Ch] [ebp-8h]
+    scr_block_p *oldBreakChildBlocks; // [esp+1Ch] [ebp-8h]
     scr_block_s *oldBreakBlock; // [esp+20h] [ebp-4h]
 
     oldBreakChildBlocks = gScrCompileGlob[inst].breakChildBlocks;
     oldBreakChildCount = gScrCompileGlob[inst].breakChildCount;
     oldBreakBlock = gScrCompileGlob[inst].breakBlock;
     breakChildCount = 0;
-    breakChildBlocks = (scr_block_s **)Hunk_AllocateTempMemoryHigh(2048, "EmitSwitchStatementList");
+    breakChildBlocks = (scr_block_p *)Hunk_AllocateTempMemoryHigh(2048, "EmitSwitchStatementList");
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     gScrCompileGlob[inst].breakBlock = 0;
     hasDefault = 0;
-    for (node = *(sval_u **)(*(_DWORD *)val.stringValue + 4); node; node = nextNode)
+    for (node = *SCR_U2P(sval_p *, (*SCR_U2P(_DWORD *, val.stringValue) + 4)); node; node = nextNode)
     {
         nextNode = node[1].node;
-        if (*(_BYTE *)node->stringValue == 63 || *(_BYTE *)node->stringValue == 64)
+        if (*SCR_U2P(_BYTE *, node->stringValue) == 63 || *SCR_U2P(_BYTE *, node->stringValue) == 64)
         {
             if (gScrCompileGlob[inst].breakBlock)
             {
@@ -5091,16 +5098,16 @@ void __cdecl EmitSwitchStatementList(
                 gScrCompileGlob[inst].bCanBreak = 0;
                 EmitRemoveLocalVars(inst, gScrCompileGlob[inst].breakBlock, gScrCompileGlob[inst].breakBlock);
             }
-            if (*(_BYTE *)node->stringValue == 63)
+            if (*SCR_U2P(_BYTE *, node->stringValue) == 63)
             {
-                gScrCompileGlob[inst].breakBlock = *(scr_block_s **)(node->stringValue + 12);
-                EmitCaseStatement(inst, *(sval_u *)(node->stringValue + 4), *(sval_u *)(node->stringValue + 8));
+                gScrCompileGlob[inst].breakBlock = *SCR_U2P(scr_block_p *, (node->stringValue + 12));
+                EmitCaseStatement(inst, *SCR_U2P(sval_u *, (node->stringValue + 4)), *SCR_U2P(sval_u *, (node->stringValue + 8)));
             }
             else
             {
-                gScrCompileGlob[inst].breakBlock = *(scr_block_s **)(node->stringValue + 8);
+                gScrCompileGlob[inst].breakBlock = *SCR_U2P(scr_block_p *, (node->stringValue + 8));
                 hasDefault = 1;
-                EmitDefaultStatement(inst, *(sval_u *)(node->stringValue + 4));
+                EmitDefaultStatement(inst, *SCR_U2P(sval_u *, (node->stringValue + 4)));
             }
             Scr_TransferBlock(block, gScrCompileGlob[inst].breakBlock);
             if (gScrCompileGlob[inst].bCanBreak
@@ -5175,22 +5182,22 @@ void __cdecl EmitCaseStatement(scriptInstance_t inst, sval_u expr, sval_u source
     unsigned int name; // [esp+4h] [ebp-4h]
     unsigned int namea; // [esp+4h] [ebp-4h]
 
-    if ( *(_BYTE *)expr.stringValue == 9 )
+    if ( *SCR_U2P(_BYTE *, expr.stringValue) == 9 )
     {
-        if ( IsValidArrayIndex(inst, *(unsigned int *)(expr.stringValue + 4)) )
+        if ( IsValidArrayIndex(inst, *SCR_U2P(unsigned int *, (expr.stringValue + 4))) )
         {
-            name = GetInternalVariableIndex(inst, *(unsigned int *)(expr.stringValue + 4));
+            name = GetInternalVariableIndex(inst, *SCR_U2P(unsigned int *, (expr.stringValue + 4)));
             EmitCaseStatementInfo(inst, name, sourcePos);
         }
         else
         {
-            v3 = va("case index %d out of range", *(unsigned int *)(expr.stringValue + 4));
+            v3 = va("case index %d out of range", *SCR_U2P(unsigned int *, (expr.stringValue + 4)));
             CompileError(inst, sourcePos.stringValue, v3);
         }
     }
-    else if ( *(_BYTE *)expr.stringValue == 13 )
+    else if ( *SCR_U2P(_BYTE *, expr.stringValue) == 13 )
     {
-        namea = *(unsigned int *)(expr.stringValue + 4);
+        namea = *SCR_U2P(unsigned int *, (expr.stringValue + 4));
         CompileTransferRefToString(inst, namea, 1u);
         EmitCaseStatementInfo(inst, namea, sourcePos);
     }
@@ -5224,7 +5231,7 @@ void __cdecl EmitCaseStatementInfo(scriptInstance_t inst, unsigned int name, sva
     }
     else
     {
-        newCaseStatement = (CaseStatementInfo *)Hunk_AllocateTempMemoryHigh(16, "EmitCaseStatementInfo");
+        newCaseStatement = (CaseStatementInfo *)Hunk_AllocateTempMemoryHigh(sizeof(CaseStatementInfo), "EmitCaseStatementInfo");
         newCaseStatement->name = name;
         newCaseStatement->codePos = TempMallocAlignStrict(0);
         newCaseStatement->sourcePos = sourcePos.stringValue;
@@ -5257,7 +5264,7 @@ void __cdecl EmitBreakStatement(scriptInstance_t inst, sval_u sourcePos, scr_blo
         EmitCodepos(inst, 0);
         if (gScrCompilePub[inst].developer_statement != 2)
         {
-            newBreakStatement = (BreakStatementInfo *)Hunk_AllocateTempMemoryHigh(12, "EmitBreakStatement");
+            newBreakStatement = (BreakStatementInfo *)Hunk_AllocateTempMemoryHigh(sizeof(BreakStatementInfo), "EmitBreakStatement");
             newBreakStatement->codePos = (const char *)gScrCompileGlob[inst].codePos;
             newBreakStatement->nextCodePos = TempMallocAlignStrict(0);
             newBreakStatement->next = gScrCompileGlob[inst].currentBreakStatement;
@@ -5284,7 +5291,7 @@ void __cdecl EmitContinueStatement(scriptInstance_t inst, sval_u sourcePos, scr_
         EmitCodepos(inst, 0);
         if (gScrCompilePub[inst].developer_statement != 2)
         {
-            newContinueStatement = (ContinueStatementInfo *)Hunk_AllocateTempMemoryHigh(12, "EmitContinueStatement");
+            newContinueStatement = (ContinueStatementInfo *)Hunk_AllocateTempMemoryHigh(sizeof(ContinueStatementInfo), "EmitContinueStatement");
             newContinueStatement->codePos = (const char *)gScrCompileGlob[inst].codePos;
             newContinueStatement->nextCodePos = TempMallocAlignStrict(0);
             newContinueStatement->next = gScrCompileGlob[inst].currentContinueStatement;
@@ -5368,7 +5375,7 @@ void __cdecl EmitDeveloperStatementList(
 
 void __cdecl EmitFormalParameterList(scriptInstance_t inst, sval_u exprlist, sval_u sourcePos, scr_block_s *block)
 {
-    EmitFormalParameterListInternal(inst, *(sval_u **)exprlist.stringValue, block);
+    EmitFormalParameterListInternal(inst, *SCR_U2P(sval_p *, exprlist.stringValue), block);
     EmitOpcode(inst, 0x35u, 0, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 0);
 }
@@ -5380,7 +5387,7 @@ void __cdecl EmitFormalParameterListInternal(scriptInstance_t inst, sval_u *node
         node = node[1].node;
         if ( !node )
             break;
-        EmitSafeSetVariableField(inst, *node->node, *(sval_u *)(node->stringValue + 4), block);
+        EmitSafeSetVariableField(inst, *node->node, *SCR_U2P(sval_u *, (node->stringValue + 4)), block);
     }
 }
 
@@ -5435,13 +5442,13 @@ void __cdecl EmitDeveloperThread(scriptInstance_t inst, sval_u val, sval_u *stmt
     {
         gScrCompilePub[inst].developer_statement = 1;
         InitThread(inst, 1);
-        posId = FindVariable(inst, gScrCompileGlob[inst].filePosId, *(unsigned int *)(val.stringValue + 4));
+        posId = FindVariable(inst, gScrCompileGlob[inst].filePosId, *SCR_U2P(unsigned int *, (val.stringValue + 4)));
         SetThreadPosition(inst, posId);
         EmitThreadInternal(
             inst,
             val,
-            *(sval_u *)(val.stringValue + 16),
-            *(sval_u *)(val.stringValue + 20),
+            *SCR_U2P(sval_u *, (val.stringValue + 16)),
+            *SCR_U2P(sval_u *, (val.stringValue + 20)),
             stmttblock->block);
     }
     else
@@ -5453,8 +5460,8 @@ void __cdecl EmitDeveloperThread(scriptInstance_t inst, sval_u val, sval_u *stmt
         EmitThreadInternal(
             inst,
             val,
-            *(sval_u *)(val.stringValue + 16),
-            *(sval_u *)(val.stringValue + 20),
+            *SCR_U2P(sval_u *, (val.stringValue + 16)),
+            *SCR_U2P(sval_u *, (val.stringValue + 20)),
             stmttblock->block);
         TempMemorySetPos(begin_pos);
         gScrVarPub[inst].checksum = savedChecksum;
@@ -5466,7 +5473,7 @@ void __cdecl EmitIncludeList(scriptInstance_t inst, sval_u val)
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    for ( node = *(sval_u **)(*(unsigned int *)val.stringValue + 4); node; node = node[1].node )
+    for ( node = *SCR_U2P(sval_p *, (*SCR_U2P(unsigned int *, val.stringValue) + 4)); node; node = node[1].node )
         EmitInclude(inst, *node);
 }
 
@@ -5475,7 +5482,7 @@ void __cdecl EmitInclude(scriptInstance_t inst, sval_u val)
     char *v2; // eax
     unsigned int filename; // [esp+0h] [ebp-4h]
 
-    if ( *(_BYTE *)val.stringValue != 88
+    if ( *SCR_U2P(_BYTE *, val.stringValue) != 88
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     4755,
@@ -5485,10 +5492,10 @@ void __cdecl EmitInclude(scriptInstance_t inst, sval_u val)
     {
         __debugbreak();
     }
-    v2 = SL_ConvertToString(*(unsigned int *)(val.stringValue + 4), inst);
+    v2 = SL_ConvertToString(*SCR_U2P(unsigned int *, (val.stringValue + 4)), inst);
     filename = Scr_CreateCanonicalFilename(inst, v2);
-    Scr_CompileRemoveRefToString(inst, *(unsigned int *)(val.stringValue + 4));
-    AddFilePrecache(inst, filename, *(unsigned int *)(val.stringValue + 8), 1, 0, 0);
+    Scr_CompileRemoveRefToString(inst, *SCR_U2P(unsigned int *, (val.stringValue + 4)));
+    AddFilePrecache(inst, filename, *SCR_U2P(unsigned int *, (val.stringValue + 8)), 1, 0, 0);
 }
 
 void __cdecl Scr_CompileStatement(scriptInstance_t inst, sval_u parseData)

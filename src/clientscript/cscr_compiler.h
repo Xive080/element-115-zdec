@@ -46,7 +46,7 @@ struct scrCompilePub_t // sizeof=0x21038
                                         // Scr_FindBreakpointInfo+4E/r ...
     int func_table_size;                // XREF: AddFunction+22/r
                                         // AddFunction+58/r ...
-    int func_table[1024];               // XREF: AddFunction+36/r
+    intptr_t func_table[1024];          // LP64: punteros a funcion nativos (int en x86)               // XREF: AddFunction+36/r
                                         // AddFunction+C5/w ...
 };
 
@@ -90,10 +90,10 @@ struct scrCompileGlob_t
     BreakStatementInfo *currentBreakStatement;
     bool bCanContinue;
     ContinueStatementInfo *currentContinueStatement;
-    scr_block_s **breakChildBlocks;
+    scr_block_p *breakChildBlocks;
     int *breakChildCount;
     scr_block_s *breakBlock;
-    scr_block_s **continueChildBlocks;
+    scr_block_p *continueChildBlocks;
     int *continueChildCount;
     bool forceNotCreate;
     PrecacheEntry *precachescriptList;
@@ -239,8 +239,8 @@ void __cdecl Scr_CalcLocalVarsArrayVariableRef(sval_u expr, scr_block_s *block);
 void __cdecl Scr_CalcLocalVarsArrayPrimitiveExpressionRef(sval_u expr, scr_block_s *block);
 void __cdecl Scr_CalcLocalVarsAssignmentStatement(sval_u lhs, sval_u rhs, scr_block_s *block);
 void __cdecl Scr_CalcLocalVarsIfStatement(scriptInstance_t inst, sval_u stmt, scr_block_s *block, sval_u *ifStatBlock);
-void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_s **to);
-void __cdecl Scr_MergeChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block);
+void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_p *to);
+void __cdecl Scr_MergeChildBlocks(scr_block_p *childBlocks, int childCount, scr_block_s *block);
 int __cdecl Scr_FindLocalVar(scr_block_s *block, int startIndex, unsigned int name);
 void __cdecl Scr_CalcLocalVarsIfElseStatement(
                 scriptInstance_t inst,
@@ -249,7 +249,7 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
                 scr_block_s *block,
                 sval_u *ifStatBlock,
                 sval_u *elseStatBlock);
-void __cdecl Scr_AppendChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block);
+void __cdecl Scr_AppendChildBlocks(scr_block_p *childBlocks, int childCount, scr_block_s *block);
 void __cdecl Scr_AddBreakBlock(scriptInstance_t inst, scr_block_s *block);
 void __cdecl Scr_CheckMaxSwitchCases(int count);
 void __cdecl Scr_AddContinueBlock(scriptInstance_t inst, scr_block_s *block);
@@ -314,6 +314,7 @@ void __cdecl EmitByte(scriptInstance_t inst, unsigned __int8 value);
 void __cdecl EmitValue(scriptInstance_t inst, VariableCompileValue *constValue);
 void __cdecl EmitGetUndefined(scriptInstance_t inst, sval_u sourcePos);
 void __cdecl EmitGetInteger(scriptInstance_t inst, int value, sval_u sourcePos);
+void __cdecl EmitCodeposInt(scriptInstance_t inst, unsigned int value);
 void __cdecl EmitCodepos(scriptInstance_t inst, const char *pos);
 void __cdecl EmitGetFloat(scriptInstance_t inst, float value, sval_u sourcePos);
 void __cdecl EmitFloat(scriptInstance_t inst, float value);
@@ -391,7 +392,7 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
 void __cdecl EmitDecTop(scriptInstance_t inst);
 int __cdecl EmitExpressionList(scriptInstance_t inst, sval_u exprlist, scr_block_s *block);
 void __cdecl AddExpressionListOpcodePos(scriptInstance_t inst, sval_u exprlist);
-int __cdecl AddFunction(scriptInstance_t inst, int func);
+int __cdecl AddFunction(scriptInstance_t inst, intptr_t func);
 void __cdecl EmitPreFunctionCall(scriptInstance_t inst, sval_u func_name);
 void __cdecl EmitPostFunctionCall(
                 scriptInstance_t inst,
@@ -585,7 +586,7 @@ void __cdecl EmitIfElseStatement(
                 scr_block_s *block,
                 sval_u *ifStatBlock,
                 sval_u *elseStatBlock);
-void __cdecl Scr_InitFromChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block);
+void __cdecl Scr_InitFromChildBlocks(scr_block_p *childBlocks, int childCount, scr_block_s *block);
 void __cdecl EmitWhileStatement(
                 scriptInstance_t inst,
                 sval_u expr,

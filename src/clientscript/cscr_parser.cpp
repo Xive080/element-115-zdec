@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "cscr_parser.h"
 #include "cscr_variable.h"
 #include <universal/assertive.h>
@@ -19,7 +20,12 @@
 scrParserPub_t gScrParserPub[2];
 scrParserGlob_t gScrParserGlob[2];
 
+#if defined(__LP64__) || defined(_WIN64)
+// LP64: g_EndPos se guarda como codepos (desplazamiento de arena): tiene que vivir dentro de la arena
+char &g_EndPos = *(char *)Ptr32_ArenaAlloc(64, 64);
+#else
 char g_EndPos;
+#endif
 
 thread_local bool g_loadedImpureScript = false;
 
@@ -62,31 +68,31 @@ void __cdecl Scr_InitOpcodeLookup(scriptInstance_t inst)
         gScrParserGlob[inst].opcodeLookupLen = 0;
         gScrParserGlob[inst].opcodeLookup = (OpcodeLookup *)Hunk_UserAlloc(
             g_DebugHunkUser,
-            12 * gScrParserGlob[inst].opcodeLookupMaxLen,
+            sizeof(OpcodeLookup) * gScrParserGlob[inst].opcodeLookupMaxLen,
             4,
             "Scr_InitOpcodeLookup");
-        memset((unsigned __int8 *)gScrParserGlob[inst].opcodeLookup, 0, 12 * gScrParserGlob[inst].opcodeLookupMaxLen);
+        memset((unsigned __int8 *)gScrParserGlob[inst].opcodeLookup, 0, sizeof(OpcodeLookup) * gScrParserGlob[inst].opcodeLookupMaxLen);
         gScrParserGlob[inst].sourcePosLookupMaxLen = inst != SCRIPTINSTANCE_CLIENT ? 393216 : 16;
         gScrParserGlob[inst].sourcePosLookupLen = 0;
         gScrParserGlob[inst].sourcePosLookup = (SourceLookup *)Hunk_UserAlloc(
             g_DebugHunkUser,
-            8 * gScrParserGlob[inst].sourcePosLookupMaxLen,
+            sizeof(SourceLookup) * gScrParserGlob[inst].sourcePosLookupMaxLen,
             4,
             "Scr_InitOpcodeLookup");
-        memset((unsigned __int8 *)gScrParserGlob[inst].sourcePosLookup, 0, 8 * gScrParserGlob[inst].sourcePosLookupMaxLen);
+        memset((unsigned __int8 *)gScrParserGlob[inst].sourcePosLookup, 0, sizeof(SourceLookup) * gScrParserGlob[inst].sourcePosLookupMaxLen);
         gScrParserGlob[inst].currentCodePos = 0;
         gScrParserGlob[inst].currentSourcePosCount = 0;
         gScrParserGlob[inst].sourceBufferLookupMaxLen = inst != SCRIPTINSTANCE_CLIENT ? 256 : 16;
         gScrParserPub[inst].sourceBufferLookupLen = 0;
         gScrParserPub[inst].sourceBufferLookup = (SourceBufferInfo *)Hunk_UserAlloc(
             g_DebugHunkUser,
-            24 * gScrParserGlob[inst].sourceBufferLookupMaxLen,
+            sizeof(SourceBufferInfo) * gScrParserGlob[inst].sourceBufferLookupMaxLen,
             4,
             "Scr_InitOpcodeLookup");
         memset(
             (unsigned __int8 *)gScrParserPub[inst].sourceBufferLookup,
             0,
-            24 * gScrParserGlob[inst].sourceBufferLookupMaxLen);
+            sizeof(SourceBufferInfo) * gScrParserGlob[inst].sourceBufferLookupMaxLen);
     }
 }
 
@@ -206,14 +212,14 @@ void __cdecl AddOpcodePos(scriptInstance_t inst, unsigned int sourcePos, int typ
                 }
                 newOpcodeLookup = (unsigned __int8 *)Hunk_UserAlloc(
                     g_DebugHunkUser,
-                    12 * gScrParserGlob[inst].opcodeLookupMaxLen,
+                    sizeof(OpcodeLookup) * gScrParserGlob[inst].opcodeLookupMaxLen,
                     4,
                     "AddOpcodePos");
-                memset(newOpcodeLookup, 0, 12 * gScrParserGlob[inst].opcodeLookupMaxLen);
+                memset(newOpcodeLookup, 0, sizeof(OpcodeLookup) * gScrParserGlob[inst].opcodeLookupMaxLen);
                 memcpy(
                     newOpcodeLookup,
                     (unsigned __int8 *)gScrParserGlob[inst].opcodeLookup,
-                    12 * gScrParserGlob[inst].opcodeLookupLen);
+                    sizeof(OpcodeLookup) * gScrParserGlob[inst].opcodeLookupLen);
                 Hunk_UserFree(g_DebugHunkUser, gScrParserGlob[inst].opcodeLookup);
                 gScrParserGlob[inst].opcodeLookup = (OpcodeLookup *)newOpcodeLookup;
             }
@@ -232,14 +238,14 @@ void __cdecl AddOpcodePos(scriptInstance_t inst, unsigned int sourcePos, int typ
                 }
                 newSourcePosLookup = (unsigned __int8 *)Hunk_UserAlloc(
                     g_DebugHunkUser,
-                    8 * gScrParserGlob[inst].sourcePosLookupMaxLen,
+                    sizeof(SourceLookup) * gScrParserGlob[inst].sourcePosLookupMaxLen,
                     4,
                     "AddOpcodePos");
-                memset(newSourcePosLookup, 0, 8 * gScrParserGlob[inst].sourcePosLookupMaxLen);
+                memset(newSourcePosLookup, 0, sizeof(SourceLookup) * gScrParserGlob[inst].sourcePosLookupMaxLen);
                 memcpy(
                     newSourcePosLookup,
                     (unsigned __int8 *)gScrParserGlob[inst].sourcePosLookup,
-                    8 * gScrParserGlob[inst].sourcePosLookupLen);
+                    sizeof(SourceLookup) * gScrParserGlob[inst].sourcePosLookupLen);
                 Hunk_UserFree(g_DebugHunkUser, gScrParserGlob[inst].sourcePosLookup);
                 gScrParserGlob[inst].sourcePosLookup = (SourceLookup *)newSourcePosLookup;
             }
@@ -1081,14 +1087,14 @@ SourceBufferInfo *__cdecl Scr_GetNewSourceBuffer(scriptInstance_t inst)
         }
         newSourceBufferInfo = (unsigned __int8 *)Hunk_UserAlloc(
             g_DebugHunkUser,
-            24 * gScrParserGlob[inst].sourceBufferLookupMaxLen,
+            sizeof(SourceBufferInfo) * gScrParserGlob[inst].sourceBufferLookupMaxLen,
             4,
             "Scr_AddSourceBuffer4");
-        memset(newSourceBufferInfo, 0, 24 * gScrParserGlob[inst].sourceBufferLookupMaxLen);
+        memset(newSourceBufferInfo, 0, sizeof(SourceBufferInfo) * gScrParserGlob[inst].sourceBufferLookupMaxLen);
         Com_Memcpy(
             newSourceBufferInfo,
             (unsigned char*)gScrParserPub[inst].sourceBufferLookup,
-            24 * gScrParserPub[inst].sourceBufferLookupLen);
+            sizeof(SourceBufferInfo) * gScrParserPub[inst].sourceBufferLookupLen);
         Hunk_UserFree(g_DebugHunkUser, gScrParserPub[inst].sourceBufferLookup);
         gScrParserPub[inst].sourceBufferLookup = (SourceBufferInfo *)newSourceBufferInfo;
     }
@@ -1300,16 +1306,16 @@ char *__cdecl Scr_ReadFile_FastFile(
         extension = Com_GetExtensionSubString(extFilename);
         if ( I_stricmp(extension, ".gsc") && I_stricmp(extension, ".csc") )
         {
-            sourceBuf = (char *)rawfile->buffer;
+            sourceBuf = (char *)rawfile->buffer.get();
             len = strlen(sourceBuf);
         }
         else
         {
-            len = *(unsigned int *)rawfile->buffer;
+            len = *(unsigned int *)rawfile->buffer.get();
             outlen = len;
-            inlen = *((unsigned int *)rawfile->buffer + 1);
+            inlen = *((unsigned int *)rawfile->buffer.get() + 1);
             sourceBuf = (char *)Hunk_AllocateTempMemoryHigh(len, "Scr_ReadFile");
-            uncompress((unsigned __int8 *)sourceBuf, &outlen, (unsigned __int8 *)rawfile->buffer + 8, inlen);
+            uncompress((unsigned __int8 *)sourceBuf, &outlen, (unsigned __int8 *)rawfile->buffer.get() + 8, inlen);
             if ( len != outlen
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_parser.cpp",

@@ -143,6 +143,10 @@ void __cdecl MT_Free(_BYTE *p, int numBytes, scriptInstance_t inst);
 bool __cdecl MT_Realloc(scriptInstance_t inst, int oldNumBytes, int newNumbytes);
 
 
+#if defined(__LP64__) || defined(_WIN64)
+extern scrMemTreeGlob_t (&gScrMemTreeGlob)[2];
+#else
 extern scrMemTreeGlob_t gScrMemTreeGlob[2];
+#endif
 extern scrMemTreePub_t gScrMemTreePub[2];
 extern scrMemTreeDebugGlob_t gScrMemTreeDebugGlob[2];

@@ -2219,7 +2219,7 @@ void __cdecl yy_load_buffer_state()
     yy_hold_char = *yy_c_buf_p;
 }
 
-yy_buffer_state *__cdecl yy_create_buffer(_iobuf *file, unsigned int size)
+yy_buffer_state *__cdecl yy_create_buffer(FILE *file, unsigned int size)
 {
     yy_buffer_state *b; // [esp+0h] [ebp-4h]
 
@@ -2235,7 +2235,7 @@ yy_buffer_state *__cdecl yy_create_buffer(_iobuf *file, unsigned int size)
     return b;
 }
 
-void __cdecl yy_init_buffer(yy_buffer_state *b, _iobuf *file)
+void __cdecl yy_init_buffer(yy_buffer_state *b, FILE *file)
 {
     yy_flush_buffer(b);
     b->yy_input_file = file;

@@ -272,7 +272,7 @@ char *__cdecl Scr_GetNextCodepos(
                 if (gScrVmPub[inst].function_count >= 32)
                     goto LABEL_23;
                 *localId = 0;
-                result = *(char **)pos;
+                result = SCR_U2P(char *, *(unsigned int *)pos);
                 break;
             case 'S':
             case 'W':
@@ -282,7 +282,7 @@ char *__cdecl Scr_GetNextCodepos(
                 if (top->type != 9 || gScrVmPub[inst].function_count >= 32)
                     goto LABEL_23;
                 *localId = 0;
-                result = (char *)top->u.intValue;
+                result = SCR_U2P(char *, top->u.intValue);
                 break;
             default:
                 goto LABEL_23;
@@ -543,7 +543,7 @@ char *__cdecl Scr_GetNextCodepos(
             {
                 v12 = *(_DWORD *)posa;
                 posc = posa + 4;
-                v11 = *(const char **)posc;
+                v11 = SCR_U2P(const char *, *(unsigned int *)posc);
                 posa = posc + 4;
                 if (v12 == caseValue)
                 {
@@ -859,7 +859,7 @@ const char *__cdecl Scr_GetStackThreadPos(
             {
                 __debugbreak();
             }
-            pos = (const char *)u.intValue;
+            pos = SCR_U2P(const char *, u.intValue);
         }
     }
     if (killThread)
@@ -1129,9 +1129,9 @@ void __cdecl VM_Notify(
                     }
                     tempValue = (VariableUnion *)GetVariableValueAddress(inst, notifyListEntry);
                     stackValue.intValue = tempValue->intValue;
-                    if (*(_BYTE *)(*(_DWORD *)tempValue->intValue - 1) == 119)
+                    if (*SCR_U2P(_BYTE *, (*SCR_U2P(_DWORD *, tempValue->intValue)) - 1) == 119)
                     {
-                        size = **(char **)stackValue.intValue;
+                        size = *SCR_U2P(char *, *SCR_U2P(unsigned int *, stackValue.intValue));
                         if (size < 0
                             && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
@@ -1142,18 +1142,18 @@ void __cdecl VM_Notify(
                         {
                             __debugbreak();
                         }
-                        if (size > *(unsigned __int16 *)(stackValue.intValue + 4)
+                        if (size > *SCR_U2P(unsigned __int16 *, (stackValue.intValue + 4))
                             && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                 4084,
                                 0,
                                 "size <= stackValue->size\n\t%i, %i",
                                 size,
-                                *(unsigned __int16 *)(stackValue.intValue + 4)))
+                                *SCR_U2P(unsigned __int16 *, (stackValue.intValue + 4))))
                         {
                             __debugbreak();
                         }
-                        buf = (char *)(stackValue.intValue + 5 * (*(unsigned __int16 *)(stackValue.intValue + 4) - size) + 13);
+                        buf = SCR_U2P(char *, (stackValue.intValue + 5 * (*SCR_U2P(unsigned __int16 *, (stackValue.intValue + 4)) - size)) + 13);
                         for (currentValue = top; size; --currentValue)
                         {
                             if (currentValue->type == 7
@@ -1197,8 +1197,8 @@ void __cdecl VM_Notify(
                             {
                                 RuntimeError(
                                     inst,
-                                    *(char **)stackValue.intValue,
-                                    **(char **)stackValue.intValue - size + 3,
+                                    SCR_U2P(char *, *SCR_U2P(unsigned int *, stackValue.intValue)),
+                                    *SCR_U2P(char *, *SCR_U2P(unsigned int *, stackValue.intValue)) - size + 3,
                                     gScrVarPub[inst].error_message,
                                     gScrVmGlob[inst].dialog_error_message);
                                 Scr_ClearErrorMessage(inst);
@@ -1221,7 +1221,7 @@ void __cdecl VM_Notify(
                                 goto next;
                             }
                         }
-                        ++ * (_DWORD *)stackValue.intValue;
+                        ++ * SCR_U2P(_DWORD *, stackValue.intValue);
                         bNoStack = 1;
                     }
                     else
@@ -1279,7 +1279,7 @@ void __cdecl VM_Notify(
                         {
                             __debugbreak();
                         }
-                        size = *(unsigned __int16 *)(stackValue.intValue + 4);
+                        size = *SCR_U2P(unsigned __int16 *, (stackValue.intValue + 4));
                         newSize = size;
                         currentValue = top;
                         do
@@ -1310,19 +1310,19 @@ void __cdecl VM_Notify(
                         }
                         len = 5 * size;
                         bufLen = 5 * newSize + 13;
-                        if (!MT_Realloc(inst, *(unsigned __int16 *)(stackValue.intValue + 6), bufLen))
+                        if (!MT_Realloc(inst, *SCR_U2P(unsigned __int16 *, (stackValue.intValue + 6)), bufLen))
                         {
                             newStackValue = (VariableStackBuffer *)MT_Alloc(bufLen, 1, inst);
                             newStackValue->bufLen = bufLen;
-                            newStackValue->pos = *(const char **)stackValue.intValue;
-                            newStackValue->localId = *(_DWORD *)(stackValue.intValue + 8);
-                            memcpy((unsigned __int8 *)newStackValue->buf, (unsigned __int8 *)(stackValue.intValue + 13), len);
-                            MT_Free((uint8*)stackValue.intValue, *(unsigned __int16 *)(stackValue.intValue + 6), inst);
-                            stackValue.intValue = (int)newStackValue;
-                            tempValue->intValue = (int)newStackValue;
+                            newStackValue->pos = SCR_U2P(const char *, *SCR_U2P(unsigned int *, stackValue.intValue));
+                            newStackValue->localId = *SCR_U2P(_DWORD *, (stackValue.intValue + 8));
+                            memcpy((unsigned __int8 *)newStackValue->buf, SCR_U2P(unsigned __int8 *, (stackValue.intValue + 13)), len);
+                            MT_Free(SCR_U2P(uint8*, stackValue.intValue), *SCR_U2P(unsigned __int16 *, (stackValue.intValue + 6)), inst);
+                            stackValue.stackValue = newStackValue;
+                            tempValue->stackValue = newStackValue;
                         }
-                        *(_WORD *)(stackValue.intValue + 4) = newSize;
-                        buf = (char *)(stackValue.intValue + len + 13);
+                        *SCR_U2P(_WORD *, (stackValue.intValue + 4)) = newSize;
+                        buf = SCR_U2P(char *, (stackValue.intValue + len + 13));
                         newSize -= size;
                         if (!newSize
                             && !Assert_MyHandler(
@@ -1353,7 +1353,7 @@ void __cdecl VM_Notify(
                             buf += 4;
                             --newSize;
                         } while (newSize);
-                        if (&buf[-stackValue.intValue] != (char *)bufLen
+                        if (buf - SCR_U2P(char *, stackValue.intValue) != bufLen
                             && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                 4217,
@@ -1493,7 +1493,7 @@ void __cdecl Scr_TerminateWaitThread(scriptInstance_t inst, unsigned int localId
     {
         __debugbreak();
     }
-    stackValue = (VariableStackBuffer *)GetVariableValueAddress(inst, stackId)->next;
+    stackValue = SCR_U2P(VariableStackBuffer *, GetVariableValueAddress(inst, stackId)->next);
     if (gScrVarPub[inst].developer)
         Scr_GetStackThreadPos(inst, localId, stackValue, 1);
     RemoveObjectVariable(inst, id, startLocalId);
@@ -1515,12 +1515,12 @@ void __cdecl VM_TerminateStack(
     int size = stackValue->size;
     unsigned int localId = stackValue->localId;
     const char *buf = stackValue->buf;
-    buf += (sizeof(const char *) + sizeof(unsigned char)) * size;
+    buf += (sizeof(unsigned int) + sizeof(unsigned char)) * size;   // LP64: entradas de 5 bytes (tipo + valor de 4)
 
     while (size)
     {
-        buf -= sizeof(const char *);
-        u.codePosValue = *(const char **)buf;
+        buf -= sizeof(unsigned int);
+        u.intValue = *(const unsigned int *)buf;
         buf -= sizeof(unsigned char);
         unsigned char type = buf[0];
         size--;
@@ -1619,7 +1619,7 @@ void __cdecl Scr_TerminateWaittillThread(scriptInstance_t inst, unsigned int loc
         {
             __debugbreak();
         }
-        stackValue = (VariableStackBuffer *)GetVariableValueAddress(inst, stackId)->next;
+        stackValue = SCR_U2P(VariableStackBuffer *, GetVariableValueAddress(inst, stackId)->next);
         if (gScrVarPub[inst].developer)
             Scr_GetStackThreadPos(inst, localId, stackValue, 1);
         VM_CancelNotifyInternal(inst, notifyListOwnerId, startLocalId, notifyListId, notifyNameListId, stringValue);
@@ -1645,7 +1645,7 @@ void __cdecl Scr_TerminateWaittillThread(scriptInstance_t inst, unsigned int loc
         {
             __debugbreak();
         }
-        stackValue = (VariableStackBuffer *)GetVariableValueAddress(inst, stackIda)->next;
+        stackValue = SCR_U2P(VariableStackBuffer *, GetVariableValueAddress(inst, stackIda)->next);
         if (gScrVarPub[inst].developer)
             Scr_GetStackThreadPos(inst, localId, stackValue, 1);
         RemoveVariable(inst, startLocalId, VARIABLELIST_STACK_NAME(inst));
@@ -1733,7 +1733,7 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t inst, unsigned int notifyList
         }
         if ( GetValueType(inst, stackId) == 10 )
         {
-            stackValuea = (VariableStackBuffer *)GetVariableValueAddress(inst, stackId)->next;
+            stackValuea = SCR_U2P(VariableStackBuffer *, GetVariableValueAddress(inst, stackId)->next);
             Scr_CancelWaittill(inst, startLocalId);
             VM_TrimStack(inst, startLocalId, stackValuea, 0);
         }
@@ -1767,8 +1767,8 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t inst, unsigned int notifyList
                     __debugbreak();
                 }
                 VariableValueAddress = GetVariableValueAddress(inst, stackIda);
-                stackValue = (VariableStackBuffer *)VariableValueAddress->next;
-                if ( *(unsigned int *)VariableValueAddress->next )
+                stackValue = SCR_U2P(VariableStackBuffer *, VariableValueAddress->next);
+                if ( *SCR_U2P(unsigned int *, VariableValueAddress->next) )
                 {
                     if ( !Assert_MyHandler(
                                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
@@ -1837,7 +1837,7 @@ void __cdecl VM_TrimStack(
                     Scr_SetThreadNotifyName(inst, startLocalId, 0);
                     stackValue->pos = 0;
                     tempValue.type = 10;
-                    tempValue.u.intValue = (int)stackValue;
+                    tempValue.u.stackValue = stackValue;
                     NewVariable = GetNewVariable(inst, startLocalId, VARIABLELIST_STACK_NAME(inst));
                     SetNewVariableValue(inst, NewVariable, &tempValue);
                 }
@@ -2126,7 +2126,7 @@ const char *__cdecl Scr_ReadCodePos(scriptInstance_t inst, const char **pos)
 
     v3 = *(unsigned int *)*pos;
     *pos += 4;
-    return (const char *)v3;
+    return SCR_U2P(const char *, v3);   // LP64: el bytecode guarda desplazamientos de arena
 }
 
 unsigned int __cdecl GetDummyObject(scriptInstance_t inst)
@@ -2200,7 +2200,7 @@ VariableStackBuffer *__cdecl VM_ArchiveStack(scriptInstance_t inst, function_sta
     *((_DWORD *)stackValue + 2) = localId;
     *((_WORD *)stackValue + 2) = size;
     *((_WORD *)stackValue + 3) = bufLen;
-    *(_DWORD *)stackValue = (DWORD)stack->pos;
+    *(_DWORD *)stackValue = SCR_P2U(stack->pos);
     stackValue[12] = gScrVarPub[inst].time;
     gScrVmPub[inst].localVars -= stack->localVarCount;
     buf = &stackValue[5 * size + 13];
@@ -2211,7 +2211,7 @@ VariableStackBuffer *__cdecl VM_ArchiveStack(scriptInstance_t inst, function_sta
         {
             --gScrVmPub[inst].function_count;
             --gScrVmPub[inst].function_frame;
-            *(_DWORD *)bufa = (DWORD)gScrVmPub[inst].function_frame->fs.pos;
+            *(_DWORD *)bufa = SCR_P2U(gScrVmPub[inst].function_frame->fs.pos);
             gScrVmPub[inst].localVars -= gScrVmPub[inst].function_frame->fs.localVarCount;
             localId = GetParentLocalId(inst, localId);
         }
@@ -2848,7 +2848,7 @@ void __cdecl VM_TerminateTime(scriptInstance_t inst, unsigned int timeId)
         {
             __debugbreak();
         }
-        stackValue = (VariableStackBuffer *)GetVariableValueAddress(inst, stackId)->next;
+        stackValue = SCR_U2P(VariableStackBuffer *, GetVariableValueAddress(inst, stackId)->next);
         RemoveObjectVariable(inst, timeId, startLocalId);
         Scr_ClearWaitTime(inst, startLocalId);
         VM_TerminateStack(inst, startLocalId, startLocalId, stackValue);
@@ -3122,8 +3122,8 @@ void __cdecl Scr_GetVector(unsigned int index, float *vectorValue, scriptInstanc
         value = &gScrVmPub[inst].top[-(int)index];
         if (value->type == 4)
         {
-            intValue = (float *)value->u.intValue;
-            *vectorValue = *(float *)value->u.intValue;
+            intValue = SCR_U2P(float *, value->u.intValue);
+            *vectorValue = *SCR_U2P(float *, value->u.intValue);
             vectorValue[1] = intValue[1];
             vectorValue[2] = intValue[2];
             return;
@@ -3165,7 +3165,7 @@ unsigned int __cdecl Scr_GetFunc(unsigned int index, scriptInstance_t inst)
     {
         __debugbreak();
     }
-    return value->u.intValue - (unsigned int)gScrVarPub[inst].programBuffer;
+    return value->u.intValue - SCR_P2U(gScrVarPub[inst].programBuffer);
 }
 
 scr_entref_t __cdecl Scr_GetEntityRef(unsigned int index, scriptInstance_t inst)
@@ -3313,7 +3313,7 @@ void __cdecl Scr_AddAnim(scr_anim_s value, scriptInstance_t inst)
 {
     IncInParam(inst);
     gScrVmPub[inst].top->type = 11;
-    gScrVmPub[inst].top->u.intValue = (int)value.linkPointer;
+    gScrVmPub[inst].top->u.intValue = *(int *)&value;   // LP64: los 4 bytes (index/tree) del scr_anim_s
 }
 
 void __cdecl Scr_AddUndefined(scriptInstance_t inst)
@@ -3445,7 +3445,7 @@ void __cdecl Scr_AddVector(float *value, scriptInstance_t inst)
 {
     IncInParam(inst);
     gScrVmPub[inst].top->type = 4;
-    gScrVmPub[inst].top->u.intValue = (int)Scr_AllocVector(inst, value);
+    gScrVmPub[inst].top->u.vectorValue = Scr_AllocVector(inst, value);
 }
 
 void __cdecl Scr_MakeArray(scriptInstance_t inst)
@@ -4103,7 +4103,7 @@ void __cdecl VM_Resume(scriptInstance_t inst, unsigned int timeId)
         {
             __debugbreak();
         }
-        stackValue = (VariableStackBuffer *)GetVariableValueAddress(inst, stackId)->next;
+        stackValue = SCR_U2P(VariableStackBuffer *, GetVariableValueAddress(inst, stackId)->next);
         RemoveObjectVariable(inst, timeId, startLocalId);
         VM_UnarchiveStack(inst, startLocalId, stackValue);
         v2 = VM_Execute_0(inst);
@@ -4119,7 +4119,7 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t inst, unsigned int startLocalId,
 {
     VariableValue *top; // [esp+8h] [ebp-14h]
     char *buf; // [esp+Ch] [ebp-10h]
-    const char **bufa; // [esp+Ch] [ebp-10h]
+    const unsigned int *bufa; // [esp+Ch] [ebp-10h]
     unsigned int localId; // [esp+10h] [ebp-Ch]
     int function_count; // [esp+14h] [ebp-8h]
     int size; // [esp+18h] [ebp-4h]
@@ -4166,7 +4166,7 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t inst, unsigned int startLocalId,
         --size;
         top[1].type = (unsigned __int8)*buf;
         ++top;
-        bufa = (const char **)(buf + 1);
+        bufa = (const unsigned int *)(buf + 1);   // LP64: valores de 4 bytes (desplazamientos de arena para codepos)
         if (top->type == 7)
         {
             if (gScrVmPub[inst].function_count >= 32
@@ -4179,13 +4179,13 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t inst, unsigned int startLocalId,
             {
                 __debugbreak();
             }
-            gScrVmPub[inst].function_frame->fs.pos = *bufa;
+            gScrVmPub[inst].function_frame->fs.pos = SCR_U2P(const char *, *bufa);
             ++gScrVmPub[inst].function_count;
             ++gScrVmPub[inst].function_frame;
         }
         else
         {
-            top->u.intValue = (int)*bufa;
+            top->u.intValue = *bufa;
         }
         buf = (char *)(bufa + 1);
     }
@@ -5028,9 +5028,8 @@ thread_return:
 
             v3 = Scr_EvalVariable(inst, gScrVmPub[inst].localVars[-(unsigned __int8)*localFs.pos]);
             v97 = v3;
-            v3.type = (int)localFs.top;
-            localFs.top[1].u.intValue = v3.u.intValue;
-            *(_DWORD *)(v3.type + 12) = v97.type;
+            localFs.top[1].u.intValue = v3.u.intValue;   // LP64: el decompilado escribia top[1].type via (int)top + 12
+            localFs.top[1].type = v97.type;
             ++localFs.top;
             ++localFs.pos;
             continue;
@@ -5211,9 +5210,8 @@ thread_return:
             localFs.pos += 2;
             VariableField = Scr_FindVariableField(inst, objectId, v77);
             v94 = VariableField;
-            VariableField.type = (int)localFs.top;
-            localFs.top[1].u.intValue = VariableField.u.intValue;
-            *(_DWORD *)(VariableField.type + 12) = v94.type;
+            localFs.top[1].u.intValue = VariableField.u.intValue;   // LP64: idem (top[1].type)
+            localFs.top[1].type = v94.type;
             ++localFs.top;
             continue;
         case OP_EvalLevelFieldVariableRef:
@@ -5645,7 +5643,7 @@ $LN205_0:
                 localFs.localId = AllocChildThread(inst, selfId, localFs.localId);
                 gScrVmPub[inst].function_frame->fs.pos = localFs.pos;
                 function_frame = gScrVmPub[inst].function_frame;
-                v68 = *(const char **)function_frame->fs.pos;
+                v68 = SCR_U2P(const char *, *(const unsigned int *)function_frame->fs.pos);
                 function_frame->fs.pos += 4;
                 localFs.pos = v68;
                 goto function_call;
@@ -6100,7 +6098,7 @@ function_call:
             iassert(GetObjectType(inst, tempValue.u.pointerValue) != VAR_DEAD_THREAD);
 
             stackValue.type = VAR_STACK;
-            stackValue.u.intValue = (int)VM_ArchiveStack(inst, &localFs);
+            stackValue.u.stackValue = VM_ArchiveStack(inst, &localFs);
             v64 = stringValue;
             v34 = GetVariable(inst, tempValue.u.stringValue, VARIABLELIST_NOTIFY_NAME(inst));
             Array = GetArray(inst, v34);

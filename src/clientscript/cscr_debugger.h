@@ -43,12 +43,17 @@ union sval_u // sizeof=0x4
     unsigned int idValue;
     float floatValue;
     int intValue;
-    sval_u *node;
+    // LP64: punteros de 32 bits relativos a la arena (cscr_ptr32.h); sizeof(sval_u) == 4 como en x86
+    PTR32(sval_u) node;
     unsigned int sourcePosValue;
-    const char *codePosValue;
-    const char *debugString;
-    scr_block_s *block;
+    PTR32(const char) codePosValue;
+    PTR32(const char) debugString;
+    PTR32(scr_block_s) block;
 };
+
+// LP64: ranura de 4 bytes que guarda un puntero de script (arbol de parseo, listas de bloques del compilador)
+typedef PTR32(sval_u) sval_p;
+typedef PTR32(scr_block_s) scr_block_p;
 
 struct debugger_sval_s // sizeof=0x4
 {                                       // XREF: debugger_sval_t/r

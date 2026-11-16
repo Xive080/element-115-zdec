@@ -276,7 +276,7 @@ static void Scr_SaveValue(ScrSaveContext *ctx, unsigned int type, VariableUnion 
         Scr_SaveString(ctx, value.stringValue);
         break;
     case VAR_VECTOR:
-        MemFile_WriteData(ctx->memFile, 12, (unsigned __int8 *)value.vectorValue);
+        MemFile_WriteData(ctx->memFile, 12, (unsigned __int8 *)value.vectorValue.get());
         break;
     case VAR_FLOAT:
         MemFile_WriteFloat(ctx->memFile, value.floatValue);

@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "cscr_variable.h"
 #include <universal/com_memory.h>
 #include <qcommon/common.h>
@@ -4565,7 +4566,7 @@ char __cdecl Scr_CastString(scriptInstance_t inst, VariableValue *value)
         return 1;
     case 4:
         value->type = 2;
-        constTempVector = (const float *)value->u.intValue;
+        constTempVector = SCR_U2P(const float *, value->u.intValue);
         value->u.intValue = SL_GetStringForVector(inst, value->u.vectorValue);
         RemoveRefToVector(inst, constTempVector);
         return 1;
@@ -4685,7 +4686,7 @@ void __cdecl Scr_CastVector(scriptInstance_t inst, VariableValue *value)
         }
     }
     value->type = 4;
-    value->u.intValue = (int)Scr_AllocVector(inst, vec);
+    value->u.vectorValue = Scr_AllocVector(inst, vec);
 }
 
 unsigned int __cdecl Scr_EvalFieldObject(scriptInstance_t inst, unsigned int tempVariable, VariableValue *value)
@@ -4842,9 +4843,9 @@ void __cdecl Scr_EvalEquality(scriptInstance_t inst, VariableValue *value1, Vari
             break;
         case 4:
             value1->type = 6;
-            v3 = *(float *)value1->u.intValue == *(float *)value2->u.intValue
-                && *(float *)(value1->u.intValue + 4) == *(float *)(value2->u.intValue + 4)
-                && *(float *)(value1->u.intValue + 8) == *(float *)(value2->u.intValue + 8);
+            v3 = *SCR_U2P(float *, value1->u.intValue) == *SCR_U2P(float *, value2->u.intValue)
+                && *SCR_U2P(float *, (value1->u.intValue + 4)) == *SCR_U2P(float *, (value2->u.intValue + 4))
+                && *SCR_U2P(float *, (value1->u.intValue + 8)) == *SCR_U2P(float *, (value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
             value1->u.intValue = v3;
@@ -4904,7 +4905,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
                 *tempVector = value2->u.floatValue;
                 tempVector[1] = value2->u.floatValue;
                 tempVector[2] = value2->u.floatValue;
-                value2->u.intValue = (int)tempVector;
+                value2->u.vectorValue = tempVector;
                 value2->type = 4;
                 return;
             }
@@ -4914,7 +4915,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
                 *v3 = (float)value2->u.intValue;
                 v3[1] = (float)value2->u.intValue;
                 v3[2] = (float)value2->u.intValue;
-                value2->u.intValue = (int)v3;
+                value2->u.vectorValue = v3;
                 value2->type = 4;
                 return;
             }
@@ -4927,7 +4928,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
             *tempVectora = value1->u.floatValue;
             tempVectora[1] = value1->u.floatValue;
             tempVectora[2] = value1->u.floatValue;
-            value1->u.intValue = (int)tempVectora;
+            value1->u.vectorValue = tempVectora;
             value1->type = 4;
             return;
         }
@@ -4937,7 +4938,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
             *tempVectorb = (float)value1->u.intValue;
             tempVectorb[1] = (float)value1->u.intValue;
             tempVectorb[2] = (float)value1->u.intValue;
-            value1->u.intValue = (int)tempVectorb;
+            value1->u.vectorValue = tempVectorb;
             value1->type = 4;
         }
         else
@@ -5147,12 +5148,12 @@ void __cdecl Scr_EvalPlus(scriptInstance_t inst, VariableValue *value1, Variable
             break;
         case 4:
             v12 = Scr_AllocVector(inst);
-            *v12 = *(float *)value1->u.intValue + *(float *)value2->u.intValue;
-            v12[1] = *(float *)(value1->u.intValue + 4) + *(float *)(value2->u.intValue + 4);
-            v12[2] = *(float *)(value1->u.intValue + 8) + *(float *)(value2->u.intValue + 8);
+            *v12 = *SCR_U2P(float *, value1->u.intValue) + *SCR_U2P(float *, value2->u.intValue);
+            v12[1] = *SCR_U2P(float *, (value1->u.intValue + 4)) + *SCR_U2P(float *, (value2->u.intValue + 4));
+            v12[2] = *SCR_U2P(float *, (value1->u.intValue + 8)) + *SCR_U2P(float *, (value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
-            value1->u.intValue = (int)v12;
+            value1->u.vectorValue = v12;
             break;
         case 5:
             value1->u.floatValue = value1->u.floatValue + value2->u.floatValue;
@@ -5185,7 +5186,7 @@ void __cdecl Scr_CastWeakerStringPair(scriptInstance_t inst, VariableValue *valu
                 {
                     case 4:
                         value2->type = 2;
-                        constTempVector = (const float *)value2->u.intValue;
+                        constTempVector = SCR_U2P(const float *, value2->u.intValue);
                         value2->u.intValue = SL_GetStringForVector(inst, value2->u.vectorValue);
                         RemoveRefToVector(inst, constTempVector);
                         return;
@@ -5219,7 +5220,7 @@ LABEL_28:
             {
                 case 4:
                     value1->type = 2;
-                    constTempVectora = (const float *)value1->u.intValue;
+                    constTempVectora = SCR_U2P(const float *, value1->u.intValue);
                     value1->u.intValue = SL_GetStringForVector(inst, value1->u.vectorValue);
                     RemoveRefToVector(inst, constTempVectora);
                     return;
@@ -5268,12 +5269,12 @@ void __cdecl Scr_EvalMinus(scriptInstance_t inst, VariableValue *value1, Variabl
     {
         case 4:
             tempVector = Scr_AllocVector(inst);
-            *tempVector = *(float *)value1->u.intValue - *(float *)value2->u.intValue;
-            tempVector[1] = *(float *)(value1->u.intValue + 4) - *(float *)(value2->u.intValue + 4);
-            tempVector[2] = *(float *)(value1->u.intValue + 8) - *(float *)(value2->u.intValue + 8);
+            *tempVector = *SCR_U2P(float *, value1->u.intValue) - *SCR_U2P(float *, value2->u.intValue);
+            tempVector[1] = *SCR_U2P(float *, (value1->u.intValue + 4)) - *SCR_U2P(float *, (value2->u.intValue + 4));
+            tempVector[2] = *SCR_U2P(float *, (value1->u.intValue + 8)) - *SCR_U2P(float *, (value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
-            value1->u.intValue = (int)tempVector;
+            value1->u.vectorValue = tempVector;
             break;
         case 5:
             value1->u.floatValue = value1->u.floatValue - value2->u.floatValue;
@@ -5308,12 +5309,12 @@ void __cdecl Scr_EvalMultiply(scriptInstance_t inst, VariableValue *value1, Vari
     {
         case 4:
             tempVector = Scr_AllocVector(inst);
-            *tempVector = *(float *)value1->u.intValue * *(float *)value2->u.intValue;
-            tempVector[1] = *(float *)(value1->u.intValue + 4) * *(float *)(value2->u.intValue + 4);
-            tempVector[2] = *(float *)(value1->u.intValue + 8) * *(float *)(value2->u.intValue + 8);
+            *tempVector = *SCR_U2P(float *, value1->u.intValue) * *SCR_U2P(float *, value2->u.intValue);
+            tempVector[1] = *SCR_U2P(float *, (value1->u.intValue + 4)) * *SCR_U2P(float *, (value2->u.intValue + 4));
+            tempVector[2] = *SCR_U2P(float *, (value1->u.intValue + 8)) * *SCR_U2P(float *, (value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
-            value1->u.intValue = (int)tempVector;
+            value1->u.vectorValue = tempVector;
             break;
         case 5:
             value1->u.floatValue = value1->u.floatValue * value2->u.floatValue;
@@ -5348,26 +5349,26 @@ void __cdecl Scr_EvalDivide(scriptInstance_t inst, VariableValue *value1, Variab
     {
         case 4:
             tempVector = Scr_AllocVector(inst);
-            if ( *(float *)value2->u.intValue == 0.0
-                || *(float *)(value2->u.intValue + 4) == 0.0
-                || *(float *)(value2->u.intValue + 8) == 0.0 )
+            if ( *SCR_U2P(float *, value2->u.intValue) == 0.0
+                || *SCR_U2P(float *, (value2->u.intValue + 4)) == 0.0
+                || *SCR_U2P(float *, (value2->u.intValue + 8)) == 0.0 )
             {
                 *tempVector = 0.0f;
                 tempVector[1] = 0.0f;
                 tempVector[2] = 0.0f;
                 RemoveRefToVector(inst, value1->u.vectorValue);
                 RemoveRefToVector(inst, value2->u.vectorValue);
-                value1->u.intValue = (int)tempVector;
+                value1->u.vectorValue = tempVector;
                 Scr_Error(inst, "divide by 0", 0);
             }
             else
             {
-                *tempVector = *(float *)value1->u.intValue / *(float *)value2->u.intValue;
-                tempVector[1] = *(float *)(value1->u.intValue + 4) / *(float *)(value2->u.intValue + 4);
-                tempVector[2] = *(float *)(value1->u.intValue + 8) / *(float *)(value2->u.intValue + 8);
+                *tempVector = *SCR_U2P(float *, value1->u.intValue) / *SCR_U2P(float *, value2->u.intValue);
+                tempVector[1] = *SCR_U2P(float *, (value1->u.intValue + 4)) / *SCR_U2P(float *, (value2->u.intValue + 4));
+                tempVector[2] = *SCR_U2P(float *, (value1->u.intValue + 8)) / *SCR_U2P(float *, (value2->u.intValue + 8));
                 RemoveRefToVector(inst, value1->u.vectorValue);
                 RemoveRefToVector(inst, value2->u.vectorValue);
-                value1->u.intValue = (int)tempVector;
+                value1->u.vectorValue = tempVector;
             }
             break;
         case 5:
@@ -6054,7 +6055,7 @@ void __cdecl Scr_EvalArray(scriptInstance_t inst, VariableValue *value, Variable
             else
             {
                 index->type = 5;
-                index->u.floatValue = *(float *)(value->u.intValue + 4 * index->u.intValue);
+                index->u.floatValue = *SCR_U2P(float *, (value->u.intValue + 4 * index->u.intValue));
                 RemoveRefToVector(inst, value->u.vectorValue);
             }
         }
@@ -7393,7 +7394,7 @@ char *__cdecl Scr_GetSourceFile_FastFile(const char *filename)
         v1 = va("cannot find %s", filename);
         Com_Error(ERR_DROP, v1);
     }
-    return (char*)rawfile->buffer;
+    return (char*)rawfile->buffer.get();
 }
 
 void __cdecl Scr_AddFields_FastFile(scriptInstance_t inst, const char *path, const char *extension)
@@ -7669,7 +7670,7 @@ int __cdecl Scr_FindAllThreads(scriptInstance_t inst, unsigned int selfId, unsig
         entryValue = &gScrVarGlob[inst].variableList[id + VARIABLELIST_CHILD_BEGIN(inst)];
         if ( (entryValue->w.status & 0x60) != 0 && (entryValue->w.status & 0x1F) == 0xA )
         {
-            for ( threadId = *(unsigned int *)(entryValue->u.next + 8); threadId; threadId = GetSafeParentLocalId(inst, threadId) )
+            for ( threadId = *SCR_U2P(unsigned int *, entryValue->u.next + 8); threadId; threadId = GetSafeParentLocalId(inst, threadId) )
             {
                 if ( selfId == Scr_GetSelf(inst, threadId) )
                 {
@@ -7704,7 +7705,7 @@ int __cdecl Scr_FindAllThreads(scriptInstance_t inst, unsigned int selfId, unsig
             {
                 if ( GetValueType(inst, stackId) == 10 )
                 {
-                    for ( threadIda = *(unsigned int *)(GetVariableValueAddress(inst, stackId)->next + 8);
+                    for ( threadIda = *SCR_U2P(unsigned int *, GetVariableValueAddress(inst, stackId)->next + 8);
                                 threadIda;
                                 threadIda = GetSafeParentLocalId(inst, threadIda) )
                     {

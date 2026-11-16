@@ -52,8 +52,7 @@ void __cdecl Scr_ArchiveCanonicalStrings(scriptInstance_t inst)
         "Scr_ArchiveCanonicalStrings1");
     gScrEvaluateGlob[inst].archivedCanonicalStrings = (ArchivedCanonicalStringInfo *)Hunk_UserAlloc(
         g_DebugHunkUser,
-        8
-        * gScrVarPub[inst].canonicalStrCount,
+        sizeof(ArchivedCanonicalStringInfo) * gScrVarPub[inst].canonicalStrCount,
         4,
         "Scr_ArchiveCanonicalStrings2");
     gScrEvaluateGlob[inst].canonicalStringLookup = (int *)Hunk_UserAlloc(
@@ -778,7 +777,7 @@ char __cdecl Scr_CompileFunction(scriptInstance_t inst, sval_u *func_name, sval_
     func = GetFunction(inst, &pName, &type);
     if ( !func )
         return 0;
-    func_name->stringValue = (unsigned int)func;
+    func_name->stringValue = SCR_F2U(func);
     Scr_CompileCallExpressionList(inst, params);
     return 1;
 }
@@ -813,7 +812,7 @@ char __cdecl Scr_CompileMethod(scriptInstance_t inst, sval_u *expr, sval_u *func
     if ( !meth )
         return 0;
     Scr_CompilePrimitiveExpression(inst, expr);
-    func_name->stringValue = (unsigned int)meth;
+    func_name->stringValue = SCR_F2U(meth);
     Scr_CompileCallExpressionList(inst, params);
     return 1;
 }

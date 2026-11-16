@@ -2336,7 +2336,7 @@ void __cdecl Scr_SortElementChildren(scriptInstance_t inst, Scr_WatchElement_s *
     newElements = parentElement->childArrayHead;
     elementList = Scr_AllocDebugMem(inst, 4 * count, "Scr_SortElementChildren");
     for ( newIndex = 0; newIndex < count; ++newIndex )
-        elementList[newIndex] = (unsigned int)&newElements[newIndex];
+        elementList[newIndex] = (unsigned int)(uintptr_t)&newElements[newIndex];   // LP64: depurador de scripts SIN portar (trunca)
     Sys_EnterCriticalSection(CRITSECT_SCRIPT_DEBUGGER_SORT);
     sortInst = inst;
     qsort(elementList, count, 4u, (int (__cdecl *)(const void *, const void *))CompareThreadElements);
@@ -3062,8 +3062,8 @@ bool __cdecl Scr_RefToVariable(scriptInstance_t inst, unsigned int id, int isObj
         if (*pElementNode)
             return 0;
         elementNodec = Scr_AllocDebugMem(inst, 8, "Scr_RefToVariable2");
-        *elementNodec = (unsigned int)gScrDebuggerGlob[inst].currentElement;
-        elementNodec[1] = (unsigned int)breakpoints->list;
+        *elementNodec = (unsigned int)(uintptr_t)gScrDebuggerGlob[inst].currentElement;   // LP64: depurador SIN portar (trunca)
+        elementNodec[1] = (unsigned int)(uintptr_t)breakpoints->list;
         breakpoints->list = (Scr_WatchElementNode_s *)elementNodec;
     }
     else

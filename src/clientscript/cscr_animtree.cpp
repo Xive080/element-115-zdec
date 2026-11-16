@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "cscr_animtree.h"
 #include <universal/q_shared.h>
 #include <universal/q_parse.h>
@@ -296,14 +297,14 @@ void __cdecl Scr_EmitAnimationInternal(scriptInstance_t inst, char *pos, unsigne
     {
         VariableValueAddress = GetVariableValueAddress(inst, animId);
         *(unsigned int *)pos = VariableValueAddress->next;
-        VariableValueAddress->next = (unsigned int)pos;
+        VariableValueAddress->next = SCR_P2U(pos);
     }
     else
     {
         NewVariable = GetNewVariable(inst, names, animName);
         *(unsigned int *)pos = 0;
         tempValue.type = 7;
-        tempValue.u.intValue = (int)pos;
+        tempValue.u.codePosValue = (const char *)pos;
         SetVariableValue(inst, NewVariable, &tempValue);
     }
 }
@@ -939,7 +940,7 @@ void __cdecl Scr_LoadAnimTreeAtIndex(
                 v7 = SL_ConvertToString(filenameId, SCRIPTINSTANCE_CLIENT);
                 gScrAnimPub[1].xanim_lookup[user][index] = CScr_RetrieveAnimTree(v7, names, filenameId, index);
                 insertValue.type = VAR_CODEPOS;
-                insertValue.u.intValue = (int)gScrAnimPub[1].xanim_lookup[user][index].anims;
+                insertValue.u.codePosValue = (const char *)gScrAnimPub[1].xanim_lookup[user][index].anims;
                 Variable = GetVariable(SCRIPTINSTANCE_CLIENT, fileId, 1u);
                 SetVariableValue(SCRIPTINSTANCE_CLIENT, Variable, &insertValue);
             }
@@ -998,7 +999,7 @@ void __cdecl Scr_LoadAnimTreeAtIndex(
                 RemoveRefToObject(inst, gScrAnimPub[inst].animtree_node);
                 gScrAnimPub[inst].animtree_node = 0;
                 tempValue.type = 7;
-                tempValue.u.intValue = (int)animtree.anims;
+                tempValue.u.codePosValue = (const char *)animtree.anims;
                 v13 = GetVariable(inst, fileId, 1u);
                 SetVariableValue(inst, v13, &tempValue);
                 XAnimSetupSyncNodes(animtree.anims);
@@ -1244,9 +1245,9 @@ void __cdecl ConnectScriptToAnim(
         }
         anim.index = index;
         anim.tree = treeIndex;
-        for ( codePos = (char *)value->next; codePos; codePos = (char *)nextCodePos )
+        for ( codePos = SCR_U2P(char *, value->next); codePos; codePos = (char *)nextCodePos )
         {
-            nextCodePos = *(const char **)codePos;
+            nextCodePos = SCR_U2P(const char *, *(const unsigned int *)codePos);   // LP64: enlace de 4 bytes en el bytecode
             *(scr_anim_s *)codePos = anim;
         }
         value->next = 0;
@@ -1282,7 +1283,7 @@ void __cdecl Scr_CheckAnimsDefined(scriptInstance_t inst, unsigned int names, un
             v3 = SL_ConvertToString(name, inst);
             msg = va("animation '%s' not defined in anim tree '%s'", v3, v4);
             if ( Scr_IsInOpcodeMemory(inst, value->u.codePosValue) )
-                CompileError2(inst, (char *)value->next, "%s", msg);
+                CompileError2(inst, SCR_U2P(char *, value->next), "%s", msg);
             else
                 Com_Error(ERR_DROP, "%s", msg);
         }

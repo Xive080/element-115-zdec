@@ -191,4 +191,8 @@ void __cdecl Scr_SetLoadedImpureScript(bool loadedImpureScript);
 extern scrParserPub_t gScrParserPub[2];
 extern scrParserGlob_t gScrParserGlob[2];
 
+#if defined(__LP64__) || defined(_WIN64)
+extern char &g_EndPos;
+#else
 extern char g_EndPos;
+#endif
