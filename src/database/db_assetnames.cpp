@@ -1,3 +1,4 @@
+#include <universal/layout_assert.h>
 #include "db_assetnames.h"
 #include "db_registry.h"
 
@@ -268,7 +269,7 @@ int __cdecl DB_SizeofXAsset_menuDef_t_()
     return 400;
 }
 
-static_assert(sizeof(XAnimTree_s) == 8);
+BO1_LAYOUT_ASSERT(sizeof(XAnimTree_s) == 8);
 //int __cdecl XAnimTreeSize()
 //{
 //    return 8;
@@ -368,7 +369,7 @@ const char *__cdecl DB_LocalizeEntryGetName(const XAssetHeader *header)
 
 void __cdecl DB_LocalizeEntrySetName(XAssetHeader *header, const char *name)
 {
-    header->xmodelPieces->numpieces = (int)name;
+    header->xmodelPieces->numpieces = (int)(intptr_t)name;
 }
 
 void __cdecl DB_DDLSetname(XAssetHeader *header, const char *name)

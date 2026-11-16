@@ -97,7 +97,7 @@ void __cdecl Load_XStringCustom(const char **str)
     unsigned __int8 *numBytesLoaded; // [esp+4h] [ebp-8h]
 
     numBytesLoaded = DB_LoadXFileDataNullTerminated((unsigned __int8 *)*str);
-    DB_IncStreamPos((int)numBytesLoaded);
+    DB_IncStreamPos((int)(intptr_t)numBytesLoaded); // NOTA arm64: el original pasa el puntero como tamano; sin cambio en 32 bits
 }
 
 void __cdecl Load_TempStringCustom(const char **str)

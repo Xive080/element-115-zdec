@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/layout_assert.h>
 #include <universal/com_math.h>
 #include <physics/phys_local.h>
 #include <gfx_d3d/r_material.h>
@@ -59,7 +60,7 @@ struct __declspec(align(16)) GlassPhysics // sizeof=0xA0
     void IntegratePos(float deltaTime);
     void GetPosition(float *position, float (*axis)[3]);
 };
-static_assert(sizeof(GlassPhysics) == 160);
+BO1_LAYOUT_ASSERT(sizeof(GlassPhysics) == 160);
 
 struct GlassDef;
 
@@ -102,7 +103,7 @@ struct ShardGroup // sizeof=0x54
         int mod);
     int __thiscall TracePoint(float *p0, const float *p1);
 };
-static_assert(sizeof(ShardGroup) == 84);
+BO1_LAYOUT_ASSERT(sizeof(ShardGroup) == 84);
 
 struct GlassShardMeshVertex // sizeof=0x2
 {
@@ -165,7 +166,7 @@ struct GlassShard // sizeof=0x90
 
             void operator=(const GlassShard::Outline::Vertex *other);
         };
-        static_assert(sizeof(Outline::Vertex) == 24);
+        BO1_LAYOUT_ASSERT(sizeof(Outline::Vertex) == 24);
         GlassShard::Outline::Vertex *verts; // XREF: GlassClient::Outlines::InitShards(GlassShard const *,GlassShard * * const,int)+4F/w
                                             // GlassShard::Create(Glass const *)+35/w ...
         float length;
@@ -357,7 +358,7 @@ struct GlassShard // sizeof=0x90
     static int lastFreeMemorySize;
     static int removeReasonsCount[BO1_TOTAL];
 };
-static_assert(sizeof(GlassShard) == 144);
+BO1_LAYOUT_ASSERT(sizeof(GlassShard) == 144);
 
 void GlassShard_Defrag(void *ptr); // changed from static member func
 
