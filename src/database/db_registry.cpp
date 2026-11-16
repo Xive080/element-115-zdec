@@ -986,6 +986,28 @@ void __cdecl Load_FxEffectDefFromName(const char **name)
         *(XAssetHeader *)name = DB_FindXAssetHeader(ASSET_TYPE_FX, (char *)*name, 1, -1);
 }
 
+void __cdecl Load_FxEffectDefFromName32(PTR32(const char) *name)
+{
+    if ( *name )
+    {
+        const char *n = *name;
+        FxEffectDef *fx = DB_FindXAssetHeader(ASSET_TYPE_FX, (char *)n, 1, -1).fx;
+        *(PTR32(const FxEffectDef) *)name = (const FxEffectDef *)fx;
+    }
+}
+
+void __cdecl Load_PackIndexAsset32(PTR32(PackIndex) *p)
+{
+    XAssetHeader h; h.packIndex = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_PACK_INDEX, h).packIndex;
+}
+
+void __cdecl Load_GlassesAsset32(PTR32(Glasses) *p)
+{
+    XAssetHeader h; h.glasses = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_GLASSES, h).glasses;
+}
+
 void __cdecl Load_FxImpactTableAsset(XAssetHeader *impactFx)
 {
     impactFx->xmodelPieces = DB_AddXAsset(ASSET_TYPE_IMPACT_FX, (XAssetHeader)impactFx->xmodelPieces).xmodelPieces;

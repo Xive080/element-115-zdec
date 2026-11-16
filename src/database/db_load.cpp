@@ -105,7 +105,7 @@ SndDriverGlobals *varSndDriverGlobals;
 PTR32(SndDriverGlobals) *varSndDriverGlobalsPtr;
 PackIndexEntry *varPackIndexEntry;
 PackIndex *varPackIndex;
-PackIndex **varPackIndexPtr;
+PTR32(PackIndex) *varPackIndexPtr;
 char *varsnd_align_char;
 snd_asset *varsnd_asset;
 LoadedSound *varLoadedSound;
@@ -381,7 +381,7 @@ Font_s *varFont;
 PTR32(Font_s) *varFontHandle;
 GlassDef *varGlassDef;
 Glasses *varGlasses;
-Glasses **varGlassesPtr;
+PTR32(Glasses) *varGlassesPtr;
 Glass *varGlass;
 XAsset *varXAsset;
 XAssetHeader *varXAssetHeader;
@@ -1362,8 +1362,8 @@ void __cdecl Load_PackIndex(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varPackIndex, 28);
     DB_PushStreamPos(4u);
-    varXString = &varPackIndex->name;
-    Load_XString(0);
+    varXString32 = &varPackIndex->name;
+    Load_XString32(0);
     if ( varPackIndex->entries )
     {
         varPackIndex->entries = (PackIndexEntry *)AllocLoad_FxElemVisStateSample();
@@ -1375,26 +1375,26 @@ void __cdecl Load_PackIndex(bool atStreamStart)
 
 void __cdecl Load_PackIndexPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varPackIndexPtr, 4);
     DB_PushStreamPos(0);
     if ( *varPackIndexPtr )
     {
-        value = (unsigned int)*varPackIndexPtr;
-        if ( *varPackIndexPtr == (PackIndex *)-1 || value == -2 )
+        value = PTR32_RAW(*varPackIndexPtr);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varPackIndexPtr = (PackIndex *)AllocLoad_FxElemVisStateSample();
             varPackIndex = *varPackIndexPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_PackIndex(1);
-            Load_PackIndexAsset((XAssetHeader *)varPackIndexPtr);
+            Load_PackIndexAsset32(varPackIndexPtr);
             if ( inserted )
-                *inserted = *varPackIndexPtr;
+                *inserted = PTR32_RAW(*varPackIndexPtr);
         }
         else
         {
@@ -4276,16 +4276,16 @@ void __cdecl Load_FxEffectDefHandleArray(bool atStreamStart, int count)
 
 void __cdecl Load_FxEffectDefRef(bool atStreamStart)
 {
-    varXString = (const char **)varFxEffectDefRef;
-    Load_XString(atStreamStart);
-    Load_FxEffectDefFromName((const char **)varFxEffectDefRef);
+    varXString32 = (PTR32(const char) *)varFxEffectDefRef;
+    Load_XString32(atStreamStart);
+    Load_FxEffectDefFromName32((PTR32(const char) *)varFxEffectDefRef);
 }
 
 void __cdecl Load_FxElemMarkVisuals(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varFxElemMarkVisuals, 8);
-    varMaterialHandle = (Material **)varFxElemMarkVisuals;
-    Load_MaterialHandleArray(0, 2);
+    varMaterialHandle32 = varFxElemMarkVisuals->materials;
+    Load_MaterialHandleArray32(0, 2);
 }
 
 void __cdecl Load_FxElemMarkVisualsArray(bool atStreamStart, int count)
@@ -4308,22 +4308,22 @@ void __cdecl Load_FxElemVisuals(bool atStreamStart)
     switch ( varFxElemDef->elemType )
     {
         case 7u:
-            varXModelPtr = (XModel **)varFxElemVisuals;
-            Load_XModelPtr(atStreamStart);
+            varXModelPtr32 = &varFxElemVisuals->model;
+            Load_XModelPtr32(atStreamStart);
             break;
         case 0xCu:
             varFxEffectDefRef = (FxEffectDefRef *)varFxElemVisuals;
             Load_FxEffectDefRef(atStreamStart);
             break;
         case 0xAu:
-            varXString = (const char **)varFxElemVisuals;
-            Load_XString(atStreamStart);
+            varXString32 = &varFxElemVisuals->soundName;
+            Load_XString32(atStreamStart);
             break;
         default:
             if ( varFxElemDef->elemType != 8 && varFxElemDef->elemType != 9 )
             {
-                varMaterialHandle = (Material **)varFxElemVisuals;
-                Load_MaterialHandle(atStreamStart);
+                varMaterialHandle32 = &varFxElemVisuals->material;
+                Load_MaterialHandle32(atStreamStart);
             }
             break;
     }
@@ -4347,8 +4347,8 @@ void __cdecl Load_FxElemVisualsArray(bool atStreamStart, int count)
 void __cdecl Load_FxElemSpawnSound(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varFxElemSpawnSound, 4);
-    varXString = &varFxElemSpawnSound->spawnSound;
-    Load_XString(0);
+    varXString32 = &varFxElemSpawnSound->spawnSound;
+    Load_XString32(0);
 }
 
 void __cdecl Load_FxElemVisStateSampleArray(bool atStreamStart, int count)
@@ -4374,10 +4374,10 @@ void __cdecl Load_FxElemDefVisuals(bool atStreamStart)
     }
     else if ( varFxElemDef->visualCount > 1u )
     {
-        if ( varFxElemDefVisuals->markArray )
+        if ( varFxElemDefVisuals->array )
         {
-            varFxElemDefVisuals->markArray = (FxElemMarkVisuals *)AllocLoad_FxElemVisStateSample();
-            varFxElemVisuals = (FxElemVisuals *)varFxElemDefVisuals->markArray;
+            varFxElemDefVisuals->array = (FxElemVisuals *)AllocLoad_FxElemVisStateSample();
+            varFxElemVisuals = varFxElemDefVisuals->array;
             Load_FxElemVisualsArray(1, varFxElemDef->visualCount);
         }
     }
@@ -4416,13 +4416,13 @@ void __cdecl Load_FxElemDef(bool atStreamStart)
     if ( varFxElemDef->velSamples )
     {
         varFxElemDef->velSamples = (const FxElemVelStateSample *)AllocLoad_FxElemVisStateSample();
-        varFxElemVelStateSample = (FxElemVelStateSample *)varFxElemDef->velSamples;
+        varFxElemVelStateSample = (FxElemVelStateSample *)(const FxElemVelStateSample *)varFxElemDef->velSamples;
         Load_FxElemVelStateSampleArray(1, varFxElemDef->velIntervalCount + 1);
     }
     if ( varFxElemDef->visSamples )
     {
         varFxElemDef->visSamples = (const FxElemVisStateSample *)AllocLoad_FxElemVisStateSample();
-        varFxElemVisStateSample = (FxElemVisStateSample *)varFxElemDef->visSamples;
+        varFxElemVisStateSample = (FxElemVisStateSample *)(const FxElemVisStateSample *)varFxElemDef->visSamples;
         Load_FxElemVisStateSampleArray(1, varFxElemDef->visStateIntervalCount + 1);
     }
     varFxElemDefVisuals = &varFxElemDef->visuals;
@@ -4464,12 +4464,12 @@ void __cdecl Load_FxEffectDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varFxEffectDef, 60);
     DB_PushStreamPos(4u);
-    varXString = &varFxEffectDef->name;
-    Load_XString(0);
+    varXString32 = &varFxEffectDef->name;
+    Load_XString32(0);
     if ( varFxEffectDef->elemDefsEA )
     {
         varFxEffectDef->elemDefsEA = (const FxElemDef *)AllocLoad_FxElemVisStateSample();
-        varFxElemDef = (FxElemDef*)varFxEffectDef->elemDefsEA;
+        varFxElemDef = (FxElemDef *)(const FxElemDef *)varFxEffectDef->elemDefsEA;
         Load_FxElemDefArray(
             1,
             varFxEffectDef->elemDefCountEmission + varFxEffectDef->elemDefCountOneShot + varFxEffectDef->elemDefCountLooping);
@@ -4513,8 +4513,8 @@ void __cdecl Mark_FxEffectDefHandleArray(int count)
 
 void __cdecl Mark_FxElemMarkVisuals()
 {
-    varMaterialHandle = (Material **)varFxElemMarkVisuals;
-    Mark_MaterialHandleArray(2);
+    varMaterialHandle32 = varFxElemMarkVisuals->materials;
+    Mark_MaterialHandleArray32(2);
 }
 
 void __cdecl Mark_FxElemMarkVisualsArray(int count)
@@ -4535,16 +4535,16 @@ void __cdecl Mark_FxElemVisuals()
 {
     if ( varFxElemDef->elemType == 7 )
     {
-        varXModelPtr = (XModel **)varFxElemVisuals;
-        Mark_XModelPtr();
+        varXModelPtr32 = &varFxElemVisuals->model;
+        Mark_XModelPtr32();
     }
     else if ( varFxElemDef->elemType != 12
                  && varFxElemDef->elemType != 10
                  && varFxElemDef->elemType != 8
                  && varFxElemDef->elemType != 9 )
     {
-        varMaterialHandle = (Material **)varFxElemVisuals;
-        Mark_MaterialHandle();
+        varMaterialHandle32 = &varFxElemVisuals->material;
+        Mark_MaterialHandle32();
     }
 }
 
@@ -4574,9 +4574,9 @@ void __cdecl Mark_FxElemDefVisuals()
     }
     else if ( varFxElemDef->visualCount > 1u )
     {
-        if ( varFxElemDefVisuals->markArray )
+        if ( varFxElemDefVisuals->array )
         {
-            varFxElemVisuals = (FxElemVisuals *)varFxElemDefVisuals->markArray;
+            varFxElemVisuals = varFxElemDefVisuals->array;
             Mark_FxElemVisualsArray(varFxElemDef->visualCount);
         }
     }
@@ -4611,7 +4611,7 @@ void __cdecl Mark_FxEffectDef()
 {
     if ( varFxEffectDef->elemDefsEA )
     {
-        varFxElemDef = (FxElemDef*)varFxEffectDef->elemDefsEA;
+        varFxElemDef = (FxElemDef *)(const FxElemDef *)varFxEffectDef->elemDefsEA;
         Mark_FxElemDefArray(varFxEffectDef->elemDefCountEmission + varFxEffectDef->elemDefCountOneShot
                                                                                                                          + varFxEffectDef->elemDefCountLooping);
     }
@@ -9351,24 +9351,24 @@ void __cdecl Mark_FontHandle()
 void __cdecl Load_GlassDef(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGlassDef, 60);
-    varXString = &varGlassDef->name;
-    Load_XString(0);
-    varMaterialHandle = &varGlassDef->pristineMaterial;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varGlassDef->crackedMaterial;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varGlassDef->shardMaterial;
-    Load_MaterialHandle(0);
-    varXString = &varGlassDef->crackSound;
-    Load_XString(0);
-    varXString = &varGlassDef->shatterShound;
-    Load_XString(0);
-    varXString = &varGlassDef->autoShatterShound;
-    Load_XString(0);
-    varFxEffectDefHandle = &varGlassDef->crackEffect;
-    Load_FxEffectDefHandle(0);
-    varFxEffectDefHandle = &varGlassDef->shatterEffect;
-    Load_FxEffectDefHandle(0);
+    varXString32 = &varGlassDef->name;
+    Load_XString32(0);
+    varMaterialHandle32 = &varGlassDef->pristineMaterial;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varGlassDef->crackedMaterial;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varGlassDef->shardMaterial;
+    Load_MaterialHandle32(0);
+    varXString32 = &varGlassDef->crackSound;
+    Load_XString32(0);
+    varXString32 = &varGlassDef->shatterShound;
+    Load_XString32(0);
+    varXString32 = &varGlassDef->autoShatterShound;
+    Load_XString32(0);
+    varFxEffectDefHandle32 = &varGlassDef->crackEffect;
+    Load_FxEffectDefHandle32(0);
+    varFxEffectDefHandle32 = &varGlassDef->shatterEffect;
+    Load_FxEffectDefHandle32(0);
 }
 
 void __cdecl Load_Glass(bool atStreamStart)
@@ -9414,8 +9414,8 @@ void __cdecl Load_Glasses(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGlasses, 56);
     DB_PushStreamPos(4u);
-    varXString = &varGlasses->name;
-    Load_XString(0);
+    varXString32 = &varGlasses->name;
+    Load_XString32(0);
     if ( varGlasses->glasses )
     {
         varGlasses->glasses = (Glass *)AllocLoad_FxElemVisStateSample();
@@ -9427,26 +9427,26 @@ void __cdecl Load_Glasses(bool atStreamStart)
 
 void __cdecl Load_GlassesPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
-    unsigned int value; // [esp+4h] [ebp-8h]
+    unsigned int *inserted;
+    unsigned int value;
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varGlassesPtr, 4);
     DB_PushStreamPos(0);
     if ( *varGlassesPtr )
     {
-        value = (unsigned int)*varGlassesPtr;
-        if ( *varGlassesPtr == (Glasses *)-1 || value == -2 )
+        value = PTR32_RAW(*varGlassesPtr);
+        if ( value == 0xFFFFFFFFu || value == 0xFFFFFFFEu )
         {
             *varGlassesPtr = (Glasses *)AllocLoad_FxElemVisStateSample();
             varGlasses = *varGlassesPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_Glasses(1);
-            Load_GlassesAsset((XAssetHeader *)varGlassesPtr);
+            Load_GlassesAsset32(varGlassesPtr);
             if ( inserted )
-                *inserted = *varGlassesPtr;
+                *inserted = PTR32_RAW(*varGlassesPtr);
         }
         else
         {
@@ -9458,16 +9458,16 @@ void __cdecl Load_GlassesPtr(bool atStreamStart)
 
 void __cdecl Mark_GlassDef()
 {
-    varMaterialHandle = &varGlassDef->pristineMaterial;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varGlassDef->crackedMaterial;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varGlassDef->shardMaterial;
-    Mark_MaterialHandle();
-    varFxEffectDefHandle = &varGlassDef->crackEffect;
-    Mark_FxEffectDefHandle();
-    varFxEffectDefHandle = &varGlassDef->shatterEffect;
-    Mark_FxEffectDefHandle();
+    varMaterialHandle32 = &varGlassDef->pristineMaterial;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varGlassDef->crackedMaterial;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varGlassDef->shardMaterial;
+    Mark_MaterialHandle32();
+    varFxEffectDefHandle32 = &varGlassDef->crackEffect;
+    Mark_FxEffectDefHandle32();
+    varFxEffectDefHandle32 = &varGlassDef->shatterEffect;
+    Mark_FxEffectDefHandle32();
 }
 
 void __cdecl Mark_Glass()
@@ -9626,7 +9626,7 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_StringTablePtr(atStreamStart);
             break;
         case 38:
-            varPackIndexPtr = (PackIndex **)varXAssetHeader;
+            varPackIndexPtr = (PTR32(PackIndex) *)varXAssetHeader;
             Load_PackIndexPtr(atStreamStart);
             break;
         case 39:
@@ -9638,7 +9638,7 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_ddlRoot_ptr(atStreamStart);
             break;
         case 41:
-            varGlassesPtr = (Glasses **)varXAssetHeader;
+            varGlassesPtr = (PTR32(Glasses) *)varXAssetHeader;
             Load_GlassesPtr(atStreamStart);
             break;
         case 42:
@@ -9769,7 +9769,7 @@ void __cdecl Mark_XAssetHeader()
             Mark_StringTablePtr();
             break;
         case ASSET_TYPE_PACK_INDEX:
-            varPackIndexPtr = (PackIndex **)varXAssetHeader;
+            varPackIndexPtr = (PTR32(PackIndex) *)varXAssetHeader;
             Mark_PackIndexPtr();
             break;
         case ASSET_TYPE_XGLOBALS:
@@ -9781,7 +9781,7 @@ void __cdecl Mark_XAssetHeader()
             Mark_ddlRoot_ptr();
             break;
         case ASSET_TYPE_GLASSES:
-            varGlassesPtr = (Glasses **)varXAssetHeader;
+            varGlassesPtr = (PTR32(Glasses) *)varXAssetHeader;
             Mark_GlassesPtr();
             break;
         case ASSET_TYPE_EMBLEMSET:

@@ -1,6 +1,7 @@
 #pragma once
 #include "r_material.h"
 #include <universal/q_shared.h>
+#include <universal/ptr32.h>
 
 enum FxRandKey : __int32
 {                                       // XREF: FX_IntegrateRotationFromZero/r
@@ -122,30 +123,30 @@ const struct FxElemVisStateSample // sizeof=0x30
 
 struct FxElemMarkVisuals // sizeof=0x8
 {                                       // XREF: $02AC52774A03C1B6F49B7C17F56F8A85/r
-    Material *materials[2];
+    PTR32(Material) materials[2];
 };
 
 union FxEffectDefRef // sizeof=0x4
 {                                       // XREF: FxElemVisuals/r
                                         // FxElemDef/r ...
-    const FxEffectDef *handle;
-    const char *name;
+    PTR32(const FxEffectDef) handle;
+    PTR32(const char) name;
 };
 
 union FxElemVisuals // sizeof=0x4
 {                                       // XREF: FX_GenSpriteVerts+4C/w
                                         // FX_GenSpriteVerts+52/r ...
-    const void *anonymous;
-    Material *material;
-    XModel *model;
+    PTR32(const void) anonymous;
+    PTR32(Material) material;
+    PTR32(XModel) model;
     FxEffectDefRef effectDef;
-    const char *soundName;
+    PTR32(const char) soundName;
 };
 
 union FxElemDefVisuals // sizeof=0x4
 {                                       // XREF: FxElemDef/r
-    FxElemMarkVisuals *markArray;
-    FxElemVisuals *array;
+    PTR32(FxElemMarkVisuals) markArray;
+    PTR32(FxElemVisuals) array;
     FxElemVisuals instance;
 };
 
@@ -165,15 +166,15 @@ struct FxTrailDef // sizeof=0x1C
     //$A41F6DDA83A77139D9FD89879C7CFB09 ___u4;
     union //$A41F6DDA83A77139D9FD89879C7CFB09 // sizeof=0x4
     {                                       // XREF: FxTrailDef/r
-        FxTrailVertex *vertsEA;
-        FxTrailVertex *verts;
+        PTR32(FxTrailVertex) vertsEA;
+        PTR32(FxTrailVertex) verts;
     };
     int indCount;
     //$D31B43AE1E46D24CA4A859818848B5E1 ___u6;
     union //$D31B43AE1E46D24CA4A859818848B5E1 // sizeof=0x4
     {                                       // XREF: FxTrailDef/r
-        unsigned __int16 *indsEA;
-        unsigned __int16 *inds;
+        PTR32(unsigned __int16) indsEA;
+        PTR32(unsigned __int16) inds;
     };
 };
 
@@ -192,7 +193,7 @@ union FxElemDefUnion // sizeof=0x8
 struct FxElemSpawnSound // sizeof=0x4
 {                                       // XREF: FxElemDef/r
                                         // FxEditorElemDef/r
-    const char *spawnSound;
+    PTR32(const char) spawnSound;
 };
 
 const struct FxElemDef // sizeof=0x124
@@ -220,8 +221,8 @@ const struct FxElemDef // sizeof=0x124
     unsigned __int8 visualCount;
     unsigned __int8 velIntervalCount;
     unsigned __int8 visStateIntervalCount;
-    const FxElemVelStateSample *velSamples;
-    const FxElemVisStateSample *visSamples;
+    PTR32(const FxElemVelStateSample) velSamples;
+    PTR32(const FxElemVisStateSample) visSamples;
     FxElemDefVisuals visuals;
     float collMins[3];
     float collMaxs[3];
@@ -234,8 +235,8 @@ const struct FxElemDef // sizeof=0x124
     //$6560A5492D3E60888A9CD1F2E81D900E ___u34;
     union //$6560A5492D3E60888A9CD1F2E81D900E // sizeof=0x4
     {                                       // XREF: FxElemDef/r
-        FxTrailDef *localTrailDef;
-        FxTrailDef *trailDef;
+        PTR32(FxTrailDef) localTrailDef;
+        PTR32(FxTrailDef) trailDef;
     };
     unsigned __int8 sortOrder;
     unsigned __int8 lightingFrac;
@@ -251,7 +252,7 @@ const struct FxElemDef // sizeof=0x124
 
 const struct FxEffectDef // sizeof=0x3C
 {                                       // XREF: XAssetPoolEntry<FxEffectDef>/r
-    const char *name;
+    PTR32(const char) name;
     unsigned __int8 flags;
     unsigned __int8 efPriority;
     unsigned __int8 reserved[2];
@@ -263,8 +264,8 @@ const struct FxEffectDef // sizeof=0x3C
     //$7BD2F22D4D2E155DDD2F5AE6C1F591D8 ___u9;
     union //$7BD2F22D4D2E155DDD2F5AE6C1F591D8 // sizeof=0x4
     {                                       // XREF: FxEffectDef/r
-        const FxElemDef *elemDefsEA;
-        const FxElemDef *elemDefs;
+        PTR32(const FxElemDef) elemDefsEA;
+        PTR32(const FxElemDef) elemDefs;
     };
     float boundingBoxDim[3];
     float boundingSphere[4];

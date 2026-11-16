@@ -5,6 +5,7 @@
 #pragma once
 #include <cstdint>
 #include <cstddef>
+#include <type_traits>
 
 #if defined(__LP64__) || defined(_WIN64)
 extern uintptr_t g_ptr32Base;            // base de la arena de 4 GB (reservada con mmap PROT_NONE)
@@ -34,8 +35,8 @@ struct Ptr32 {
     }
     operator T *() const { return get(); }
     T *operator->() const { return get(); }
-    T &operator*() const { return *get(); }
-    T &operator[](ptrdiff_t i) const { return get()[i]; }
+    std::add_lvalue_reference_t<T> operator*() const { return *get(); }   // add_lvalue_reference: permite Ptr32<const void>
+    std::add_lvalue_reference_t<T> operator[](ptrdiff_t i) const { return get()[i]; }
     explicit operator bool() const { return off != 0; }
 };
 template <typename T> using Ptr32Of = Ptr32<T>;
