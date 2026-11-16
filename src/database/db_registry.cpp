@@ -855,6 +855,28 @@ void __cdecl Load_MenuListAsset(XAssetHeader *menuList)
     menuList->xmodelPieces = DB_AddXAsset(ASSET_TYPE_MENULIST, (XAssetHeader)menuList->xmodelPieces).xmodelPieces;
 }
 
+// Variantes para handles PTR32 (slot de 4 bytes) del grupo D (menus y localizacion)
+void __cdecl Load_MenuListAsset32(PTR32(MenuList) *p)
+{
+    XAssetHeader h; h.menuList = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_MENULIST, h).menuList;
+}
+
+void __cdecl Load_MenuAsset32(PTR32(menuDef_t) *p)
+{
+    XAssetHeader h; h.menu = *p;
+    menuDef_t *orig = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_MENU, h).menu;
+    for ( int i = 0; i < orig->itemCount; ++i )
+        orig->items[i]->parent = *p;
+}
+
+void __cdecl Load_LocalizeEntryAsset32(PTR32(LocalizeEntry) *p)
+{
+    XAssetHeader h; h.localize = *p;
+    *p = DB_AddXAsset(ASSET_TYPE_LOCALIZE_ENTRY, h).localize;
+}
+
 void __cdecl Mark_MenuListAsset(MenuList *menuList)
 {
     DB_GetXAsset(ASSET_TYPE_MENULIST, (XAssetHeader)menuList);

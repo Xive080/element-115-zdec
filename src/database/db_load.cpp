@@ -262,11 +262,11 @@ GenericEventHandler *varGenericEventHandlerNext;
 ItemKeyHandler *varItemKeyHandler;
 ItemKeyHandler *varItemKeyHandlerNext;
 editFieldDef_s *vareditFieldDef_t;
-editFieldDef_s **vareditFieldDef_ptr;
+PTR32(editFieldDef_s) *vareditFieldDef_ptr;
 multiDef_s *varmultiDef_t;
-multiDef_s **varmultiDef_ptr;
+PTR32(multiDef_s) *varmultiDef_ptr;
 enumDvarDef_s *varenumDvarDef_t;
-enumDvarDef_s **varenumDvarDef_ptr;
+PTR32(enumDvarDef_s) *varenumDvarDef_ptr;
 MenuCell *varMenuCell;
 MenuRow *varMenuRow;
 listBoxDef_s *varlistBoxDef_t;
@@ -274,32 +274,32 @@ animParamsDef_t *varanimParamsDef_t;
 windowDef_t *varwindowDef_t;
 windowDef_t *varWindow;
 windowDef_t **varwindowDef_ptr;
-animParamsDef_t **varanimParamsDef_ptr;
+PTR32(animParamsDef_t) *varanimParamsDef_ptr;
 imageDef_s *varimageDef_t;
-imageDef_s **varimageDef_ptr;
+PTR32(imageDef_s) *varimageDef_ptr;
 ownerDrawDef_s *varownerDrawDef_t;
-ownerDrawDef_s **varownerDrawDef_ptr;
-listBoxDef_s **varlistBoxDef_ptr;
+PTR32(ownerDrawDef_s) *varownerDrawDef_ptr;
+PTR32(listBoxDef_s) *varlistBoxDef_ptr;
 focusDefData_t *varfocusDefData_t;
 itemDef_s *varitemDef_t;
 focusItemDef_s *varfocusItemDef_t;
-focusItemDef_s **varfocusItemDef_ptr;
+PTR32(focusItemDef_s) *varfocusItemDef_ptr;
 gameMsgDef_s *vargameMsgDef_t;
-gameMsgDef_s **vargameMsgDef_ptr;
+PTR32(gameMsgDef_s) *vargameMsgDef_ptr;
 textDefData_t *vartextDefData_t;
 textExp_s *vartextExp_t;
 textDef_s *vartextDef_t;
-textDef_s **vartextDef_ptr;
+PTR32(textDef_s) *vartextDef_ptr;
 rectData_s *varrectData_t;
 itemDefData_t *varitemDefData_t;
 UIAnimInfo *varUIAnimInfo;
-itemDef_s **varitemDef_ptr;
+PTR32(itemDef_s) *varitemDef_ptr;
 menuDef_t *varmenuDef_t;
-menuDef_t **varmenuDef_ptr;
-MenuList **varMenuListPtr;
+PTR32(menuDef_t) *varmenuDef_ptr;
+PTR32(MenuList) *varMenuListPtr;
 MenuList *varMenuList;
 LocalizeEntry *varLocalizeEntry;
-LocalizeEntry **varLocalizeEntryPtr;
+PTR32(LocalizeEntry) *varLocalizeEntryPtr;
 FxImpactEntry *varFxImpactEntry;
 FxImpactTable *varFxImpactTable;
 FxImpactTable **varFxImpactTablePtr;
@@ -5449,6 +5449,19 @@ void __cdecl Mark_ComWorldPtr()
     }
 }
 
+// Array de PTR32(const char) (hueco de 4 bytes por elemento), grupo D
+void __cdecl Load_UIXStringArray32(bool atStreamStart, int count)
+{
+    PTR32(const char) *var = varXString32;
+    Load_Stream(atStreamStart, (unsigned __int8 *)varXString32, 4 * count);
+    for ( int i = 0; i < count; ++i )
+    {
+        varXString32 = var;
+        Load_XString32(0);
+        ++var;
+    }
+}
+
 void __cdecl Load_operandInternalDataUnion(bool atStreamStart)
 {
     if ( varOperand->dataType )
@@ -5463,8 +5476,8 @@ void __cdecl Load_operandInternalDataUnion(bool atStreamStart)
         }
         else if ( varOperand->dataType == VAL_STRING )
         {
-            varXString = (const char **)varoperandInternalDataUnion;
-            Load_XString(atStreamStart);
+            varXString32 = (PTR32(const char) *)varoperandInternalDataUnion;
+            Load_XString32(atStreamStart);
         }
     }
     else if ( atStreamStart )
@@ -5523,8 +5536,8 @@ void __cdecl Load_expressionRpnArray(bool atStreamStart, int count)
 void __cdecl Load_ExpressionStatement(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varExpressionStatement, 16);
-    varXString = (const char **)&varExpressionStatement->filename;
-    Load_XString(0);
+    varXString32 = (PTR32(const char) *)&varExpressionStatement->filename;
+    Load_XString32(0);
     if ( varExpressionStatement->rpn )
     {
         if ( varExpressionStatement->rpn == (expressionRpn *)-1 )
@@ -5569,8 +5582,8 @@ void __cdecl Load_GenericEventScript(bool atStreamStart)
     }
     varExpressionStatement = &varGenericEventScript->condition;
     Load_ExpressionStatement(0);
-    varXString = &varGenericEventScript->action;
-    Load_XString(0);
+    varXString32 = &varGenericEventScript->action;
+    Load_XString32(0);
     if ( varGenericEventScript->next )
     {
         varGenericEventScript->next = (GenericEventScript *)AllocLoad_FxElemVisStateSample();
@@ -5589,8 +5602,8 @@ void __cdecl Load_GenericEventScriptNext(bool atStreamStart)
 void __cdecl Load_GenericEventHandler(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varGenericEventHandler, 12);
-    varXString = &varGenericEventHandler->name;
-    Load_XString(0);
+    varXString32 = &varGenericEventHandler->name;
+    Load_XString32(0);
     if ( varGenericEventHandler->eventScript )
     {
         varGenericEventHandler->eventScript = (GenericEventScript *)AllocLoad_FxElemVisStateSample();
@@ -5655,10 +5668,10 @@ void __cdecl Load_editFieldDef_ptr(bool atStreamStart)
 void __cdecl Load_multiDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varmultiDef_t, 396);
-    varXString = (const char **)varmultiDef_t;
-    Load_XStringArray(0, 32);
-    varXString = varmultiDef_t->dvarStr;
-    Load_XStringArray(0, 32);
+    varXString32 = varmultiDef_t->dvarList;
+    Load_UIXStringArray32(0, 32);
+    varXString32 = varmultiDef_t->dvarStr;
+    Load_UIXStringArray32(0, 32);
 }
 
 void __cdecl Load_multiDef_ptr(bool atStreamStart)
@@ -5675,8 +5688,8 @@ void __cdecl Load_multiDef_ptr(bool atStreamStart)
 void __cdecl Load_enumDvarDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varenumDvarDef_t, 4);
-    varXString = &varenumDvarDef_t->enumDvarName;
-    Load_XString(0);
+    varXString32 = &varenumDvarDef_t->enumDvarName;
+    Load_XString32(0);
 }
 
 void __cdecl Load_enumDvarDef_ptr(bool atStreamStart)
@@ -5757,8 +5770,8 @@ void __cdecl Load_MenuRowArray(bool atStreamStart, int count)
 void __cdecl Load_animParamsDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varanimParamsDef_t, 108);
-    varXString = &varanimParamsDef_t->name;
-    Load_XString(0);
+    varXString32 = &varanimParamsDef_t->name;
+    Load_XString32(0);
     if ( varanimParamsDef_t->onEvent )
     {
         varanimParamsDef_t->onEvent = (GenericEventHandler *)AllocLoad_FxElemVisStateSample();
@@ -5770,12 +5783,12 @@ void __cdecl Load_animParamsDef_t(bool atStreamStart)
 void __cdecl Load_windowDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varwindowDef_t, 164);
-    varXString = &varwindowDef_t->name;
-    Load_XString(0);
-    varXString = &varwindowDef_t->group;
-    Load_XString(0);
-    varMaterialHandle = &varwindowDef_t->background;
-    Load_MaterialHandle(0);
+    varXString32 = &varwindowDef_t->name;
+    Load_XString32(0);
+    varXString32 = &varwindowDef_t->group;
+    Load_XString32(0);
+    varMaterialHandle32 = &varwindowDef_t->background;
+    Load_MaterialHandle32(0);
 }
 
 void __cdecl Load_Window(bool atStreamStart)
@@ -5798,7 +5811,7 @@ void __cdecl Load_animParamsDef_ptr(bool atStreamStart)
 
 void __cdecl Load_animParamsDef_ptrArray(bool atStreamStart, int count)
 {
-    animParamsDef_t **var; // [esp+0h] [ebp-8h]
+    PTR32(animParamsDef_t) *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varanimParamsDef_ptr, 4 * count);
@@ -5850,12 +5863,12 @@ void __cdecl Load_ownerDrawDef_ptr(bool atStreamStart)
 void __cdecl Load_listBoxDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varlistBoxDef_t, 668);
-    varMaterialHandle = &varlistBoxDef_t->selectIcon;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varlistBoxDef_t->backgroundItemListbox;
-    Load_MaterialHandle(0);
-    varMaterialHandle = &varlistBoxDef_t->highlightTexture;
-    Load_MaterialHandle(0);
+    varMaterialHandle32 = &varlistBoxDef_t->selectIcon;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varlistBoxDef_t->backgroundItemListbox;
+    Load_MaterialHandle32(0);
+    varMaterialHandle32 = &varlistBoxDef_t->highlightTexture;
+    Load_MaterialHandle32(0);
     if ( varlistBoxDef_t->rows )
     {
         varlistBoxDef_t->rows = (MenuRow *)AllocLoad_FxElemVisStateSample();
@@ -5884,7 +5897,7 @@ void __cdecl Load_focusDefData_t(bool atStreamStart)
             Load_listBoxDef_ptr(atStreamStart);
             break;
         case 0xA:
-            varmultiDef_ptr = (multiDef_s **)varfocusDefData_t;
+            varmultiDef_ptr = (PTR32(multiDef_s) *)varfocusDefData_t;
             Load_multiDef_ptr(atStreamStart);
             break;
         case 5:
@@ -5897,11 +5910,11 @@ void __cdecl Load_focusDefData_t(bool atStreamStart)
         case 0x10:
         case 8:
         case 0x16:
-            vareditFieldDef_ptr = (editFieldDef_s **)varfocusDefData_t;
+            vareditFieldDef_ptr = (PTR32(editFieldDef_s) *)varfocusDefData_t;
             Load_editFieldDef_ptr(atStreamStart);
             break;
         case 0xB:
-            varenumDvarDef_ptr = (enumDvarDef_s **)varfocusDefData_t;
+            varenumDvarDef_ptr = (PTR32(enumDvarDef_s) *)varfocusDefData_t;
             Load_enumDvarDef_ptr(atStreamStart);
             break;
     }
@@ -5910,14 +5923,14 @@ void __cdecl Load_focusDefData_t(bool atStreamStart)
 void __cdecl Load_focusItemDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varfocusItemDef_t, 24);
-    varXString = &varfocusItemDef_t->mouseEnterText;
-    Load_XString(0);
-    varXString = &varfocusItemDef_t->mouseExitText;
-    Load_XString(0);
-    varXString = &varfocusItemDef_t->mouseEnter;
-    Load_XString(0);
-    varXString = &varfocusItemDef_t->mouseExit;
-    Load_XString(0);
+    varXString32 = &varfocusItemDef_t->mouseEnterText;
+    Load_XString32(0);
+    varXString32 = &varfocusItemDef_t->mouseExitText;
+    Load_XString32(0);
+    varXString32 = &varfocusItemDef_t->mouseEnter;
+    Load_XString32(0);
+    varXString32 = &varfocusItemDef_t->mouseExit;
+    Load_XString32(0);
     if ( varfocusItemDef_t->onKey )
     {
         varfocusItemDef_t->onKey = (ItemKeyHandler *)AllocLoad_FxElemVisStateSample();
@@ -5979,7 +5992,7 @@ void __cdecl Load_textDefData_t(bool atStreamStart)
     }
     else if ( varitemDef_t->type == 15 )
     {
-        vargameMsgDef_ptr = (gameMsgDef_s **)vartextDefData_t;
+        vargameMsgDef_ptr = (PTR32(gameMsgDef_s) *)vartextDefData_t;
         Load_gameMsgDef_ptr(atStreamStart);
     }
 }
@@ -5994,8 +6007,8 @@ void __cdecl Load_textExp_t(bool atStreamStart)
 void __cdecl Load_textDef_t(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)vartextDef_t, 68);
-    varXString = &vartextDef_t->text;
-    Load_XString(0);
+    varXString32 = &vartextDef_t->text;
+    Load_XString32(0);
     if ( vartextDef_t->textExpData )
     {
         vartextDef_t->textExpData = (textExp_s *)AllocLoad_FxElemVisStateSample();
@@ -6055,16 +6068,16 @@ void __cdecl Load_itemDefData_t(bool atStreamStart)
             Load_textDef_ptr(atStreamStart);
             break;
         case 2:
-            varimageDef_ptr = (imageDef_s **)varitemDefData_t;
+            varimageDef_ptr = (PTR32(imageDef_s) *)varitemDefData_t;
             Load_imageDef_ptr(atStreamStart);
             break;
         case 0x15:
         case 0x13:
-            varfocusItemDef_ptr = (focusItemDef_s **)varitemDefData_t;
+            varfocusItemDef_ptr = (PTR32(focusItemDef_s) *)varitemDefData_t;
             Load_focusItemDef_ptr(atStreamStart);
             break;
         case 6:
-            varownerDrawDef_ptr = (ownerDrawDef_s **)varitemDefData_t;
+            varownerDrawDef_ptr = (PTR32(ownerDrawDef_s) *)varitemDefData_t;
             Load_ownerDrawDef_ptr(atStreamStart);
             break;
     }
@@ -6075,7 +6088,7 @@ void __cdecl Load_UIAnimInfo(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varUIAnimInfo, 236);
     if ( varUIAnimInfo->animStates )
     {
-        varUIAnimInfo->animStates = (animParamsDef_t **)AllocLoad_FxElemVisStateSample();
+        varUIAnimInfo->animStates = (PTR32(animParamsDef_t) *)AllocLoad_FxElemVisStateSample();
         varanimParamsDef_ptr = varUIAnimInfo->animStates;
         Load_animParamsDef_ptrArray(1, varUIAnimInfo->animStateCount);
     }
@@ -6086,12 +6099,12 @@ void __cdecl Load_itemDef_t(bool atStreamStart)
     Load_Stream(atStreamStart, (unsigned __int8 *)varitemDef_t, 272);
     varWindow = &varitemDef_t->window;
     Load_Window(0);
-    varXString = &varitemDef_t->dvar;
-    Load_XString(0);
-    varXString = &varitemDef_t->dvarTest;
-    Load_XString(0);
-    varXString = &varitemDef_t->enableDvar;
-    Load_XString(0);
+    varXString32 = &varitemDef_t->dvar;
+    Load_XString32(0);
+    varXString32 = &varitemDef_t->dvarTest;
+    Load_XString32(0);
+    varXString32 = &varitemDef_t->enableDvar;
+    Load_XString32(0);
     varitemDefData_t = &varitemDef_t->typeData;
     Load_itemDefData_t(0);
     if ( varitemDef_t->rectExpData )
@@ -6136,7 +6149,7 @@ void __cdecl Load_itemDef_ptr(bool atStreamStart)
 
 void __cdecl Load_itemDef_ptrArray(bool atStreamStart, int count)
 {
-    itemDef_s **var; // [esp+0h] [ebp-8h]
+    PTR32(itemDef_s) *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varitemDef_ptr, 4 * count);
@@ -6155,8 +6168,8 @@ void __cdecl Load_menuDef_t(bool atStreamStart)
     DB_PushStreamPos(4u);
     varWindow = &varmenuDef_t->window;
     Load_Window(0);
-    varXString = &varmenuDef_t->font;
-    Load_XString(0);
+    varXString32 = &varmenuDef_t->font;
+    Load_XString32(0);
     if ( varmenuDef_t->onEvent )
     {
         varmenuDef_t->onEvent = (GenericEventHandler *)AllocLoad_FxElemVisStateSample();
@@ -6171,17 +6184,17 @@ void __cdecl Load_menuDef_t(bool atStreamStart)
     }
     varExpressionStatement = &varmenuDef_t->visibleExp;
     Load_ExpressionStatement(0);
-    varXString = &varmenuDef_t->allowedBinding;
-    Load_XString(0);
-    varXString = &varmenuDef_t->soundName;
-    Load_XString(0);
+    varXString32 = &varmenuDef_t->allowedBinding;
+    Load_XString32(0);
+    varXString32 = &varmenuDef_t->soundName;
+    Load_XString32(0);
     varExpressionStatement = &varmenuDef_t->rectXExp;
     Load_ExpressionStatement(0);
     varExpressionStatement = &varmenuDef_t->rectYExp;
     Load_ExpressionStatement(0);
     if ( varmenuDef_t->items )
     {
-        varmenuDef_t->items = (itemDef_s **)AllocLoad_FxElemVisStateSample();
+        varmenuDef_t->items = (PTR32(itemDef_s) *)AllocLoad_FxElemVisStateSample();
         varitemDef_ptr = varmenuDef_t->items;
         Load_itemDef_ptrArray(1, varmenuDef_t->itemCount);
     }
@@ -6190,26 +6203,26 @@ void __cdecl Load_menuDef_t(bool atStreamStart)
 
 void __cdecl Load_menuDef_ptr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varmenuDef_ptr, 4);
     DB_PushStreamPos(0);
     if ( *varmenuDef_ptr )
     {
-        value = (unsigned int)*varmenuDef_ptr;
-        if ( *varmenuDef_ptr == (menuDef_t *)-1 || value == -2 )
+        value = PTR32_RAW(*varmenuDef_ptr);
+        if ( *varmenuDef_ptr == (menuDef_t *)-1 || value == 0xFFFFFFFEu )
         {
             *varmenuDef_ptr = AllocLoad_itemDef_t();
             varmenuDef_t = *varmenuDef_ptr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_menuDef_t(1);
-            Load_MenuAsset((XAssetHeader *)varmenuDef_ptr);
+            Load_MenuAsset32(varmenuDef_ptr);
             if ( inserted )
-                *inserted = *varmenuDef_ptr;
+                *inserted = PTR32_RAW(*varmenuDef_ptr);
         }
         else
         {
@@ -6221,7 +6234,7 @@ void __cdecl Load_menuDef_ptr(bool atStreamStart)
 
 void __cdecl Load_menuDef_ptrArray(bool atStreamStart, int count)
 {
-    menuDef_t **var; // [esp+0h] [ebp-8h]
+    PTR32(menuDef_t) *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varmenuDef_ptr, 4 * count);
@@ -6238,11 +6251,11 @@ void __cdecl Load_MenuList(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varMenuList, 12);
     DB_PushStreamPos(4u);
-    varXString = &varMenuList->name;
-    Load_XString(0);
+    varXString32 = &varMenuList->name;
+    Load_XString32(0);
     if ( varMenuList->menus )
     {
-        varMenuList->menus = (menuDef_t **)AllocLoad_FxElemVisStateSample();
+        varMenuList->menus = (PTR32(menuDef_t) *)AllocLoad_FxElemVisStateSample();
         varmenuDef_ptr = varMenuList->menus;
         Load_menuDef_ptrArray(1, varMenuList->menuCount);
     }
@@ -6251,26 +6264,26 @@ void __cdecl Load_MenuList(bool atStreamStart)
 
 void __cdecl Load_MenuListPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varMenuListPtr, 4);
     DB_PushStreamPos(0);
     if ( *varMenuListPtr )
     {
-        value = (unsigned int)*varMenuListPtr;
-        if ( *varMenuListPtr == (MenuList *)-1 || value == -2 )
+        value = PTR32_RAW(*varMenuListPtr);
+        if ( *varMenuListPtr == (MenuList *)-1 || value == 0xFFFFFFFEu )
         {
             *varMenuListPtr = (MenuList *)AllocLoad_FxElemVisStateSample();
             varMenuList = *varMenuListPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_MenuList(1);
-            Load_MenuListAsset((XAssetHeader *)varMenuListPtr);
+            Load_MenuListAsset32(varMenuListPtr);
             if ( inserted )
-                *inserted = *varMenuListPtr;
+                *inserted = PTR32_RAW(*varMenuListPtr);
         }
         else
         {
@@ -6282,8 +6295,8 @@ void __cdecl Load_MenuListPtr(bool atStreamStart)
 
 void __cdecl Mark_windowDef_t()
 {
-    varMaterialHandle = &varwindowDef_t->background;
-    Mark_MaterialHandle();
+    varMaterialHandle32 = &varwindowDef_t->background;
+    Mark_MaterialHandle32();
 }
 
 void __cdecl Mark_Window()
@@ -6294,12 +6307,12 @@ void __cdecl Mark_Window()
 
 void __cdecl Mark_listBoxDef_t()
 {
-    varMaterialHandle = &varlistBoxDef_t->selectIcon;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varlistBoxDef_t->backgroundItemListbox;
-    Mark_MaterialHandle();
-    varMaterialHandle = &varlistBoxDef_t->highlightTexture;
-    Mark_MaterialHandle();
+    varMaterialHandle32 = &varlistBoxDef_t->selectIcon;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varlistBoxDef_t->backgroundItemListbox;
+    Mark_MaterialHandle32();
+    varMaterialHandle32 = &varlistBoxDef_t->highlightTexture;
+    Mark_MaterialHandle32();
 }
 
 void __cdecl Mark_listBoxDef_ptr()
@@ -6399,7 +6412,7 @@ void __cdecl Mark_itemDefData_t()
     }
     else if ( varitemDef_t->type != 2 && (varitemDef_t->type == 21 || varitemDef_t->type == 19) )
     {
-        varfocusItemDef_ptr = (focusItemDef_s **)varitemDefData_t;
+        varfocusItemDef_ptr = (PTR32(focusItemDef_s) *)varitemDefData_t;
         Mark_focusItemDef_ptr();
     }
 }
@@ -6423,7 +6436,7 @@ void __cdecl Mark_itemDef_ptr()
 
 void __cdecl Mark_itemDef_ptrArray(int count)
 {
-    itemDef_s **var; // [esp+0h] [ebp-8h]
+    PTR32(itemDef_s) *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     var = varitemDef_ptr;
@@ -6458,7 +6471,7 @@ void __cdecl Mark_menuDef_ptr()
 
 void __cdecl Mark_menuDef_ptrArray(int count)
 {
-    menuDef_t **var; // [esp+0h] [ebp-8h]
+    PTR32(menuDef_t) *var; // [esp+0h] [ebp-8h]
     int i; // [esp+4h] [ebp-4h]
 
     var = varmenuDef_ptr;
@@ -6493,35 +6506,35 @@ void __cdecl Load_LocalizeEntry(bool atStreamStart)
 {
     Load_Stream(atStreamStart, (unsigned __int8 *)varLocalizeEntry, 8);
     DB_PushStreamPos(4u);
-    varXString = &varLocalizeEntry->value;
-    Load_XString(0);
-    varXString = &varLocalizeEntry->name;
-    Load_XString(0);
+    varXString32 = &varLocalizeEntry->value;
+    Load_XString32(0);
+    varXString32 = &varLocalizeEntry->name;
+    Load_XString32(0);
     DB_PopStreamPos();
 }
 
 void __cdecl Load_LocalizeEntryPtr(bool atStreamStart)
 {
-    const void **inserted; // [esp+0h] [ebp-Ch]
+    unsigned int *inserted; // [esp+0h] [ebp-Ch]
     unsigned int value; // [esp+4h] [ebp-8h]
 
     Load_Stream(atStreamStart, (unsigned __int8 *)varLocalizeEntryPtr, 4);
     DB_PushStreamPos(0);
     if ( *varLocalizeEntryPtr )
     {
-        value = (unsigned int)*varLocalizeEntryPtr;
-        if ( *varLocalizeEntryPtr == (LocalizeEntry *)-1 || value == -2 )
+        value = PTR32_RAW(*varLocalizeEntryPtr);
+        if ( *varLocalizeEntryPtr == (LocalizeEntry *)-1 || value == 0xFFFFFFFEu )
         {
             *varLocalizeEntryPtr = (LocalizeEntry *)AllocLoad_FxElemVisStateSample();
             varLocalizeEntry = *varLocalizeEntryPtr;
-            if ( value == -2 )
-                inserted = DB_InsertPointer();
+            if ( value == 0xFFFFFFFEu )
+                inserted = DB_InsertPointer32();
             else
                 inserted = 0;
             Load_LocalizeEntry(1);
-            Load_LocalizeEntryAsset((XAssetHeader *)varLocalizeEntryPtr);
+            Load_LocalizeEntryAsset32(varLocalizeEntryPtr);
             if ( inserted )
-                *inserted = *varLocalizeEntryPtr;
+                *inserted = PTR32_RAW(*varLocalizeEntryPtr);
         }
         else
         {
@@ -9590,15 +9603,15 @@ void __cdecl Load_XAssetHeader(bool atStreamStart)
             Load_FontHandle(atStreamStart);
             break;
         case 21:
-            varMenuListPtr = (MenuList **)varXAssetHeader;
+            varMenuListPtr = (PTR32(MenuList) *)varXAssetHeader;
             Load_MenuListPtr(atStreamStart);
             break;
         case 22:
-            varmenuDef_ptr = (menuDef_t **)varXAssetHeader;
+            varmenuDef_ptr = (PTR32(menuDef_t) *)varXAssetHeader;
             Load_menuDef_ptr(atStreamStart);
             break;
         case 23:
-            varLocalizeEntryPtr = (LocalizeEntry **)varXAssetHeader;
+            varLocalizeEntryPtr = (PTR32(LocalizeEntry) *)varXAssetHeader;
             Load_LocalizeEntryPtr(atStreamStart);
             break;
         case 24:
@@ -9733,15 +9746,15 @@ void __cdecl Mark_XAssetHeader()
             Mark_FontHandle();
             break;
         case ASSET_TYPE_MENULIST:
-            varMenuListPtr = (MenuList **)varXAssetHeader;
+            varMenuListPtr = (PTR32(MenuList) *)varXAssetHeader;
             Mark_MenuListPtr();
             break;
         case ASSET_TYPE_MENU:
-            varmenuDef_ptr = (menuDef_t **)varXAssetHeader;
+            varmenuDef_ptr = (PTR32(menuDef_t) *)varXAssetHeader;
             Mark_menuDef_ptr();
             break;
         case ASSET_TYPE_LOCALIZE_ENTRY:
-            varLocalizeEntryPtr = (LocalizeEntry **)varXAssetHeader;
+            varLocalizeEntryPtr = (PTR32(LocalizeEntry) *)varXAssetHeader;
             Mark_LocalizeEntryPtr();
             break;
         case ASSET_TYPE_WEAPON:
