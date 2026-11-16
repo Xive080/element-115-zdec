@@ -14,7 +14,8 @@
 #include "r_reflection_probe.h"
 #include "r_model.h"
 
-GfxWorld s_world;
+#include <universal/ptr32.h>
+GfxWorld &s_world = *new (Ptr32_ArenaAlloc(sizeof(GfxWorld), 64)) GfxWorld; // arm64: singleton de assets dentro de la arena (se referencia con Ptr32)
 int g_pmemLocation;
 
 MaterialUsage *__cdecl R_GetMaterialUsageData(Material *material)

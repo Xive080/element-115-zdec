@@ -1,7 +1,8 @@
 #include "com_bsp.h"
 #include <win32/win_main.h>
 
-ComWorld comWorld;
+#include <universal/ptr32.h>
+ComWorld &comWorld = *new (Ptr32_ArenaAlloc(sizeof(ComWorld), 64)) ComWorld; // arm64: singleton de assets dentro de la arena (se referencia con Ptr32)
 
 char __cdecl Com_CanPrimaryLightAffectPoint(const ComPrimaryLight *light, const float *point)
 {

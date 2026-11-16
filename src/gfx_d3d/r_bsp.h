@@ -450,4 +450,4 @@ unsigned int __cdecl R_GetDebugReflectionProbeLocs(float (*locArray)[3], unsigne
 void __cdecl R_BspGenerateReflections();
 void __cdecl R_RegisterSkyboxModel(char *xmodelName);
 
-extern GfxWorld s_world;
+extern GfxWorld &s_world;

@@ -8,7 +8,7 @@
 
 #include "phys_colgeom.h"
 
-extern clipMap_t cm;
+extern clipMap_t &cm;
 
 struct cbrush_t;
 struct CollisionAabbTree;

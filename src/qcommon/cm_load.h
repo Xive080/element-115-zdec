@@ -21,7 +21,7 @@ unsigned int __cdecl CM_Hunk_AllocateTempMemoryHigh(int size, const char *name);
 void __cdecl CM_Hunk_ClearTempMemoryHigh();
 
 
-extern clipMap_t cm;
+extern clipMap_t &cm;
 
 extern int num_occlusion_overrides;
 extern float occlusion_overrides[32][2][3];

@@ -79,4 +79,4 @@ char __cdecl Com_CanPrimaryLightAffectPoint(const ComPrimaryLight *light, const 
 double __cdecl CosOfSumOfArcCos(float cos0, float cos1);
 void __cdecl Com_UnloadWorld();
 
-extern ComWorld comWorld;
+extern ComWorld &comWorld;

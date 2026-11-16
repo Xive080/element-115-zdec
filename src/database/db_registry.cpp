@@ -3922,6 +3922,12 @@ void DB_Init()
         g_poolSize[ASSET_TYPE_STRINGTABLE] = POOLSIZE_STRINGTABLE_MOD;
     }
 
+    // arm64: los singletons son referencias a objetos de la arena (inicializacion dinamica en otras TU): se enlazan aqui
+    DB_XAssetPool[ASSET_TYPE_CLIPMAP] = DB_XAssetPool[ASSET_TYPE_CLIPMAP_PVS] = &cm;
+    DB_XAssetPool[ASSET_TYPE_COMWORLD] = &comWorld;
+    DB_XAssetPool[ASSET_TYPE_GAMEWORLD_SP] = DB_XAssetPool[ASSET_TYPE_GAMEWORLD_MP] = &gameWorldMp;
+    DB_XAssetPool[ASSET_TYPE_GFXWORLD] = &s_world;
+
     for (type = ASSET_TYPE_XMODELPIECES; type < ASSET_TYPE_COUNT; ++type)
         DB_InitPoolHeader(type);
 

@@ -13,7 +13,8 @@
 #include <database/db_registry.h>
 #include <physics/rope.h>
 
-clipMap_t cm;
+#include <universal/ptr32.h>
+clipMap_t &cm = *new (Ptr32_ArenaAlloc(sizeof(clipMap_t), 64)) clipMap_t; // arm64: singleton de assets dentro de la arena (se referencia con Ptr32)
 
 int num_occlusion_overrides;
 float occlusion_overrides[32][2][3];
