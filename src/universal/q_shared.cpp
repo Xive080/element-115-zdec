@@ -1200,14 +1200,14 @@ bool __cdecl KeyValueToField(
             case 0xA:
                 I_strncpyz(dest, pszKeyValue, 0x2000);
                 v12 = R_RegisterModel(dest);
-                *(unsigned int *)&pStruct[pField->iOffset] = (unsigned int)v12;
+                *(unsigned int *)&pStruct[pField->iOffset] = (uint32_t)(uintptr_t)v12;
                 if ( v12 )
                     return 1;
                 result = 0;
                 break;
             case 0xD:
                 I_strncpyz(name, pszKeyValue, 245);
-                *(unsigned int *)&pStruct[pField->iOffset] = (unsigned int)PhysPreset_Register(name);
+                *(unsigned int *)&pStruct[pField->iOffset] = (uint32_t)(uintptr_t)PhysPreset_Register(name);
                 return 1;
             case 0xE:
                 *(_WORD *)&pStruct[pField->iOffset] = SL_GetLowercaseString(pszKeyValue, 0, SCRIPTINSTANCE_SERVER);
