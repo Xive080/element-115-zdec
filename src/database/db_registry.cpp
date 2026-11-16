@@ -3167,7 +3167,22 @@ void __cdecl DB_SwapXAsset(XAsset *from, XAsset *to)
     iassert(from->type == to->type);
     DB_DynamicCloneXAsset(from->header, to->header, to->type, DB_CLONE_SWAP);
     unsigned int size = DB_GetXAssetTypeSize(from->type);
+#if defined(__LP64__) || defined(_WIN64)
+    // LP64: XAssetHeader guarda punteros de 32 bits (desplazamientos en la arena Ptr32): el temporal del intercambio
+    // no puede vivir en la pila (alloca). Se usa un bufer de la arena (bajo CRITSECT_DBHASH, como el resto del enlace).
+    static void *s_swapTemp;
+    static unsigned int s_swapTempSize;
+    if (size > s_swapTempSize)
+    {
+        if (s_swapTemp)
+            Ptr32_ArenaFree(s_swapTemp);
+        s_swapTemp = Ptr32_ArenaAlloc(size, 16);
+        s_swapTempSize = size;
+    }
+    asset.header.data = s_swapTemp;
+#else
     asset.header.data = alloca(size);
+#endif
     asset.type = from->type;
     DB_CloneXAssetInternal(to, &asset);
     DB_CloneXAssetInternal(from, to);
