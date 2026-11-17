@@ -62,7 +62,7 @@ GlassesClient::GlassesClient(const Glasses *glss)
 
     this->numGlasses = glss->numGlasses;
     this->glasses = (GlassClient *)GlassesClient::Allocate(
-                                                                     12 * this->numGlasses,
+                                                                     sizeof(GlassClient) * this->numGlasses,   // x86: 12
                                                                      "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_client.cpp",
                                                                      80);
 
@@ -323,7 +323,7 @@ void __thiscall GlassClient::SetState(
                 GlassClient::SetBrushMaterial(GlassState::State::CRACKED);
                 if (!gameState)
                 {
-                    CG_PlaySound(localClientNum, (float*)this->glass->origin, 0, 0, 1.0, (char *)this->glass->glassDef->crackSound);
+                    CG_PlaySound(localClientNum, (float*)this->glass->origin, 0, 0, 1.0, (char *)(const char *)this->glass->glassDef->crackSound);
                 }
             }
             else if ( newState == GlassState::State::SHATTERED )
@@ -335,9 +335,9 @@ void __thiscall GlassClient::SetState(
                 {
                     if ( (float)((float)((float)(*hitDir * *hitDir) + (float)(hitDir[1] * hitDir[1]))
                                          + (float)(hitDir[2] * hitDir[2])) == 0.0 )
-                        autoShatterShound = (char *)this->glass->glassDef->autoShatterShound;
+                        autoShatterShound = (char *)(const char *)this->glass->glassDef->autoShatterShound;
                     else
-                        autoShatterShound = (char *)this->glass->glassDef->shatterShound;
+                        autoShatterShound = (char *)(const char *)this->glass->glassDef->shatterShound;
                     CG_PlaySound(localClientNum, (float*)this->glass->origin, 0, 0, 1.0, autoShatterShound);
                     // zombies: SP queues shards and sound, without MP's pane-wide FX (SP 0x0051D720).
                     if ( !Dvar_GetBool("zombiemode") && this->glass->glassDef->shatterEffect )
@@ -729,7 +729,7 @@ int __cdecl GlassClient::Outlines::CalcMemorySize(const GlassShard **shards, int
     numVerts = 0;
     for ( i = 0; i < numShards; ++i )
         numVerts += shards[i]->outline.numVerts;
-    return 12 * numShards + 8 * numVerts + 8;
+    return (int)(sizeof(GlassClient::Outlines::Outline) * numShards + 8 * numVerts + sizeof(GlassClient::Outlines));   // x86: 12*n + 8*v + 8
 }
 
 GlassClient::Outlines::Outlines(

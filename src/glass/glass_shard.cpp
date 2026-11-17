@@ -1130,7 +1130,7 @@ char __thiscall GlassShard::Outline::CloseOutline()
             --this->numVerts;
             dir = this->verts[v1].edge.dir;
             v5 = &this->verts[v1];
-            v6 = &this->verts[((signed int)-abs(v1 - (this->numVerts - 1)) >> 31) & (v1 + 1)];
+            v6 = &this->verts[(v1 + 1 < this->numVerts ? v1 + 1 : 0)];
             *dir = v6->edge.origin[0] - v5->edge.origin[0];
             dir[1] = v6->edge.origin[1] - v5->edge.origin[1];
             v3 = Vec2Normalize(dir);
@@ -1142,7 +1142,7 @@ char __thiscall GlassShard::Outline::CloseOutline()
     this->area = 0.0f;
     for ( i = 0; i < this->numVerts; ++i )
     {
-        v11 = ((signed int)-fabs(i - (this->numVerts - 1)) >> 31) & (i + 1);
+        v11 = (i + 1 < this->numVerts) ? i + 1 : 0;   // LP64: el -fabs(unsigned) del decomp desborda el cast a int
         this->length = this->length + this->verts[i].edge.len;
         this->area = (float)((float)((float)(this->verts[i].edge.origin[0] * this->verts[v11].edge.origin[1])
                                                              - (float)(this->verts[i].edge.origin[1] * this->verts[v11].edge.origin[0]))
@@ -2096,7 +2096,7 @@ int __thiscall GlassShard::Shatter(const GlassShard **newShards, int maxNewShard
             if (ns)
             {
                 numNewShards += ns;
-                qsort(newShards, numNewShards, 4u, compareShards);
+                qsort(newShards, numNewShards, sizeof(*newShards), compareShards);
                 if (maxShardSize > (&(*newShards)->outline)->Area())
                     break;
             }
@@ -2795,7 +2795,7 @@ LABEL_38:
             if ( v47 )
             {
                 numNewShards += v47;
-                qsort(newShards, numNewShards, 4u, (int (__cdecl *)(const void *, const void *))compareShards);
+                qsort(newShards, numNewShards, sizeof(*newShards), (int (__cdecl *)(const void *, const void *))compareShards);
             }
         }
     }
@@ -3574,9 +3574,9 @@ int GlassShard::Split(
         newOutline.Add(newDir, newEdgeDist)->isOriginalEdge = isOriginalEdge;
         v13 = this->outline.verts[newEdgeIdx].isOriginalEdge;
         otherOutline.Add(newOutline.verts[newOutline.numVerts - 1].edge.origin)->isOriginalEdge = v13;
-        for ( edgeIndex = ((signed int)-abs(newEdgeIdx - (this->outline.numVerts - 1)) >> 31) & (newEdgeIdx + 1);
+        for ( edgeIndex = (newEdgeIdx + 1 < this->outline.numVerts) ? newEdgeIdx + 1 : 0;
                     edgeIndex != startEdge;
-                    edgeIndex = ((signed int)-fabs(edgeIndex - (this->outline.numVerts - 1)) >> 31) & (edgeIndex + 1) )
+                    edgeIndex = (edgeIndex + 1 < this->outline.numVerts) ? edgeIndex + 1 : 0 )
         {
             v12 = this->outline.verts[edgeIndex].isOriginalEdge;
             newOutline.Add(this->outline.verts[edgeIndex].edge.origin)->isOriginalEdge = v12;
@@ -3587,7 +3587,7 @@ int GlassShard::Split(
         {
             nextEdgeIndex = this->outline.numVerts
                                         - 1
-                                        + (((signed int)-fabs(edgeIndex) >> 31) & (edgeIndex - this->outline.numVerts));
+                                        + (edgeIndex ? (int)edgeIndex - (int)this->outline.numVerts : 0);
             v11 = this->outline.verts[nextEdgeIndex].isOriginalEdge;
             otherOutline.Add(this->outline.verts[edgeIndex].edge.origin)->isOriginalEdge = v11;
         }
@@ -3896,7 +3896,16 @@ bool __thiscall GlassShard::InitPhysicsObj(bool enableCollisions)
         //gjk_geom_list_t::add_geom(&gjk_geom_list, aabb_gjk_geom);
         gjk_geom_list.add_geom(aabb_gjk_geom);
         PhysObjUserData *obj = Phys_ObjCreate(1, this->origin, quat, vec3_origin, &physPreset, &gjk_geom_list, 1, -1);
-        this->physObjId = (int)obj;
+        if ( !obj )
+        {
+            // Port: sin motor de fisica (harness H12) Phys_ObjCreate devuelve nulo; se usa la fisica propia del cristal
+            // (GlassPhysics), la misma ruta que el original toma cuando hay mas de 100 fragmentos con colisiones.
+            Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
+            Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
+            clGlasses->renderer->RemoveColidingShard(this);
+            goto glass_physics;
+        }
+        this->physObjId = (int)(intptr_t)obj; // LP64: el handle del arnes es indice+1 (h8_doors)
 
         broad_phase_base *bpb = obj->m_bpb;
         aasap_list_remove(bpb);
@@ -3909,6 +3918,7 @@ bool __thiscall GlassShard::InitPhysicsObj(bool enableCollisions)
     }
     else
     {
+glass_physics:
         this->glassPhysics = clGlasses->renderer->AllocPhysics();
         if ( this->glassPhysics )
         {
@@ -4113,7 +4123,7 @@ bool __thiscall GlassShard::IsOnBottomEdge()
     }
     if ( edgeIdx == -1 )
         return 0;
-    edgeIdx2 = ((signed int)-fabs(edgeIdx - (this->outline.numVerts - 1)) >> 31) & (edgeIdx + 1);
+    edgeIdx2 = (edgeIdx + 1 < this->outline.numVerts) ? edgeIdx + 1 : 0;
     minEdge = FLT_MAX;
     minOthers = FLT_MAX;
     for ( j = 0; j < this->outline.numVerts; ++j )

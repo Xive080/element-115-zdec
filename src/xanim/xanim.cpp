@@ -2569,6 +2569,9 @@ void __cdecl NotifyServerNotetrack(
 {
     XAnimServerNotify *notify; // [esp+0h] [ebp-4h]
 
+#ifdef H5G
+    { extern void (*g_h12NoteHook)(int, unsigned, unsigned) __attribute__((weak)); if (&g_h12NoteHook && g_h12NoteHook) g_h12NoteHook(obj->entnum - 1, notifyName, notetrackName); }   // harness OLA 12: registro de notetracks
+#endif
     if ( g_currList )
     {
         if ( g_currList->iCurrentElement < g_currList->iNumElements )

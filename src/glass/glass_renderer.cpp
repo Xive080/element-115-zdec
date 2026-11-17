@@ -1,3 +1,9 @@
+// LP64: un nodo de std::list (prev, next, valor) ocupa 24 bytes en arm64; en x86 cabia en 16.
+#if defined(__LP64__) || defined(_WIN64)
+#define GLASS_SMALL_BLOCK 32u
+#else
+#define GLASS_SMALL_BLOCK 0x10u
+#endif
 #include "glass_renderer.h"
 #include "glass_client.h"
 
@@ -77,10 +83,10 @@ GlassRenderer::GlassRenderer(const Glasses *glasses)
     this->smallAllocator.memory = 0;
     smallAllocatorBlocks = glasses->smallAllocatorBlocks;
     v2 = GlassesClient::Allocate(
-                 16 * smallAllocatorBlocks,
+                 GLASS_SMALL_BLOCK * smallAllocatorBlocks,
                  "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",
                  70);
-    this->smallAllocator.Init(v2, 0x10u, smallAllocatorBlocks);
+    this->smallAllocator.Init(v2, GLASS_SMALL_BLOCK, smallAllocatorBlocks);
 
 
     //v23 = GlassesClient::Allocate(28, "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp", 72);
