@@ -563,7 +563,7 @@ unsigned int __cdecl DestructibleUpdate(gentity_s *ent, DObjModel_s *dobjModels,
     }
     else
     {
-        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, ddef->name);
+        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, ddef->name.get());
     }
     if ( !ent->destructible->ddef
         && !Assert_MyHandler(
@@ -612,7 +612,7 @@ unsigned int __cdecl DestructibleUpdate(gentity_s *ent, DObjModel_s *dobjModels,
     {
         if ( !ddef->pieces[i].stages[0].showBone )
         {
-            v4 = va("Destructible %s Piece %d first stage can't find bone", ddef->name, i);
+            v4 = va("Destructible %s Piece %d first stage can't find bone", ddef->name.get(), i);
             if ( !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                             817,
@@ -641,11 +641,11 @@ unsigned int __cdecl DestructibleUpdate(gentity_s *ent, DObjModel_s *dobjModels,
                 pristineModel = ddef->model;
             dobjModels->model = pristineModel;
             if ( level.initializing )
-                G_SetModel(ent, (char *)dobjModels->model->name);
+                G_SetModel(ent, (char *)dobjModels->model->name.get());
             if ( (ent->destructible->flags & 2) == 0 )
             {
                 stage = Destructible_GetDestructibleStage(ddef, 0, ent->destructible->pieceArray->health);
-                loopSoundName = (char *)ddef->pieces->stages[stage].loopSound;
+                loopSoundName = (char *)ddef->pieces->stages[stage].loopSound.get();
                 if ( loopSoundName )
                 {
                     ent->s.loopSoundId = SND_FindAliasId(loopSoundName);
@@ -904,7 +904,7 @@ bool __cdecl DamagePiece(
     ddef = destructible->ddef;
     if ( recursiveDepth > 20 )
     {
-        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", ddef->name);
+        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", ddef->name.get());
         return 0;
     }
     if ( index >= ddef->numPieces
@@ -977,7 +977,7 @@ bool __cdecl DamagePiece(
             if ( (float)damage >= cg_vehicle_piece_damagesfx_threshold->current.value )
             {
                 G_GetTagTransform(self, ddef, index, tagMat);
-                AliasId = SND_FindAliasId((char *)ddef->pieces[index].damageSound);
+                AliasId = SND_FindAliasId((char *)ddef->pieces[index].damageSound.get());
                 G_PlaySoundAliasAtPoint(tagMat[3], AliasId);
             }
         }
@@ -1624,7 +1624,7 @@ unsigned int __cdecl CG_DestructibleUpdate(
     }
     else
     {
-        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, ddef->name);
+        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, ddef->name.get());
     }
     if ( numModels != 1
         && !Assert_MyHandler(
@@ -1697,7 +1697,7 @@ unsigned int __cdecl CG_DestructibleUpdate(
             loopSoundName = (char *)ddef->pieces->stages[Destructible_GetDestructibleStage(
                                                                                                          ddef,
                                                                                                          0,
-                                                                                                         ent->destructible->pieceArray->health)].loopSound;
+                                                                                                         ent->destructible->pieceArray->health)].loopSound.get();
             if ( loopSoundName )
             {
                 ent->nextState.loopSoundId = SND_FindAliasId(loopSoundName);
@@ -1997,8 +1997,8 @@ void __cdecl CG_DestructibleBreakPiece(
                     Com_PrintWarning(
                         21,
                         "Spawn model %s for destructible %s doesn't have physPreset.",
-                        model->name,
-                        self->destructible->ddef->name);
+                        model->name.get(),
+                        self->destructible->ddef->name.get());
                 }
             }
         }
@@ -2082,7 +2082,7 @@ void __cdecl CG_DestructibleBreakPiece(
     }
     if ( piece->stages[stage].breakSound )
     {
-        AliasId = SND_FindAliasId((char *)piece->stages[stage].breakSound);
+        AliasId = SND_FindAliasId((char *)piece->stages[stage].breakSound.get());
         CG_PlaySound(localClientNum, entityNum, tagOrigin, 0, 0, 1.0, AliasId);
     }
     if ( ddef->clientOnly && nextStage >= 0 && piece->stages[nextStage].maxTime > 0.0 )
@@ -2377,14 +2377,14 @@ void __cdecl CG_DestructibleRadiusDamage(
         {
             de = &g_destructible_events[g_destructible_events_count++];
             de->type = 1;
-            de->ehe.localClientNum = (int)self;
-            p_attacker = &de->ed.attacker;
-            de->erd.point[0] = *(float *)point;
-            p_attacker[1] = point[1];
-            p_attacker[2] = point[2];
-            de->ed.dir[2] = damgeInner;
-            de->ed.point[0] = damgeOuter;
-            de->ed.point[1] = radius;
+            // arm64: el decompilado escribia los campos de erd por los desplazamientos x86 de ed (union); mismos valores
+            de->erd.self = self;
+            de->erd.point[0] = ((const float *)point)[0];   // point es float[3] (firma del decompilado)
+            de->erd.point[1] = ((const float *)point)[1];   // point es float[3] (firma del decompilado)
+            de->erd.point[2] = ((const float *)point)[2];   // point es float[3] (firma del decompilado)
+            de->erd.damgeInner = damgeInner;
+            de->erd.damgeOuter = damgeOuter;
+            de->erd.radius = radius;
             de->erd.mod = mod;
         }
     }
@@ -2513,13 +2513,13 @@ void Destructible_DumpEventInfo()
                     Com_PrintWarning(20, "\tEnt Num: %d\n", cent->destructible->entNum);
                     Com_PrintWarning(20, "\tName: ");
                     if ( cent->destructible->ddef->name )
-                        Com_PrintWarning(20, "%s\n", cent->destructible->ddef->name);
+                        Com_PrintWarning(20, "%s\n", cent->destructible->ddef->name.get());
                     else
                         Com_PrintWarning(20, "[Blank]\n");
                     if ( cent->destructible->ddef->model && cent->destructible->ddef->model->name )
-                        Com_PrintWarning(20, "\tModel Name: %s\n", cent->destructible->ddef->model->name);
+                        Com_PrintWarning(20, "\tModel Name: %s\n", cent->destructible->ddef->model->name.get());
                     if ( cent->destructible->ddef->pristineModel && cent->destructible->ddef->pristineModel->name )
-                        Com_PrintWarning(20, "\tModel Name: %s\n", cent->destructible->ddef->pristineModel->name);
+                        Com_PrintWarning(20, "\tModel Name: %s\n", cent->destructible->ddef->pristineModel->name.get());
                     Com_PrintWarning(20, "\tNum Pieces: %d\n", cent->destructible->ddef->numPieces);
                     Com_PrintWarning(20, "\tClient Only: ");
                     if ( cent->destructible->ddef->clientOnly )
@@ -2571,7 +2571,7 @@ char __cdecl CG_DamagePiece(
     ddef = destructible->ddef;
     if ( recursiveDepth > 20 )
     {
-        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", ddef->name);
+        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", ddef->name.get());
         return 0;
     }
     if ( index >= ddef->numPieces
@@ -2646,7 +2646,7 @@ char __cdecl CG_DamagePiece(
         self->nextState.loopSoundFade = 250;
         if ( new_stage_index >= 0 )
         {
-            loopSoundName = (char *)new_stage->loopSound;
+            loopSoundName = (char *)new_stage->loopSound.get();
             if ( loopSoundName )
             {
                 self->nextState.loopSoundId = SND_FindAliasId(loopSoundName);
@@ -2661,7 +2661,7 @@ void __cdecl CG_NotifyDestructibleScripts(int localClientNum, centity_s *self, D
 {
     char *notify; // [esp+0h] [ebp-4h]
 
-    notify = (char *)prev_stage->breakNotify;
+    notify = (char *)prev_stage->breakNotify.get();
     if ( notify )
     {
         Scr_AddString(notify, SCRIPTINSTANCE_CLIENT);
@@ -2922,11 +2922,11 @@ void __cdecl CG_ProcessDestructibleEvents()
             if ( type == 1 )
             {
                 CG_DestructibleRadiusDamage(
-                    de->ed.self,
-                    &de->ed.attacker,
-                    de->ed.dir[2],
-                    de->ed.point[0],
-                    de->ed.point[1],
+                    de->erd.self,
+                    (const centity_s **)de->erd.point,
+                    de->erd.damgeInner,
+                    de->erd.damgeOuter,
+                    de->erd.radius,
                     de->erd.mod,
                     0);
             }
@@ -2982,8 +2982,8 @@ void __cdecl CG_DestructibleDamage(
         {
             de = &g_destructible_events[g_destructible_events_count++];
             de->type = 0;
-            de->ehe.localClientNum = (int)self;
-            de->ehe.event = (int)attacker;
+            de->ed.self = self;           // arm64: (x86) ehe.localClientNum/ehe.event alias de ed.self/ed.attacker
+            de->ed.attacker = attacker;
             de->ed.dir[0] = *dir;
             de->ed.dir[1] = dir[1];
             de->ed.dir[2] = dir[2];
@@ -3148,7 +3148,7 @@ bool __cdecl CG_DestructibleDamage(
                     if ( (float)damage >= cg_vehicle_piece_damagesfx_threshold->current.value )
                     {
                         CG_GetTagTransform(self, ddef, pieceIndex, tagOrigin, tagMat);
-                        AliasId = SND_FindAliasId((char *)piece->damageSound);
+                        AliasId = SND_FindAliasId((char *)piece->damageSound.get());
                         CG_PlaySound(self->pose.localClientNum, self->nextState.number, tagOrigin, 0, 0, 1.0, AliasId);
                     }
                 }
@@ -3742,7 +3742,7 @@ void __cdecl Destructible_DebugRender()
                     ddef = g_DebugRenderDestructible->ddef;
                     ent = &g_entities[g_DebugRenderDestructible->entNum];
                     smallDevFont = cgMedia.smallDevFont;
-                    v0 = va("%s Health %d Entnum %d", ddef->name, ent->health, g_DebugRenderDestructible->entNum);
+                    v0 = va("%s Health %d Entnum %d", ddef->name.get(), ent->health, g_DebugRenderDestructible->entNum);
                     y = (float)CG_DrawDevString(scrPlaceView, 8.0, 10.0, fontScale, fontScale, v0, colorWhite, 5, smallDevFont)
                         + 10.0;
                     for ( i = 0; i < ddef->numPieces; ++i )

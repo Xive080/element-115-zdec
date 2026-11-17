@@ -824,7 +824,7 @@ void __cdecl    SV_SpawnServer(int controllerIndex, char *server, int mapIsPrelo
 
 }
 
-const int ikStateSize = 3680;
+const int ikStateSize = (int)sizeof(IKState); // x86 3680 (en LP64 IKState crece)
 unsigned __int8 *sv_ikBuf;
 char *__cdecl SV_AllocateClientMemory_SizeRequired(int maxLocalClients, int maxClients)
 {
@@ -847,7 +847,7 @@ char *__cdecl SV_AllocateClientMemory_SizeRequired(int maxLocalClients, int maxC
         + (maxClients << 7)
         + 0x5000 * maxClients
         + 0x80
-        + 0x2780 * v3 * v4
+        + sizeof(cachedClient_s) /*x86 0x2780*/ * v3 * v4
         + 0x1002580
         + 0x20 * ikStateSize);
 }
@@ -895,8 +895,8 @@ void __cdecl SV_AllocateClientMemory(HunkUser *hunk, int maxLocalClients, int ma
     else
         v3 = 2;
     svs.numCachedSnapshotClients = v3 * v4;
-    svs.cachedSnapshotClients = (cachedClient_s *)Hunk_UserAlloc(hunk, 10112 * v3 * v4, 4, "svs.cachedSnapshotClients");
-    memset((unsigned __int8 *)svs.cachedSnapshotClients, 0, 10112 * svs.numCachedSnapshotClients);
+    svs.cachedSnapshotClients = (cachedClient_s *)Hunk_UserAlloc(hunk, (int)sizeof(cachedClient_s) /*x86 10112*/ * v3 * v4, 4, "svs.cachedSnapshotClients");
+    memset((unsigned __int8 *)svs.cachedSnapshotClients, 0, sizeof(cachedClient_s) * svs.numCachedSnapshotClients);
     svs.archivedSnapshotFrames = (archivedSnapshot_s *)Hunk_UserAlloc(hunk, 9600, 4, "svs.archivedSnapshotFrames");
     memset((unsigned __int8 *)svs.archivedSnapshotFrames, 0, 0x2580u);
     svs.archivedSnapshotBuffer = (unsigned __int8 *)Hunk_UserAlloc(hunk, 0x1000000, 4, "svs.archivedSnapshotBuffer");

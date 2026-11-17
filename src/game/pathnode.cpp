@@ -283,9 +283,9 @@ const pathnode_parent_t *__cdecl get_pathnode_parent(const pathnode_t *node)
     if ( (node->constant.spawnflags & 0x100) == 0 )
         return &node_parent_world;
     m_tree_root = g_pathnode_parent_map.m_tree_root;
-    while ( m_tree_root && node != (const pathnode_t *)m_tree_root->m_avl_key )
+    while ( m_tree_root && (unsigned int)(uintptr_t)node != m_tree_root->m_avl_key )   // LP64: clave de 32 bits
     {
-        if ( (unsigned int)node >= m_tree_root->m_avl_key )
+        if ( (unsigned int)(uintptr_t)node >= m_tree_root->m_avl_key )
             m_tree_root = m_tree_root->m_avl_tree_node.m_right;
         else
             m_tree_root = m_tree_root->m_avl_tree_node.m_left;
@@ -474,7 +474,7 @@ void __cdecl setup_pathnode_parent(pathnode_t *node, int entnum, const float *or
     node_parent->entnum = entnum;
     node_parent->m_node = node;
     node_parent->m_next = 0;
-    generic_avl_map_add(&g_pathnode_parent_map, node_parent, (unsigned int)node);
+    generic_avl_map_add(&g_pathnode_parent_map, node_parent, (unsigned int)(uintptr_t)node);
 }
 
 bool __cdecl is_moving_entity(gentity_s *gent)
@@ -593,7 +593,7 @@ void __cdecl G_SpawnPathnodeDynamic(SpawnVar *spawnVar)
                         {
                             animscript = SL_ConvertToString(loadNode->constant.animscript, SCRIPTINSTANCE_SERVER);
                             DataForFile = Hunk_FindDataForFile(1, animscript);
-                            loadNode->constant.animscriptfunc = (int)DataForFile;
+                            loadNode->constant.animscriptfunc = (int)(intptr_t)DataForFile;
                             if ( !loadNode->constant.animscriptfunc )
                             {
                                 printf(
@@ -1323,7 +1323,6 @@ void __cdecl Path_InitNodeDynamic(pathnode_t *loadNode)
 
 void __cdecl Path_InitPaths()
 {
-    _iobuf *v0; // eax
 
     if ( !useFastFile->current.enabled )
     {
@@ -1351,7 +1350,7 @@ void __cdecl Path_InitPaths()
             //v0 = __iob_func();
             //fflush(v0 + 1);
             fflush(stdout);
-            ExitProcess(0);
+            exit(0);
         }
         Dvar_SetInt((dvar_s *)g_connectpaths, 0);
     }

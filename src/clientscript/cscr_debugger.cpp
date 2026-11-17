@@ -951,9 +951,9 @@ void __thiscall Scr_ScriptList::Init(scriptInstance_t inst)
     qsort(
         &scriptWindowsNames[1],
         this->numLines - 1,
-        4u,
+        sizeof(scriptWindowsNames[0]),   // arm64: punteros de 8 bytes (x86: 4u)
         (int (__cdecl *)(const void *, const void *))ConDrawInput_CompareStrings);
-    this->scriptWindows = (Scr_ScriptWindow **)Scr_AllocDebugMem(inst, 4 * this->numLines, "Scr_ScriptList::Init2");
+    this->scriptWindows = (Scr_ScriptWindow **)Scr_AllocDebugMem(inst, (int)sizeof(Scr_ScriptWindow *) * this->numLines, "Scr_ScriptList::Init2");
     memset(&info, 0, sizeof(info));
     Hunk_CheckTempMemoryHighClear();
     Scr_AddSourceBuffer(inst, 0, (char*)"scriptdebugger/help.txt", 0, 0);
@@ -1650,12 +1650,12 @@ void __thiscall Scr_ScriptWatch::EvaluateWatchChildren(
             oldChildCount = parentElement->childCount;
             newElements = (Scr_WatchElement_s *)Scr_AllocDebugMem(
                 inst,
-                100 * count,
+                (int)sizeof(Scr_WatchElement_s) * count,
                 "Scr_ScriptWatch::EvaluateWatchChildren3");
-            memset((unsigned __int8 *)&newElements->expr.parseData, 0, 100 * count);
+            memset((unsigned __int8 *)&newElements->expr.parseData, 0, sizeof(Scr_WatchElement_s) * count);
             newElementOldRef = (Scr_WatchElement_s **)Scr_AllocDebugMem(
                 inst,
-                4 * count,
+                (int)sizeof(Scr_WatchElement_s *) * count,
                 "Scr_ScriptWatch::EvaluateWatchChildren");
             v11 = oldElements && parentElement->objectType == oldObjectType;
             sameType = v11;
@@ -3423,19 +3423,19 @@ void __cdecl Scr_InitDebuggerMain(scriptInstance_t inst)
         if ( g_scrVarChildSize[inst] != 0x3FFFE )
         {
             gScrDebuggerGlob[inst].variableBreakpoints = (Scr_WatchElementDoubleNode_t **)Z_VirtualAlloc(
-                4 * VARIABLELIST_SIZE(inst), "gScrDebuggerGlob[inst].variableBreakpoints", 0);
+                sizeof(Scr_WatchElementDoubleNode_t *) * VARIABLELIST_SIZE(inst), "gScrDebuggerGlob[inst].variableBreakpoints", 0);
             if ( !gScrDebuggerGlob[inst].variableBreakpoints )
                 Com_Error(ERR_FATAL, "mod: out of memory for the script debugger breakpoints (%u bytes)", 4 * VARIABLELIST_SIZE(inst));
-            memset((unsigned __int8 *)gScrDebuggerGlob[inst].variableBreakpoints, 0, 4 * VARIABLELIST_SIZE(inst));
+            memset((unsigned __int8 *)gScrDebuggerGlob[inst].variableBreakpoints, 0, sizeof(Scr_WatchElementDoubleNode_t *) * VARIABLELIST_SIZE(inst));
         }
         else
         {
             gScrDebuggerGlob[inst].variableBreakpoints = (Scr_WatchElementDoubleNode_t **)Hunk_UserAlloc(
                                                                                                                                                                             g_DebugHunkUser,
-                                                                                                                                                                            4 * VARIABLELIST_SIZE(inst) /* retail 1179640 */,
+                                                                                                                                                                            sizeof(Scr_WatchElementDoubleNode_t *) * VARIABLELIST_SIZE(inst) /* retail 4 * = 1179640; arm64 punteros de 8 */,
                                                                                                                                                                             4,
                                                                                                                                                                             "gScrDebuggerGlob[inst].variableBreakpoints");
-            memset((unsigned __int8 *)gScrDebuggerGlob[inst].variableBreakpoints, 0, 4 * VARIABLELIST_SIZE(inst));
+            memset((unsigned __int8 *)gScrDebuggerGlob[inst].variableBreakpoints, 0, sizeof(Scr_WatchElementDoubleNode_t *) * VARIABLELIST_SIZE(inst));
         }
         gScrDebuggerGlob[inst].assignHead = 0;
         gScrDebuggerGlob[inst].assignHeadCodePos = 0;

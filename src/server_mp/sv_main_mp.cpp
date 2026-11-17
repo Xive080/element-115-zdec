@@ -1641,6 +1641,11 @@ void __cdecl SV_FrameInternal(int controllerIndex, int msec)
     }
 }
 
+#ifdef H5G
+// harness H5: el hilo del servidor cooperativo (h5_game.cpp Sys_WakeServer) cierra el mismo handshake que SV_ServerThread.
+void SV_H5G_MarkFrameRun() { InterlockedExchange(&s_svFramesRun, s_svFramesWoken); }
+#endif
+
 void SV_WakeServer()
 {
     if ( !com_inServerFrame )

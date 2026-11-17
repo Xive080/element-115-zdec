@@ -26,17 +26,17 @@ Glasses *__cdecl GetGlasses_FastFile()
     if ( DB_GetAllXAssetOfType(ASSET_TYPE_GLASSES, &header, 1) <= 0 )
         return 0;
     else
-        return (Glasses *)header.xmodelPieces;
+        return header.glasses.get();
 }
 
 Glasses *__cdecl GetGlasses()
 {
     bool v1; // [esp+4h] [ebp-8h]
 
-    v1 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v1 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.string;
     if ( v1 || !useFastFile->current.enabled )
-        return (Glasses *)((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_LoadObj)(GetGlasses_LoadObj);
+        return GetGlasses_LoadObj();   // arm64: antes via un puntero que devolvia int (truncaba el puntero)
     else
-        return (Glasses *)((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_FastFile)(GetGlasses_FastFile);
+        return GetGlasses_FastFile();   // arm64: antes via un puntero que devolvia int (truncaba el puntero)
 }
 

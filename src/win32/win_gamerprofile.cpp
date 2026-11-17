@@ -403,9 +403,9 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int controllerIndex, profileWri
     gamerSettings[controllerIndex].show_blood = cg_blood->current.enabled;
     if ( _stricmp(gpad_buttonsConfig->current.string, "BUTTONS_ZOMBIETRON") )
         I_strncpyz(gamerSettings[controllerIndex].gpadButtonsConfig, gpad_buttonsConfig->current.string, 256);
-    if ( !*(_BYTE *)gpad_buttonsConfig->current.integer )
+    if ( !*(_BYTE *)gpad_buttonsConfig->current.string )
         Dvar_SetString((dvar_s *)gpad_buttonsConfig, "buttons_default");
-    if ( !*(_BYTE *)gpad_sticksConfig->current.integer )
+    if ( !*(_BYTE *)gpad_sticksConfig->current.string )
         Dvar_SetString((dvar_s *)gpad_sticksConfig, "thumbstick_default");
     if ( Dvar_GetBool("gpad_enabled") )
     {

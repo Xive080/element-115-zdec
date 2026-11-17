@@ -18,12 +18,12 @@ struct WeaponFullDef // sizeof=0xC48
     WeaponVariantDef weapVariantDef;
     WeaponDef weapDef;                  // XREF: BG_WeaponUpdateField(char const *,char const *)+58/o
                                         // BG_WeaponUpdateField(char const *,char const *)+AC/o
-    XModel *gunXModel[16];
-    const char *szXAnims[66];
+    PTR32(XModel) gunXModel[16];          // LP64: el WeaponDef los apunta con PTR32 (mismo layout que la zona)
+    PTR32(const char) szXAnims[66];
     unsigned __int16 hideTags[32];
     unsigned __int16 notetrackSoundMapKeys[20];
     unsigned __int16 notetrackSoundMapValues[20];
-    XModel *worldModel[16];
+    PTR32(XModel) worldModel[16];
     float parallelBounce[31];
     float perpendicularBounce[31];
     float locationDamageMultipliers[19];

@@ -463,7 +463,7 @@ void __fastcall Actor_UpdateSight(actor_s *self)
             }
         }
         if ( iCheckCount > 1 )
-            qsort(check, iCheckCount, 8u, (int (__cdecl *)(const void *, const void *))compare_sentient_sort);
+            qsort(check, iCheckCount, sizeof(sentient_sort_t), (int (__cdecl *)(const void *, const void *))compare_sentient_sort);   // arm64: 16 bytes (x86: 8u)
     }
     {
         PROF_SCOPED("sight 2");

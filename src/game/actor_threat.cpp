@@ -578,7 +578,7 @@ void __cdecl DebugThreatStringAll(const actor_s *self, sentient_s *enemy, int th
 
         displayPos[2] = displayPos[2] + 32.0;
 
-        for ( i = 0; i < ARRAYSIZE(g_threatDebugStrings); ++i )
+        for ( i = 0; i < (int)(sizeof(g_threatDebugStrings) / sizeof(g_threatDebugStrings[0])); ++i )
         {
             char *str = g_threatDebugStrings[i];
 

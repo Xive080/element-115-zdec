@@ -3,7 +3,19 @@
 #include "assertive.h"
 
 int g_largeLocalPos;
+#if defined(__LP64__) || defined(_WIN64)
+// arm64: los LargeLocal guardan estructuras que la VM de scripts enlaza por desplazamiento de 32 bits (scr_anim_s de
+// BG_LoadAnim -> Scr_EmitAnimationInternal hace SCR_P2U(pos)); el buffer vive en la arena Ptr32. Mismo tamanio (512 KB).
+#include <universal/ptr32.h>
+static unsigned __int8 *LargeLocal_Buf()
+{
+    static unsigned __int8 *buf = (unsigned __int8 *)Ptr32_ArenaAlloc(524288, 64);
+    return buf;
+}
+#define g_largeLocalBuf (LargeLocal_Buf())
+#else
 unsigned __int8 g_largeLocalBuf[524288];
+#endif
 int g_largeLocalRightPos = 524288;
 
 

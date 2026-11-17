@@ -56,3 +56,6 @@ int __cdecl StringTable_ColumnCount(const StringTable *table);
 int __cdecl StringTable_Checksum(const StringTable *table, unsigned int initialCrc);
 void __cdecl StringTable_GetAsset_FastFile(const char *filename, XAssetHeader *tablePtr);
 void __cdecl StringTable_GetAsset(const char *filename, XAssetHeader *tablePtr);
+// arm64: XAssetHeader es un Ptr32 de 4 bytes; el decompilado pasaba (XAssetHeader *)&tabla con tabla un StringTable* de
+// 8 bytes (solo se escribian 4 bytes de desplazamiento). Estas sobrecargas devuelven el puntero nativo.
+template <class T, class H = XAssetHeader> inline void StringTable_GetAsset(const char *filename, T **tablePtr) { H h; StringTable_GetAsset(filename, &h); *tablePtr = h.stringTable.get(); }   // T = (const) StringTable; H diferido: XAssetHeader puede ser incompleto aqui

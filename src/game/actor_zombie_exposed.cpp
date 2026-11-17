@@ -2217,7 +2217,7 @@ static bool FUN_007c65b0(path_t *path, team_t team, const float *start, pathnode
     pathnode_t top;
     from->transient.iSearchFrame = ++level.iSearchFrame;
     from->transient.pParent = &top;
-    from->transient.pNextOpen = NULL;
+    from->transient.pNextOpen = nullptr;
     from->transient.pPrevOpen = &top;
     from->transient.fCost = 0.0f;
     top.transient.pNextOpen = from;
@@ -2295,7 +2295,7 @@ static bool FUN_007c65b0(path_t *path, team_t team, const float *start, pathnode
             if ( next->transient.pNextOpen )
                 next->transient.pNextOpen->transient.pPrevOpen = next;
         }
-        current->transient.pPrevOpen = NULL;
+        current->transient.pPrevOpen = nullptr;
         if ( !top.transient.pNextOpen )
             return false;
     } while ( true );

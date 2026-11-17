@@ -46,7 +46,7 @@ void __cdecl BG_SetupWeaponDefAmmoIndexes(unsigned int weapIndex, WeaponDef *wea
         || bg_weapAmmoTypes[weapVarDef->iAmmoIndex] != weapVarDef )
     {
         if ( weapDef->bDualWield
-            && (dwIndex = BG_GetWeaponIndexForName((char *)weapDef->szDualWieldWeaponName)) != 0
+            && (dwIndex = BG_GetWeaponIndexForName((char *)weapDef->szDualWieldWeaponName.get())) != 0
             && (dwWeaponVarDef = BG_GetWeaponVariantDef(dwIndex), dwWeaponVarDef->iAmmoIndex >= 0)
             && dwWeaponVarDef->iAmmoIndex < (signed int)bg_numAmmoTypes
             && bg_weapAmmoTypes[dwWeaponVarDef->iAmmoIndex] == dwWeaponVarDef )
@@ -120,7 +120,7 @@ void __cdecl BG_SetupWeaponDefSharedAmmoIndexes(unsigned int weapIndex, WeaponDe
                     v5 = BG_WeaponName(otherWeapIndex);
                     v4 = weapDef->iSharedAmmoCap;
                     v3 = BG_WeaponName(weapIndex);
-                    Com_Error(ERR_DROP, "Shared ammo cap mismatch for \"%s\" shared ammo cap: %s set to %i but \"%s\" already set it to %i", weapDef->szSharedAmmoCapName, v3, v4, v5, iSharedAmmoCap);
+                    Com_Error(ERR_DROP, "Shared ammo cap mismatch for \"%s\" shared ammo cap: %s set to %i but \"%s\" already set it to %i", weapDef->szSharedAmmoCapName.get(), v3, v4, v5, iSharedAmmoCap);
                 }
             }
             if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_ammo.cpp", 121, 0, "unreachable") )

@@ -135,7 +135,7 @@ static void G_f_codespawn()
     if (G_CallSpawnEntity(ent))
     {
         if (ent->destructible)
-            ent->model = G_ModelIndex((char *)ent->destructible->ddef->model->name);
+            ent->model = G_ModelIndex((char *)ent->destructible->ddef->model->name.get());
         Scr_AddEntity(ent, SCRIPTINSTANCE_SERVER);
         return;
     }
@@ -1664,9 +1664,9 @@ static pathnode_link_override_t *Path_GetLinkOverride(pathnode_t *node)
 {
     for (generic_avl_map_node_t *t = g_pathnodeLinkMap.m_tree_root; t; )
     {
-        if ((unsigned int)node == t->m_avl_key)
+        if ((unsigned int)(uintptr_t)node == t->m_avl_key)
             return (pathnode_link_override_t *)t->m_data;
-        t = (unsigned int)node >= t->m_avl_key ? t->m_avl_tree_node.m_right : t->m_avl_tree_node.m_left;
+        t = (unsigned int)(uintptr_t)node >= t->m_avl_key ? t->m_avl_tree_node.m_right : t->m_avl_tree_node.m_left;
     }
     pathnode_link_override_t *rec = g_pathnodeLinkAllocator.allocate();
     rec->node = node;
@@ -1677,7 +1677,7 @@ static pathnode_link_override_t *Path_GetLinkOverride(pathnode_t *node)
     for (int i = 0; i < rec->count; ++i)
         rec->links[i] = rec->origLinks[i];
     node->constant.Links = rec->links;
-    generic_avl_map_add(&g_pathnodeLinkMap, rec, (unsigned int)node);
+    generic_avl_map_add(&g_pathnodeLinkMap, rec, (unsigned int)(uintptr_t)node);
     return rec;
 }
 

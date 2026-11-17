@@ -987,7 +987,7 @@ void __cdecl Load_SndDriverGlobalsAsset(SndDriverGlobals **sndDriverGlobals)
             *sndDriverGlobals = resident->entry.asset.header.sndDriverGlobals;
             Sys_LeaveCriticalSection(CRITSECT_DBHASH);
             Com_Printf(16, "bo1_zombies: SndDriverGlobals '%s' from zone '%s' replaces the resident one\n",
-                header.sndDriverGlobals->name, g_zoneNames[g_zoneIndex].name);
+                header.sndDriverGlobals->name.get(), g_zoneNames[g_zoneIndex].name);
             return;
         }
         Sys_LeaveCriticalSection(CRITSECT_DBHASH);
@@ -4698,10 +4698,10 @@ void __cdecl DB_ModXFileHandle(const char *zoneName, void **zoneFile, FF_DIR *zo
     bool v6; // [esp+4h] [ebp-10Ch]
     char filename[260]; // [esp+8h] [ebp-108h] BYREF
 
-    v6 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v6 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.string;
     if ( !v6 || I_stricmp(zoneName, "mod") )
     {
-        if ( fs_usermapDir && *(_BYTE *)fs_usermapDir->current.integer )
+        if ( fs_usermapDir && *(_BYTE *)fs_usermapDir->current.string )
         {
             String = Dvar_GetString("fs_usermapDir");
             v4 = va("%s\\%s", String, zoneName);
@@ -4728,7 +4728,7 @@ void __cdecl DB_BuildOSPath_FromSource(const char *zoneName, FF_DIR source, unsi
     {
         if ( source == FFD_MOD_DIR )
         {
-            v4 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+            v4 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.string;
             if ( !v4
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
@@ -5590,7 +5590,7 @@ char __cdecl DB_ModFileExists()
     char filename[256]; // [esp+4h] [ebp-108h] BYREF
     void *zoneFile; // [esp+108h] [ebp-4h]
 
-    if ( !fs_gameDirVar || !*(_BYTE *)fs_gameDirVar->current.integer )
+    if ( !fs_gameDirVar || !*(_BYTE *)fs_gameDirVar->current.string )
         return 0;
     DB_BuildOSPath_FromSource("mod", FFD_MOD_DIR, 0x100u, filename);
     zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);

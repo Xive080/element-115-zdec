@@ -20,28 +20,28 @@ void __cdecl AIFIELD_NULLSUB(actor_s *pSelf, const actor_fields_s *pField)
 
 const actor_fields_s sentientfields[12] =
 {
-  { "threatbias", 12, { 4 }, F_INT, NULL, NULL },
-  { "node", 96, { 4 }, F_PATHNODE, &ActorScr_ReadOnly, NULL },
-  { "prevnode", 100, { 4 }, F_PATHNODE, &ActorScr_ReadOnly, NULL },
-  { "enemy", 56, { 4 }, F_ENTHANDLE, &ActorScr_ReadOnly, NULL },
-  { "scriptenemy", 60, { 4 }, F_ENTHANDLE, &ActorScr_ReadOnly, NULL },
-  { "scriptenemytag", 64, { 2 }, F_STRING, &ActorScr_ReadOnly, NULL },
-  { "syncedmeleetarget", 52, { 4 }, F_ENTHANDLE, NULL, NULL },
-  { "ignoreme", 20, { 1 }, F_BYTE, NULL, NULL },
-  { "ignoreall", 21, { 1 }, F_BYTE, NULL, NULL },
-  { "maxvisibledist", 36, { 4 }, F_FLOAT, NULL, NULL },
-  { "ignoreforfriendlyfire", 22, { 1 }, F_BYTE, NULL, NULL },
+  { "threatbias", offsetof(sentient_s, iThreatBias), { 4 }, F_INT, NULL, NULL },
+  { "node", offsetof(sentient_s, pClaimedNode), { 4 }, F_PATHNODE, &ActorScr_ReadOnly, NULL },
+  { "prevnode", offsetof(sentient_s, pPrevClaimedNode), { 4 }, F_PATHNODE, &ActorScr_ReadOnly, NULL },
+  { "enemy", offsetof(sentient_s, targetEnt), { 4 }, F_ENTHANDLE, &ActorScr_ReadOnly, NULL },
+  { "scriptenemy", offsetof(sentient_s, scriptTargetEnt), { 4 }, F_ENTHANDLE, &ActorScr_ReadOnly, NULL },
+  { "scriptenemytag", offsetof(sentient_s, scriptTargetTag), { 2 }, F_STRING, &ActorScr_ReadOnly, NULL },
+  { "syncedmeleetarget", offsetof(sentient_s, syncedMeleeEnt), { 4 }, F_ENTHANDLE, NULL, NULL },
+  { "ignoreme", offsetof(sentient_s, bIgnoreMe), { 1 }, F_BYTE, NULL, NULL },
+  { "ignoreall", offsetof(sentient_s, bIgnoreAll), { 1 }, F_BYTE, NULL, NULL },
+  { "maxvisibledist", offsetof(sentient_s, maxVisibleDist), { 4 }, F_FLOAT, NULL, NULL },
+  { "ignoreforfriendlyfire", offsetof(sentient_s, bIgnoreForFriendlyFire), { 1 }, F_BYTE, NULL, NULL },
   { NULL, 0, { 0 }, F_INT, NULL, NULL }
 };
 
 const actor_fields_s entfields[7] =
 {
-  { "health", 404, { 4 }, F_INT, NULL, NULL },
-  { "maxhealth", 408, { 4 }, F_INT, NULL, NULL },
-  { "targetname", 360, { 2 }, F_STRING, NULL, NULL },
-  { "classname", 356, { 2 }, F_STRING, &ActorScr_ReadOnly, NULL },
-  { "spawnflags", 368, { 4 }, F_INT, NULL, NULL },
-  { "model", 348, { 2 }, F_MODEL, &ActorScr_ReadOnly, NULL },
+  { "health", offsetof(gentity_s, health), { 4 }, F_INT, NULL, NULL },
+  { "maxhealth", offsetof(gentity_s, maxHealth), { 4 }, F_INT, NULL, NULL },
+  { "targetname", offsetof(gentity_s, targetname), { 2 }, F_STRING, NULL, NULL },
+  { "classname", offsetof(gentity_s, classname), { 2 }, F_STRING, &ActorScr_ReadOnly, NULL },
+  { "spawnflags", offsetof(gentity_s, spawnflags), { 4 }, F_INT, NULL, NULL },
+  { "model", offsetof(gentity_s, model), { 2 }, F_MODEL, &ActorScr_ReadOnly, NULL },
   { NULL, 0, { 0 }, F_INT, NULL, NULL }
 };
 
@@ -407,7 +407,7 @@ void __cdecl ActorScr_GetWeapon(actor_s *pSelf, const actor_fields_s *pField)
     }
     weapVariantDef = BG_GetWeaponVariantDef(*(unsigned int *)((char *)&pSelf->ent + pField->ofs));
     if ( weapVariantDef )
-        Scr_AddString((char *)weapVariantDef->szInternalName, SCRIPTINSTANCE_SERVER);
+        Scr_AddString((char *)weapVariantDef->szInternalName.get(), SCRIPTINSTANCE_SERVER);
 }
 
 void __cdecl ActorScr_GetGroundType(actor_s *pSelf, const actor_fields_s *pField)
@@ -1032,9 +1032,9 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                     *(float *)&pBase[pField->ofs + 8]);
                 break;
             case F_ENTITY:
-                if ( !*(unsigned int *)&pBase[pField->ofs] )
+                if ( !*(void **)&pBase[pField->ofs] )
                     goto LABEL_43;
-                i = (signed int)(*(unsigned int *)&pBase[pField->ofs] - (unsigned int)level.gentities) / 760;
+                i = (int)(*(gentity_s **)&pBase[pField->ofs] - level.gentities);
                 if ( i >= 0x400
                     && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",
@@ -1072,7 +1072,7 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                 Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v10);
                 break;
             case F_ACTOR:
-                if ( !*(unsigned int *)&pBase[pField->ofs] )
+                if ( !*(void **)&pBase[pField->ofs] )
                     goto LABEL_43;
                 i = ***(unsigned int ***)&pBase[pField->ofs];
                 if ( !level.gentities[i].targetname )
@@ -1081,7 +1081,7 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                 Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v9);
                 break;
             case F_SENTIENT:
-                if ( !*(unsigned int *)&pBase[pField->ofs] )
+                if ( !*(void **)&pBase[pField->ofs] )
                     goto LABEL_43;
                 i = ***(unsigned int ***)&pBase[pField->ofs];
                 if ( !level.gentities[i].targetname )
@@ -1112,7 +1112,7 @@ LABEL_46:
                     "ent %i: %s = client %i\n",
                     entnum,
                     pField->name,
-                    (signed int)(*(unsigned int *)&pBase[pField->ofs] - (unsigned int)level.clients) / 10720);
+                    (int)(*(gclient_s **)&pBase[pField->ofs] - level.clients));
                 break;
             case F_PATHNODE:
                 pNode = *(pathnode_t **)&pBase[pField->ofs];

@@ -386,7 +386,7 @@ int __cdecl GetCurrentMapIndex()
     int row; // [esp+4h] [ebp-8h]
     const char *mapname; // [esp+8h] [ebp-4h]
 
-    StringTable_GetAsset("mp/mapsTable.csv", (XAssetHeader *)&mapTable);
+    StringTable_GetAsset("mp/mapsTable.csv", &mapTable);
     if ( !mapTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DW\\MatchRecorder.cpp", 726, 0, "%s", "mapTable") )
     {
@@ -832,7 +832,7 @@ void __cdecl MatchRecord_GeneratePooledFileDetails(int controllerIndex)
     else if ( fileDetails->context == FILESHARE_POOLEDFILEDETAILS_FRIEND
                  && selectedPlayerXuid
                  && selectedPlayerXuid->current.integer
-                 && *(_BYTE *)selectedPlayerXuid->current.integer )
+                 && *(_BYTE *)selectedPlayerXuid->current.string )
     {
         xuid = I_atoi64(selectedPlayerXuid->current.string);
     }

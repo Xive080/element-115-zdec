@@ -1961,9 +1961,9 @@ void    MissileImpact(gentity_s *ent, trace_t *trace, float *dir, float *endpos)
                             {
                                 MapHitLocationToRagdollBoneName(hitLocation, &boneName);
                                 if (other->client->ps.pm_type == 9
-                                    && *(int *)&g_scr_data.playerCorpseInfo[1504 * other->client->ps.corpseIndex + 4] >= 0)
+                                    && g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum >= 0)
                                 {
-                                    entnum = *(int*)&g_scr_data.playerCorpseInfo[1504 * other->client->ps.corpseIndex + 4];
+                                    entnum = g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum;
                                 }
                             }
                             else if (other->actor)
@@ -1981,9 +1981,9 @@ void    MissileImpact(gentity_s *ent, trace_t *trace, float *dir, float *endpos)
                             G_AddEvent(ent, 0xC1u, v18);
                             if (isExplodingCrossbowBolt)
                             {
-                                WeaponIndexForName = G_GetWeaponIndexForName((char *)weapDef->szSpawnedGrenadeWeaponName);
+                                WeaponIndexForName = G_GetWeaponIndexForName((char *)weapDef->szSpawnedGrenadeWeaponName.get());
                                 fRadiusSqrd = BG_GetWeaponDef(WeaponIndexForName)->fuseTime;
-                                radius_max = G_GetWeaponIndexForName((char *)weapDef->szSpawnedGrenadeWeaponName);
+                                radius_max = G_GetWeaponIndexForName((char *)weapDef->szSpawnedGrenadeWeaponName.get());
                                 //v20 = EntHandle::ent(&ent->parent);
                                 v20 = ent->parent.ent();
                                 v21 = G_FireGrenade(v20, endpos, dir, radius_max, 0, 0, fRadiusSqrd);
@@ -2084,7 +2084,7 @@ void    MissileImpact(gentity_s *ent, trace_t *trace, float *dir, float *endpos)
                             Scr_AddEntity(ent, SCRIPTINSTANCE_SERVER);
                             Scr_AddInt(weapDef->iExplosionRadius, SCRIPTINSTANCE_SERVER);
                             Scr_AddVector(endpos, SCRIPTINSTANCE_SERVER);
-                            Scr_AddString((char *)weapVariantDef->szInternalName, SCRIPTINSTANCE_SERVER);
+                            Scr_AddString((char *)weapVariantDef->szInternalName.get(), SCRIPTINSTANCE_SERVER);
                             z_up = scr_const.projectile_impact;
                             //v25 = EntHandle::ent(&ent->parent);
                             v25 = ent->parent.ent();
@@ -3135,9 +3135,9 @@ int __cdecl StickMissile(
             return isStuck;
         entnum = other->s.number;
         if ( other->client->ps.pm_type == 9
-            && (int)g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495] >= 0 )
+            && g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum >= 0 )
         {
-            entnum = (int)g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495];
+            entnum = g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum;
         }
         ent->flags |= 0x1000u;
         boneName = 0;
@@ -3231,7 +3231,7 @@ void __cdecl createRetrieveableProjectile(
         {
             target_ent = other;
             if (other->client->ps.pm_type == 9)
-                target_ent = (gentity_s *)((char *)sv.gentities + *(_DWORD *)&g_scr_data.playerCorpseInfo[1504 * other->client->ps.corpseIndex + 4] * sv.gentitySize);
+                target_ent = (gentity_s *)((char *)sv.gentities + g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum * sv.gentitySize);
         }
         else if ( other->actor )
         {
@@ -5753,7 +5753,7 @@ gentity_s *__cdecl G_FireRocket(
         }
         Com_Printf(16, "bo1_missile: time %d fire ent %d weapon %s start %.1f %.1f %.1f dir %.3f %.3f %.3f model %s clipmask 0x%x contents 0x%x\n",
             level.time, bolt->s.number, BG_WeaponName(weaponIndex), start[0], start[1], start[2], dir[0], dir[1], dir[2],
-            weapDef->projectileModel ? weapDef->projectileModel->name : "", bolt->clipmask, bolt->r.contents);
+            (weapDef->projectileModel ? weapDef->projectileModel->name : "").get(), bolt->clipmask, bolt->r.contents);
         if ( s_shotsQueued < Dvar_GetInt("bo1_shotonfire") )
         {
             ++s_shotsQueued;

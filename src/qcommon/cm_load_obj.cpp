@@ -127,7 +127,7 @@ MapEnts *__cdecl MapEnts_GetFromString(char *name, const char *entityString, int
     mapEnts = (MapEnts *)CM_Hunk_Alloc(12, "CMod_LoadEntityString", 31);
     nameLen = strlen(name);
     mapEnts->name = (const char *)CM_Hunk_Alloc(nameLen + 1, "CMod_LoadEntityString", 31);
-    memcpy((unsigned __int8 *)mapEnts->name, (unsigned __int8 *)name, nameLen + 1);
+    memcpy((unsigned __int8 *)mapEnts->name.get(), (unsigned __int8 *)name, nameLen + 1);
     entityStringa = Com_EntityString(&numEntityChars);
     mapEnts->entityString = (char *)CM_Hunk_Alloc(numEntityChars, "CMod_LoadEntityString", 31);
     mapEnts->numEntityChars = 0;
@@ -187,7 +187,7 @@ void __cdecl CM_LoadMapFromBsp(const char *name, bool usePvs)
     Com_Memset((unsigned int *)&cm, 0, 332);
     cm.name = (const char *)CM_Hunk_Alloc(strlen(name) + 1, "CM_LoadMapFromBsp", 26);
     v4 = name;
-    v3 = (char *)cm.name;
+    v3 = (char *)cm.name.get();
     do
     {
         v2 = *v4;
@@ -264,7 +264,7 @@ unsigned int CMod_LoadNodes()
                 Com_Error(ERR_DROP, "CMod_LoadNodes: children exceeded");
         }
         ++nodeIter;
-        result = (unsigned int)&out[1];
+        result = (unsigned int)(uintptr_t)&out[1];
         ++out;
         in += 36;
     }
@@ -351,7 +351,7 @@ unsigned int CMod_LoadCollisionBorders()
         out->start = in->start;
         out->length = in->length;
         ++index;
-        result = (unsigned int)&in[1];
+        result = (unsigned int)(uintptr_t)&in[1];
         ++in;
         ++out;
     }
@@ -401,7 +401,7 @@ unsigned int CMod_LoadCollisionPartitions()
             __debugbreak();
         }
         ++index;
-        result = (unsigned int)(in + 20);
+        result = (unsigned int)(uintptr_t)(in + 20);
         in += 20;
         ++out;
     }
@@ -412,7 +412,7 @@ MapEnts *CMod_LoadEntityString()
 {
     MapEnts *result; // eax
 
-    result = MapEnts_VirtualLoad((char *)cm.name);
+    result = MapEnts_VirtualLoad((char *)cm.name.get());
     cm.mapEnts = result;
     return result;
 }
@@ -449,7 +449,7 @@ void CMod_LoadVisibility()
         cm.clusterBytes = (int)((cm.numClusters + 63) & 0xFFFFFFC0) >> 3;
         cm.numClusters = 1;
         cm.visibility = CM_Hunk_Alloc(cm.clusterBytes, "CMod_LoadVisibility", 10);
-        Com_Memset((unsigned int *)cm.visibility, 255, cm.clusterBytes);
+        Com_Memset((unsigned int *)cm.visibility.get(), 255, cm.clusterBytes);
     }
 }
 
@@ -476,8 +476,8 @@ void __cdecl CMod_LoadBrushRelated(unsigned int version, bool usePvs)
         CMod_LoadLeafBrushNodes_Version14();
     CMod_LoadSubmodelBrushNodes();
     CM_InitBoxHull();
-    ++cm.leafbrushNodes;
-    leafbrushNodesCount = (TempMallocAlignStrict(0) - (char *)cm.leafbrushNodes) / 20;
+    cm.leafbrushNodes = cm.leafbrushNodes.get() + 1;
+    leafbrushNodesCount = (TempMallocAlignStrict(0) - (char *)cm.leafbrushNodes.get()) / (int)sizeof(cLeafBrushNode_s);
     cm.leafbrushNodesCount = leafbrushNodesCount + 1;
     leafbrushNodes = (cLeafBrushNode_s *)CM_Hunk_Alloc(20 * (leafbrushNodesCount + 1), "CMod_LoadBrushRelated", 27);
     memcpy(&leafbrushNodes[1].axis, &cm.leafbrushNodes->axis, 20 * leafbrushNodesCount);
@@ -975,7 +975,7 @@ const unsigned __int8 *CMod_LoadBrushes()
         Com_Error(ERR_DROP, "CMod_LoadBrushes: cm.numBrushes exceeded");
     allocSizeBrushVerts = 12 * vertsCount;
     cm.brushVerts = (float (*)[3])CM_Hunk_Alloc(12 * vertsCount, "CMod_LoadBrushes", 27);
-    memcpy((unsigned __int8 *)cm.brushVerts, inVerts, allocSizeBrushVerts);
+    memcpy((unsigned __int8 *)cm.brushVerts.get(), inVerts, allocSizeBrushVerts);
     result = (const unsigned __int8 *)vertsCount;
     cm.numBrushVerts = vertsCount;
     outVerts = cm.brushVerts;
@@ -1272,7 +1272,7 @@ unsigned int CMod_LoadCollisionAabbTrees()
         out->childCount = *((_WORD *)in + 13);
         out->u.firstChildIndex = *((unsigned int *)in + 7);
         ++index;
-        result = (unsigned int)(in + 32);
+        result = (unsigned int)(uintptr_t)(in + 32);
         in += 32;
         ++out;
     }

@@ -5449,6 +5449,9 @@ CallBuiltin:
             }
             gScrVmPub[inst].top = localFs.top;
             {
+#ifdef H5G
+                { extern void H5G_NoteBuiltinCall(int, int, const char *); H5G_NoteBuiltinCall(inst, builtinIndex, (const char *)debugpos); }   // harness H5
+#endif
                 SvProfBuiltin svProfBuiltin(builtinIndex); // mod (L43): bo1_mod_svprof
                 ((void (*)(void))gScrCompilePub[inst].func_table[builtinIndex])();
             }
@@ -5583,6 +5586,9 @@ negWait:
             //LOWORD(v63) = entref.client;
             //((void(__cdecl *)(_DWORD, int))gScrCompilePub[inst].func_table[builtinIndex])(*(_DWORD *)&entref.entnum, entref.client);
             {
+#ifdef H5G
+                { extern void H5G_NoteBuiltinCall(int, int, const char *); H5G_NoteBuiltinCall(inst, builtinIndex, (const char *)debugpos); }   // harness H5
+#endif
                 SvProfBuiltin svProfBuiltin(builtinIndex); // mod (L43): bo1_mod_svprof
                 ((void(*)(scr_entref_t))gScrCompilePub[inst].func_table[builtinIndex]) (entref);
             }

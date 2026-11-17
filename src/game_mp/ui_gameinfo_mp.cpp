@@ -92,11 +92,11 @@ void __cdecl UI_LoadArenas()
     sharedUiInfo.mapCount = 0;
     ui_numArenas = 0;
     ModArenas = 0;
-    if (fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer)
+    if (fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.string)
         ModArenas = UI_LoadModArenas();
-    if (!ModArenas || (!fs_gameDirVar || !*(_BYTE *)fs_gameDirVar->current.integer ? (v7 = 0) : (v7 = 1), !v7))
+    if (!ModArenas || (!fs_gameDirVar || !*(_BYTE *)fs_gameDirVar->current.string ? (v7 = 0) : (v7 = 1), !v7))
         UI_LoadArenasFromFile();
-    v6 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v6 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.string;
     if (v6 && !ModArenas)
     {
         UI_LoadModsMap(FFD_MOD_DIR);
@@ -325,7 +325,7 @@ const char *UI_LoadArenasFromFile_LoadObj()
     v1 = result;
     v3 = listbuf;
     v8 = 0;
-    while ( v8 < (int)v1 )
+    while ( v8 < (int)(intptr_t)v1 )   // v1 es el recuento de FS_GetFileList guardado en un const char*
     {
         v9 = strlen(v3);
         sprintf(string, "%s/%s", "mp", v3);
@@ -443,7 +443,7 @@ void __cdecl UI_LoadCustomMatchGameTypes()
     char index[4]; // [esp+24h] [ebp-4h] BYREF
 
     I_strncpyz(tableName, "mp/gametypesTable.csv", 23);
-    StringTable_GetAsset(tableName, (XAssetHeader *)&table);
+    StringTable_GetAsset(tableName, &table);
     if ( !table
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gameinfo_mp.cpp", 486, 0, "%s", "table") )
     {

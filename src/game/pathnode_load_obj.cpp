@@ -686,7 +686,7 @@ int __cdecl Path_LoadPathsInternal()
 
     if ( !gameWorldCurrent->path.nodeCount )
         return 1;
-    buf = (const unsigned __int8 *)Com_LoadBspLump((char *)gameWorldCurrent->name, LUMP_PATHCONNECTIONS, 1u, &len);
+    buf = (const unsigned __int8 *)Com_LoadBspLump((char *)gameWorldCurrent->name.get(), LUMP_PATHCONNECTIONS, 1u, &len);
     if ( !len )
         return 0;
     if ( *(unsigned int *)buf == 8 )
@@ -1248,7 +1248,7 @@ void __cdecl Path_ConnectPathsForSingleNode(pathnode_t *node)
                         if ( othernode->constant.Links )
                             memcpy(
                                 (unsigned __int8 *)linksBuffer,
-                                (unsigned __int8 *)othernode->constant.Links,
+                                (unsigned __int8 *)othernode->constant.Links.get(),
                                 12 * othernode->constant.totalLinkCount);
                         othernode->constant.Links = linksBuffer;
                     }

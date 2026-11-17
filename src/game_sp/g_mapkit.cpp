@@ -393,8 +393,8 @@ static int s_catalogCount[3];
 static void Mapkit_CatalogWeapon(XAssetHeader header, void *)
 {
     const WeaponVariantDef *v = header.weapon;
-    const XModel *world = v && v->weapDef && v->weapDef->worldModel ? v->weapDef->worldModel[0] : NULL;
-    Com_Printf(0, "mapkit_catalog weapon %s %s\n", v && v->szInternalName ? v->szInternalName : "-", world ? XModelGetName(world) : "-");
+    const XModel *world = v && v->weapDef && v->weapDef->worldModel ? v->weapDef->worldModel[0].get() : nullptr;
+    Com_Printf(0, "mapkit_catalog weapon %s %s\n", v && v->szInternalName ? v->szInternalName.get() : "-", world ? XModelGetName(world) : "-");
     ++s_catalogCount[0];
 }
 static void Mapkit_CatalogName(XAssetHeader header, void *data)

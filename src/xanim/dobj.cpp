@@ -59,7 +59,7 @@ void __cdecl DObjDumpInfo(const DObj *obj)
         for ( j = 0; j < numModels; ++j )
         {
             model = models[j];
-            Com_Printf(19, "%d: '%s'\n", boneIndex, model->name);
+            Com_Printf(19, "%d: '%s'\n", boneIndex, model->name.get());
             boneIndex += XModelNumBones(model);
         }
         Com_Printf(19, "\nBones:\n");
@@ -333,7 +333,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
         {
             iassert(currNumModels);
             DObjDumpCreationInfo(dobjModels, numModels);
-            Com_Error(ERR_DROP, "dobj for xmodel ',27h,'%s',27h,' has more than %d bones (see console for details)", models[0]->name, 160);
+            Com_Error(ERR_DROP, "dobj for xmodel ',27h,'%s',27h,' has more than %d bones (see console for details)", models[0]->name.get(), 160);
         }
         models[currNumModels] = model;
         modelParents[currNumModels] = -1;
@@ -352,7 +352,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
                 }
 
                 iassert(currNumModels);
-                Com_PrintWarning(19, "WARNING: Part '%s' not found in model '%s' or any of its descendants\n", SL_ConvertToString(name, SCRIPTINSTANCE_SERVER), models[0]->name);
+                Com_PrintWarning(19, "WARNING: Part '%s' not found in model '%s' or any of its descendants\n", SL_ConvertToString(name, SCRIPTINSTANCE_SERVER), models[0]->name.get());
                 iassert(modelParents[currNumModels] == NO_BONEINDEX);
             }
             else
@@ -394,8 +394,8 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
                         19,
                         "WARNING: Attempting to meld model, but root part '%s' of model '%s' not found in model '%s' or any of its descendants\n",
                         SL_ConvertToString(*boneNames, SCRIPTINSTANCE_SERVER),
-                        model->name,
-                        models[0]->name);
+                        model->name.get(),
+                        models[0]->name.get());
                 }
             }
         }
@@ -419,8 +419,9 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
     {
         __debugbreak();
     }
-    obj->localModels = (XModel **)MT_Alloc(5 * numModels, 13, SCRIPTINSTANCE_SERVER);
-    memcpy((unsigned __int8 *)obj->localModels, (unsigned __int8 *)models, 4 * numModels);
+    // arm64: punteros de 8 bytes + un byte de padre por modelo (x86: 5 * numModels)
+    obj->localModels = (XModel **)MT_Alloc((sizeof(XModel *) + 1) * numModels, 13, SCRIPTINSTANCE_SERVER);
+    memcpy((unsigned __int8 *)obj->localModels, (unsigned __int8 *)models, sizeof(XModel *) * numModels);
     memcpy((unsigned __int8 *)&obj->localModels[numModels], modelParents, numModels);
     if (numModels != (unsigned __int8)numModels
         && !Assert_MyHandler(
@@ -578,7 +579,7 @@ void __cdecl DObjFree(DObj *obj)
     models = obj->localModels;
     if ( models )
     {
-        MT_Free((unsigned char*)models, 5 * obj->numModels, SCRIPTINSTANCE_SERVER);
+        MT_Free((unsigned char*)models, (sizeof(XModel *) + 1) * obj->numModels, SCRIPTINSTANCE_SERVER);
         obj->localModels = 0;
     }
     obj->numModels = 0;
@@ -804,7 +805,7 @@ void __cdecl DObjUnarchive(DObj *obj)
         model->model = savedObj.models[modelIndex];
         model->ignoreCollision = (savedObj.ignoreCollision & (1 << modelIndex)) != 0;
     }
-    MT_Free((_BYTE *)savedObj.models, 5 * savedObj.numModels, SCRIPTINSTANCE_SERVER);
+    MT_Free((_BYTE *)savedObj.models, (sizeof(XModel *) + 1) * savedObj.numModels, SCRIPTINSTANCE_SERVER);
     DObjCreateExt(
         dobjModels,
         savedObj.numModels,

@@ -201,8 +201,8 @@ void __thiscall UIViewer::Init(bool _ingame)
             &UI_ViewerRotateRightRepeatEnabled_f_VAR);
         for ( i = 0; i < 1; ++i )
             this->dobjsPool[i] = (DObj *)&this->dobjsBuffer[124 * i];
-        StringTable_GetAsset("mp/ui_viewer_camera.csv", (XAssetHeader *)&this->cameraPosTable);
-        StringTable_GetAsset("mp/bodyheadtable.csv", (XAssetHeader *)&this->bodyHeadTable);
+        StringTable_GetAsset("mp/ui_viewer_camera.csv", &this->cameraPosTable);
+        StringTable_GetAsset("mp/bodyheadtable.csv", &this->bodyHeadTable);
         this->inited = 1;
         this->streamerInited = 0;
         this->mapLoaded = 0;
@@ -1475,11 +1475,11 @@ void __thiscall UIViewer::AddPlayerToScene(
         if (this->ingame)
             v7 = UIViewer::SetCameraPos((char*)this->playerCameraDvar->current.integer, (char*)"ingame", animate);
         else
-            v7 = UIViewer::SetCameraPos((char *)this->playerCameraDvar->current.integer, (char *)"none", animate);
+            v7 = UIViewer::SetCameraPos((char *)this->playerCameraDvar->current.string, (char *)"none", animate);
         if (!v7)
         {
             Dvar_SetString((dvar_s*)this->playerCameraDvar, "player");
-            UIViewer::SetCameraPos((char *)this->playerCameraDvar->current.integer, (char *)"none", animate);
+            UIViewer::SetCameraPos((char *)this->playerCameraDvar->current.string, (char *)"none", animate);
         }
         integer = (char*)this->playerCameraDvar->current.integer;
         playerCameraName = this->playerCameraName;

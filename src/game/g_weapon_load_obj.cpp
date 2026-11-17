@@ -36,7 +36,7 @@ char __cdecl G_ParseWeaponAccurayGraphs(WeaponDef *weaponDef)
                                                                                                                                     "G_ParseWeaponAccurayGraphs",
                                                                                                                                     10);
             weaponDef->originalAccuracyGraphKnots[weaponType] = weaponDef->accuracyGraphKnots[weaponType];
-            memcpy((unsigned __int8 *)weaponDef->accuracyGraphKnots[weaponType], (unsigned __int8 *)accuracyGraphKnots, size);
+            memcpy((unsigned __int8 *)weaponDef->accuracyGraphKnots[weaponType].get(), (unsigned __int8 *)accuracyGraphKnots, size);
             weaponDef->accuracyGraphKnotCount[weaponType] = accuracyGraphKnotCount;
             weaponDef->originalAccuracyGraphKnotCount[weaponType] = weaponDef->accuracyGraphKnotCount[weaponType];
         }

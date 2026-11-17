@@ -23,4 +23,9 @@ void __cdecl DB_SaveDObjs();
 void __cdecl DB_LoadDObjs();
 DObj *__cdecl Com_GetClientDObj(unsigned int handle, int localClientNum);
 
-extern unsigned int objBuf[3072][31];
+#if defined(__LP64__) || defined(_WIN64)
+#define DOBJ_BUF_WORDS 36   // arm64: sizeof(DObj) = 144 (x86: 124 = 31 palabras)
+#else
+#define DOBJ_BUF_WORDS 31
+#endif
+extern unsigned int objBuf[3072][DOBJ_BUF_WORDS];

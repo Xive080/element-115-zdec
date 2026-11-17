@@ -2800,7 +2800,7 @@ scr_animtree_t __cdecl Scr_FindAnimTree(scriptInstance_t inst, const char *filen
     {
         __debugbreak();
     }
-    return (scr_animtree_t)tempValue.u.intValue;
+    return scr_animtree_t((XAnim_s *)tempValue.u.codePosValue.get());   // arm64: codepos es desplazamiento de 32 bits
 }
 
 VariableValue __cdecl Scr_EvalVariable(scriptInstance_t inst, unsigned int id)

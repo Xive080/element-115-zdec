@@ -842,7 +842,7 @@ LABEL_39:
                     Com_PrintError(
                         16,
                         "%s:%d - Expression Error: Unknown token '%s'\n",
-                        statement->filename,
+                        statement->filename.get(),
                         statement->line,
                         token->token);
                     Com_PrintError(16, "%s\n", sourceText);
@@ -864,7 +864,7 @@ LABEL_39:
             if ( lastType )
             {
                 OperandAsString = GetOperandAsString(lastOperand);
-                Com_PrintError(16, "%s:%d - Expression Error: %s(...\n", statement->filename, statement->line, OperandAsString);
+                Com_PrintError(16, "%s:%d - Expression Error: %s(...\n", statement->filename.get(), statement->line, OperandAsString);
                 Com_PrintError(16, "%s\n", sourceText);
                 Com_EndParseSession();
                 return 0;
@@ -882,7 +882,7 @@ LABEL_39:
                     Com_PrintError(
                         16,
                         "%s:%d - Expression Error: Found a right parenthesis that doesn't match any left parenthesis\n",
-                        statement->filename,
+                        statement->filename.get(),
                         statement->line);
                     Com_PrintError(16, "%s\n", sourceText);
                     Com_EndParseSession();
@@ -928,7 +928,7 @@ const char *__cdecl GetOperandAsString(Operand operand)
     switch ( operand.dataType )
     {
         case VAL_STRING:
-            return va("%s", operand.internals.string);
+            return va("%s", operand.internals.string.get());
         case VAL_INT:
             return va("%i", operand.internals.intVal);
         case VAL_FLOAT:

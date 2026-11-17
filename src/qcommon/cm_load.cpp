@@ -222,7 +222,7 @@ void __cdecl CM_Hunk_CheckTempMemoryHighClear()
 
 unsigned int __cdecl CM_Hunk_AllocateTempMemoryHigh(int size, const char *name)
 {
-    return Hunk_AllocateTempMemoryHigh(size, name);
+    return (unsigned int)(uintptr_t)Hunk_AllocateTempMemoryHigh(size, name); // LP64 TODO: solo el camino load_obj (sin fastfile) lo usa
 }
 
 void __cdecl CM_Hunk_ClearTempMemoryHigh()

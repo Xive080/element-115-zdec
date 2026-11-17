@@ -12,7 +12,7 @@
 #include "dobj_utils.h"
 #include <cgame/cg_drawtools.h>
 
-Material *g_materials[1];
+PTR32(Material) g_materials[1];   // LP64: ruta sin fastfile (modelo por defecto); fuera de la arena: Ptr32 lo caza si se usa
 XModelDefault g_default;
 
 bool __cdecl XModelBad(const XModel *model)
@@ -74,10 +74,7 @@ void __cdecl XModelSurfsSetData(const char *name, XModelSurfs *modelSurfs, void 
 XModel *__cdecl XModelPrecache(char *name, void *(__cdecl *Alloc)(int), void *(__cdecl *AllocColl)(int))
 {
     if ( useFastFile->current.enabled )
-        return (XModel *)((int (__cdecl *)(char *, void *(__cdecl *)(int), void *(__cdecl *)(int)))XModelPrecache_FastFile)(
-                                             name,
-                                             Alloc,
-                                             AllocColl);
+        return XModelPrecache_FastFile(name);   // arm64: antes via un puntero que devolvia int (truncaba el puntero)
     else
         return XModelPrecache_LoadObj(name, Alloc, AllocColl);
 }
@@ -118,7 +115,7 @@ XModel *__cdecl XModelCreateDefault(void *(__cdecl *Alloc)(int))
 {
     XModel *model; // [esp+0h] [ebp-4h]
 
-    model = (XModel *)Alloc(380);
+    model = (XModel *)Alloc(sizeof(XModel));
     XModelMakeDefault(model);
     return model;
 }
@@ -602,12 +599,12 @@ bool __cdecl XSurfaceVisitTrianglesInAabb(
     {
         __debugbreak();
     }
-    PrefetchArrayIndexed((char *)locals.tree->nodes, 1u, 0, 0x10u);
+    PrefetchArrayIndexed((char *)locals.tree->nodes.get(), 1u, 0, 0x10u);
     locals.visitorFunc = visitorFunc;
     locals.visitorContext = visitorContext;
     locals.inIndices = surface->triIndices;
-    locals.inVertices0 = (const unsigned __int8 *)surface->verts0;
-    locals.inVertices1 = (const unsigned __int8 *)surface->verts0;
+    locals.inVertices0 = (const unsigned __int8 *)surface->verts0.get();
+    locals.inVertices1 = (const unsigned __int8 *)surface->verts0.get();
     XSurfaceVisitTrianglesInAabb_ConvertAabb(locals.tree, aabbMins, aabbMaxs, locals.mins, locals.maxs);
     locals.nodeQueue[0].count = 1;
     locals.nodeQueueBegin = 0;
@@ -780,17 +777,17 @@ void __cdecl XSurfaceVisitTrianglesInAabb_ConvertAabb(
 
 void __cdecl PrefetchArrayIndexed(char *mem, unsigned int elementCount, unsigned int index, unsigned int elementSize)
 {
-    unsigned int umem; // [esp+4h] [ebp-Ch]
+    uintptr_t umem; // LP64: direcciones de 64 bits
     const unsigned __int8 *memIter; // [esp+8h] [ebp-8h]
 
-    umem = (unsigned int)&mem[elementSize * index];
+    umem = (uintptr_t)&mem[elementSize * index];
     if ( !elementCount
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp", 1095, 0, "%s", "elementCount") )
     {
         __debugbreak();
     }
-    for ( memIter = (const unsigned __int8 *)(umem & 0xFFFFFF80);
-                (unsigned int)memIter <= ((umem + elementSize * elementCount - 1) & 0xFFFFFF80);
+    for ( memIter = (const unsigned __int8 *)(umem & ~(uintptr_t)0x7F);
+                (uintptr_t)memIter <= ((umem + elementSize * elementCount - 1) & ~(uintptr_t)0x7F);
                 memIter += 128 )
     {
         _mm_prefetch((const char *)memIter, 1);

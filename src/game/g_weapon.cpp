@@ -1262,7 +1262,7 @@ void __cdecl FireWeapon(gentity_s *ent, int gametime, int shotCount)
                     Weapon_Flamethrower_Fire(ent, &wp);
                     break;
                 default:
-                    Com_Error(ERR_DROP, "Unknown weapon type %i for %s", wp.weapDef->weapType, wp.weapVariantDef->szInternalName);
+                    Com_Error(ERR_DROP, "Unknown weapon type %i for %s", wp.weapDef->weapType, wp.weapVariantDef->szInternalName.get());
                     break;
             }
         }
@@ -1656,7 +1656,7 @@ void __cdecl DeployWeapon(gentity_s *ent)
             }
             if ( turretEnt )
             {
-                SetModelInternal(turretEnt, (char *)weapDef->mountedModel->name);
+                SetModelInternal(turretEnt, (char *)weapDef->mountedModel->name.get());
                 currentAngles = turretEnt->r.currentAngles;
                 turretEnt->r.currentAngles[0] = ledgeAngles[0];
                 currentAngles[1] = ledgeAngles[1];
@@ -1815,7 +1815,7 @@ int __cdecl G_GivePlayerWeapon(
                         0,
                         "%s\n\t(BG_GetWeaponVariantDef(iWeaponIndex)->szDisplayName) = %s",
                         "(!level.clientIsSpawning)",
-                        WeaponVariantDef->szDisplayName) )
+                        WeaponVariantDef->szDisplayName.get()) )
             __debugbreak();
     }
     if ( BG_HoldWeapon(pPS, iWeaponIndex) )

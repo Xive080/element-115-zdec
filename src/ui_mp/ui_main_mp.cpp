@@ -385,7 +385,7 @@ char *__cdecl UI_GetMapName(const char *inputMapName, bool returnStringRef)
     const char *v2; // eax
     const StringTable *mapTable; // [esp+0h] [ebp-8h] BYREF
 
-    StringTable_GetAsset("mp/mapsTable.csv", (XAssetHeader *)&mapTable);
+    StringTable_GetAsset("mp/mapsTable.csv", &mapTable);
     if ( !mapTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp", 1028, 0, "%s", "mapTable") )
     {
@@ -402,7 +402,7 @@ char *__cdecl UI_GetGameTypeName(const char *inputGameType, bool returnStringRef
     const char *v2; // eax
     const StringTable *gameTypeTable; // [esp+4h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypeTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypeTable);
     if ( !gameTypeTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp", 1044, 0, "%s", "gameTypeTable") )
     {
@@ -1484,7 +1484,7 @@ const char *__cdecl UI_GetOverlayMapNameFromIndex(int mapIndex)
     const char *v1; // eax
     const StringTable *mapTable; // [esp+0h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/mapsTable.csv", (XAssetHeader *)&mapTable);
+    StringTable_GetAsset("mp/mapsTable.csv", &mapTable);
     if ( !mapTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp", 1059, 0, "%s", "mapTable") )
     {

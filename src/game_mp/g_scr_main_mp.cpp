@@ -383,7 +383,7 @@ void __cdecl GScr_SetScriptsForPathNode(scriptInstance_t inst, pathnode_t *loadN
                 {
                     __debugbreak();
                 }
-                loadNode->constant.animscriptfunc = (int)Hunk_FindDataForFile(1, animscript);
+                loadNode->constant.animscriptfunc = (int)(intptr_t)Hunk_FindDataForFile(1, animscript);   // guarda un handle int, no un puntero
                 if ( !loadNode->constant.animscriptfunc )
                 {
                     // zombies: SP's traverses are animscripts/traverse/<name> (SP 0x007EEC60)
@@ -392,7 +392,7 @@ void __cdecl GScr_SetScriptsForPathNode(scriptInstance_t inst, pathnode_t *loadN
                     Hunk_SetDataForFile(
                         1,
                         animscript,
-                        (void *)loadNode->constant.animscriptfunc,
+                        (void *)(intptr_t)loadNode->constant.animscriptfunc,
                         (void *(__cdecl *)(int))GScr_AnimscriptAlloc);
                 }
                 if ( !loadNode->constant.animscriptfunc )
@@ -1571,7 +1571,7 @@ void Scr_GetWeaponStowedModel()
     weapDef = BG_GetWeaponDef(iWeaponIndex);
     if ( iWeaponIndex )
     {
-        if ( *((unsigned int *)weapDef->worldModel + 1)
+        if ( weapDef->worldModel[1]
             && weapDef->weapClass != WEAPCLASS_GRENADE
             && weapDef->weapClass != WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON )
         {
@@ -1737,10 +1737,10 @@ void GScr_AnimHasNotetrack()
     unsigned __int16 name; // [esp+4h] [ebp-8h]
     const char *anim; // [esp+8h] [ebp-4h]
 
-    anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER).linkPointer;
+    scr_anim_s sa = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER);   // LP64: index/tree en vez del puntero de 4 bytes
     name = (unsigned __int16)Scr_GetConstString(1u, SCRIPTINSTANCE_SERVER);
-    Anims = Scr_GetAnims(HIWORD(anim), SCRIPTINSTANCE_SERVER);
-    v1 = XAnimNotetrackExists(Anims, (unsigned __int16)anim, name);
+    Anims = Scr_GetAnims(sa.tree, SCRIPTINSTANCE_SERVER);
+    v1 = XAnimNotetrackExists(Anims, sa.index, name);
     Scr_AddBool(v1, SCRIPTINSTANCE_SERVER);
 }
 
@@ -1750,11 +1750,11 @@ void GScr_GetNotetrackTimes()
     VariableUnion name; // [esp+4h] [ebp-8h]
     const char *anim; // [esp+8h] [ebp-4h]
 
-    anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER).linkPointer;
+    scr_anim_s sa = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER);   // LP64: index/tree en vez del puntero de 4 bytes
     name.intValue = Scr_GetConstString(1u, SCRIPTINSTANCE_SERVER);
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-    Anims = Scr_GetAnims(HIWORD(anim), SCRIPTINSTANCE_SERVER);
-    XAnimAddNotetrackTimesToScriptArray(Anims, (unsigned __int16)anim, name.stringValue);
+    Anims = Scr_GetAnims(sa.tree, SCRIPTINSTANCE_SERVER);
+    XAnimAddNotetrackTimesToScriptArray(Anims, sa.index, name.stringValue);
 }
 
 void GScr_GetBrushModelCenter()
@@ -6414,7 +6414,7 @@ void GScr_GetWeaponFireSound()
     weaponFireSound = (char *)"";
     weaponIndex = Scr_GetInt(0, SCRIPTINSTANCE_SERVER);
     if ( weaponIndex && weaponIndex != -1 )
-        weaponFireSound = (char *)BG_GetWeaponDef(weaponIndex)->fireSound;
+        weaponFireSound = (char *)BG_GetWeaponDef(weaponIndex)->fireSound.get();
     Scr_AddString(weaponFireSound, SCRIPTINSTANCE_SERVER);
 }
 
@@ -6426,7 +6426,7 @@ void GScr_GetWeaponFireSoundPlayer()
     weaponFireSoundPlayer = (char *)"";
     weaponIndex = Scr_GetInt(0, SCRIPTINSTANCE_SERVER);
     if ( weaponIndex && weaponIndex != -1 )
-        weaponFireSoundPlayer = (char *)BG_GetWeaponDef(weaponIndex)->fireSoundPlayer;
+        weaponFireSoundPlayer = (char *)BG_GetWeaponDef(weaponIndex)->fireSoundPlayer.get();
     Scr_AddString(weaponFireSoundPlayer, SCRIPTINSTANCE_SERVER);
 }
 
@@ -6438,7 +6438,7 @@ void GScr_GetWeaponPickupSound()
     weaponPickupSound = (char *)"";
     weaponIndex = Scr_GetInt(0, SCRIPTINSTANCE_SERVER);
     if ( weaponIndex && weaponIndex != -1 )
-        weaponPickupSound = (char *)BG_GetWeaponDef(weaponIndex)->pickupSound;
+        weaponPickupSound = (char *)BG_GetWeaponDef(weaponIndex)->pickupSound.get();
     Scr_AddString(weaponPickupSound, SCRIPTINSTANCE_SERVER);
 }
 
@@ -6450,7 +6450,7 @@ void GScr_GetWeaponPickupSoundPlayer()
     weaponPickupSoundPlayer = (char *)"";
     weaponIndex = Scr_GetInt(0, SCRIPTINSTANCE_SERVER);
     if ( weaponIndex && weaponIndex != -1 )
-        weaponPickupSoundPlayer = (char *)BG_GetWeaponDef(weaponIndex)->pickupSoundPlayer;
+        weaponPickupSoundPlayer = (char *)BG_GetWeaponDef(weaponIndex)->pickupSoundPlayer.get();
     Scr_AddString(weaponPickupSoundPlayer, SCRIPTINSTANCE_SERVER);
 }
 
@@ -9815,7 +9815,7 @@ void Scr_TableLookupRowNum()
         if ( (unsigned int)Scr_GetNumParam(SCRIPTINSTANCE_SERVER) < 2 )
             Scr_Error("USAGE: tableLookupRowNum( filename, searchColumnNum, searchValue )\n", 0);
         filename = Scr_GetString(0, SCRIPTINSTANCE_SERVER);
-        StringTable_GetAsset(filename, (XAssetHeader *)&tablePtr);
+        StringTable_GetAsset(filename, &tablePtr);
         comparisonColumn = Scr_GetInt(1u, SCRIPTINSTANCE_SERVER);
         stringValue = Scr_GetString(2u, SCRIPTINSTANCE_SERVER);
         returnValueRow = StringTable_LookupRowNumForValue(tablePtr, comparisonColumn, stringValue);
@@ -9841,7 +9841,7 @@ void Scr_TableLookupColumnForRow()
         if ( (unsigned int)Scr_GetNumParam(SCRIPTINSTANCE_SERVER) < 2 )
             Scr_Error("USAGE: tableLookupColumnForRow( filename, row, column )\n", 0);
         filename = Scr_GetString(0, SCRIPTINSTANCE_SERVER);
-        StringTable_GetAsset(filename, (XAssetHeader *)&tablePtr);
+        StringTable_GetAsset(filename, &tablePtr);
         row = Scr_GetInt(1u, SCRIPTINSTANCE_SERVER);
         column = Scr_GetInt(2u, SCRIPTINSTANCE_SERVER);
         returnValue = (char *)StringTable_GetColumnValueForRow(tablePtr, row, column);
@@ -9868,7 +9868,7 @@ void Scr_TableLookup()
         if ( (unsigned int)Scr_GetNumParam(SCRIPTINSTANCE_SERVER) < 3 )
             Scr_Error("USAGE: tableLookup( filename, searchColumnNum, searchValue, returnValueColumnNum )\n", 0);
         filename = Scr_GetString(0, SCRIPTINSTANCE_SERVER);
-        StringTable_GetAsset(filename, (XAssetHeader *)&tablePtr);
+        StringTable_GetAsset(filename, &tablePtr);
         comparisonColumn = Scr_GetInt(1u, SCRIPTINSTANCE_SERVER);
         stringValue = Scr_GetString(2u, SCRIPTINSTANCE_SERVER);
         returnValueColumn = Scr_GetInt(3u, SCRIPTINSTANCE_SERVER);
@@ -9896,7 +9896,7 @@ void Scr_TableLookupIString()
         if ( (unsigned int)Scr_GetNumParam(SCRIPTINSTANCE_SERVER) < 3 )
             Scr_Error("USAGE: tableLookupIString( filename, searchColumnNum, searchValue, returnValueColumnNum )\n", 0);
         filename = Scr_GetString(0, SCRIPTINSTANCE_SERVER);
-        StringTable_GetAsset(filename, (XAssetHeader *)&tablePtr);
+        StringTable_GetAsset(filename, &tablePtr);
         comparisonColumn = Scr_GetInt(1u, SCRIPTINSTANCE_SERVER);
         stringValue = Scr_GetString(2u, SCRIPTINSTANCE_SERVER);
         returnValueColumn = Scr_GetInt(3u, SCRIPTINSTANCE_SERVER);
@@ -15826,7 +15826,7 @@ void GScr_GetWeaponProjExplosionSound()
     }
     Weapon_SetWeaponParamsWeapon(&wp, iWeaponIndex);
     if ( wp.weapDef->projExplosionSound )
-        Scr_AddString((char *)wp.weapDef->projExplosionSound, SCRIPTINSTANCE_SERVER);
+        Scr_AddString((char *)wp.weapDef->projExplosionSound.get(), SCRIPTINSTANCE_SERVER);
     else
         Scr_AddString((char *)"", SCRIPTINSTANCE_SERVER);
 }
@@ -16235,9 +16235,9 @@ void print_0()
         for (i = 0; ; i = (const dvar_s *)((char *)i + 1))
         {
             result = i;
-            if ((int)i >= num)
+            if ((int)(intptr_t)i >= num)
                 break;
-            DebugString = Scr_GetDebugString((unsigned int)i, SCRIPTINSTANCE_SERVER);
+            DebugString = Scr_GetDebugString((unsigned int)(intptr_t)i, SCRIPTINSTANCE_SERVER);
             Com_Printf(level.scriptPrintChannel, "%s", DebugString);
         }
     }
@@ -17575,7 +17575,7 @@ int Scr_ParseGameTypeList_LoadObj()
             dest = g_scr_data.gametype.list[v11].pszScript;
             I_strncpyz(dest, src, 64);
             //strlwr(dest);
-            _strlwr(dest);
+            I_strlwr(dest);
             qpath = va("maps/mp/gametypes/%s.txt", src);
             len = FS_FOpenFileByMode(qpath, &f, FS_READ);
             if ( len > 0 && len < 1024 )

@@ -45,7 +45,7 @@ void __cdecl StringTable_ParseFileIntoTable(const char *filename, StringTable *t
         nextValue = 0;
         filenameLen = strlen(filename) + 1;
         table->name = (const char *)StringTable_Alloc(filenameLen);
-        I_strncpyz((char *)table->name, filename, filenameLen);
+        I_strncpyz((char *)table->name.get(), filename, filenameLen);
         parse = buffer;
         Com_BeginParseSession(filename);
         Com_SetCSV(1);

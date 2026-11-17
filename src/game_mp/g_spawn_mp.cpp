@@ -70,21 +70,21 @@ static void __cdecl Scr_SetSpVehicleTeam(gentity_s *ent, int offset);
 
 const ent_field_t fields_1[] =
 {
-  { "classname", 356, { 2 }, F_STRING, Scr_ReadOnlyField },
-  { "origin", 292, { 12 }, F_VECTOR, Scr_SetOrigin },
-  { "model", 348, { 2 }, F_MODEL, Scr_ReadOnlyField },
-  { "spawnflags", 368, { 4 }, F_INT, Scr_ReadOnlyField },
-  { "target", 358, { 2 }, F_STRING, NULL },
-  { "targetname", 360, { 2 }, F_STRING, NULL },
-  { "script_noteworthy", 362, { 2 }, F_STRING, NULL },
-  { "count", 532, { 4 }, F_INT, NULL },
-  { "health", 404, { 4 }, F_INT, Scr_SetHealth },
-  { "dmg", 412, { 4 }, F_INT, NULL },
-  { "angles", 304, { 12 }, F_VECTOR, Scr_SetAngles },
-  { "birthtime", 748, { 4 }, F_INT, Scr_ReadOnlyField },
-  { "index", 560, { 4 }, F_INT, Scr_SetExposureIndex },
-  { "lerp_to_lighter", 564, { 4 }, F_FLOAT, Scr_SetExposureLerpToLighter },
-  { "lerp_to_darker", 568, { 4 }, F_FLOAT, Scr_SetExposureLerpToDarker },
+  { "classname", offsetof(gentity_s, classname), { 2 }, F_STRING, Scr_ReadOnlyField },
+  { "origin", offsetof(gentity_s, r.currentOrigin), { 12 }, F_VECTOR, Scr_SetOrigin },
+  { "model", offsetof(gentity_s, model), { 2 }, F_MODEL, Scr_ReadOnlyField },
+  { "spawnflags", offsetof(gentity_s, spawnflags), { 4 }, F_INT, Scr_ReadOnlyField },
+  { "target", offsetof(gentity_s, target), { 2 }, F_STRING, NULL },
+  { "targetname", offsetof(gentity_s, targetname), { 2 }, F_STRING, NULL },
+  { "script_noteworthy", offsetof(gentity_s, script_noteworthy), { 2 }, F_STRING, NULL },
+  { "count", offsetof(gentity_s, count), { 4 }, F_INT, NULL },
+  { "health", offsetof(gentity_s, health), { 4 }, F_INT, Scr_SetHealth },
+  { "dmg", offsetof(gentity_s, damage), { 4 }, F_INT, NULL },
+  { "angles", offsetof(gentity_s, r.currentAngles), { 12 }, F_VECTOR, Scr_SetAngles },
+  { "birthtime", offsetof(gentity_s, birthTime), { 4 }, F_INT, Scr_ReadOnlyField },
+  { "index", offsetof(gentity_s, trigger.exposureIndex), { 4 }, F_INT, Scr_SetExposureIndex },
+  { "lerp_to_lighter", offsetof(gentity_s, trigger.exposureLerpToLighter), { 4 }, F_FLOAT, Scr_SetExposureLerpToLighter },
+  { "lerp_to_darker", offsetof(gentity_s, trigger.exposureLerpToDarker), { 4 }, F_FLOAT, Scr_SetExposureLerpToDarker },
   // zombies: SP +0x188 -> gentity_s::maxHealth (SP 0x00a5576c).
   { "maxhealth", offsetof(gentity_s, maxHealth), { 4 }, F_INT, NULL },
   // zombies: SP +0x157 -> gentity_s::takedamage (SP 0x00a557a8).
@@ -882,16 +882,16 @@ void __cdecl GScr_SetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
         case F_ACTOR:
             ent = Scr_GetEntityAllowNull(0, SCRIPTINSTANCE_SERVER);
             if ( ent )
-                *(unsigned int *)&b[ofs] = (unsigned int)ent->actor;
+                *(actor_s **)&b[ofs] = ent->actor;   // LP64: punteros nativos de 8 bytes
             else
-                *(unsigned int *)&b[ofs] = 0;
+                *(void **)&b[ofs] = nullptr;
             break;
         case F_SENTIENT:
             enta = Scr_GetEntityAllowNull(0, SCRIPTINSTANCE_SERVER);
             if ( enta )
-                *(unsigned int *)&b[ofs] = (unsigned int)enta->sentient;
+                *(sentient_s **)&b[ofs] = enta->sentient;
             else
-                *(unsigned int *)&b[ofs] = 0;
+                *(void **)&b[ofs] = nullptr;
             break;
         case F_SENTIENTHANDLE:
             entb = Scr_GetEntityAllowNull(0, SCRIPTINSTANCE_SERVER);
@@ -901,7 +901,7 @@ void __cdecl GScr_SetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
                 ((SentientHandle *)&b[ofs])->setSentient(0);
             break;
         case F_PATHNODE:
-            *(unsigned int *)&b[ofs] = (unsigned int)Scr_GetPathnode(0, SCRIPTINSTANCE_SERVER);
+            *(pathnode_t **)&b[ofs] = Scr_GetPathnode(0, SCRIPTINSTANCE_SERVER);
             break;
         default:
             Scr_SetGenericField(b, type, ofs, SCRIPTINSTANCE_SERVER, whichbits);
@@ -1090,7 +1090,7 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
     switch ( type )
     {
         case F_ENTITY:
-            if ( *(unsigned int *)&b[ofs] )
+            if ( *(void **)&b[ofs] )
                 Scr_AddEntity(*(gentity_s **)&b[ofs], SCRIPTINSTANCE_SERVER);
             break;
         case F_ENTHANDLE:
@@ -1101,11 +1101,11 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
             }
             break;
         case F_ACTOR:
-            if ( *(unsigned int *)&b[ofs] )
+            if ( *(void **)&b[ofs] )
                 Scr_AddEntity(**(gentity_s ***)&b[ofs], SCRIPTINSTANCE_SERVER);
             break;
         case F_SENTIENT:
-            if ( *(unsigned int *)&b[ofs] )
+            if ( *(void **)&b[ofs] )
                 Scr_AddEntity(**(gentity_s ***)&b[ofs], SCRIPTINSTANCE_SERVER);
             break;
         case F_SENTIENTHANDLE:
@@ -1116,7 +1116,7 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
             }
             break;
         case F_PATHNODE:
-            if ( *(unsigned int *)&b[ofs] )
+            if ( *(void **)&b[ofs] )
                 Scr_AddPathnode(*(pathnode_t **)&b[ofs]);
             break;
         case F_OBJECT:
@@ -1567,7 +1567,7 @@ void __cdecl SP_worldspawn(SpawnVar *spawnVar)
     }
     G_SpawnString(spawnVar, "message", "", &s);
     SV_SetConfigstring(4, (char *)s);
-    SV_SetConfigstring(11, (char *)g_motd->current.integer);
+    SV_SetConfigstring(11, (char *)g_motd->current.string);
     G_SpawnString(spawnVar, "gravity", "800", &s);
     if ( !bg_gravity
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp", 1381, 0, "%s", "bg_gravity") )

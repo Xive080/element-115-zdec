@@ -1,4 +1,5 @@
 #pragma once
+#include <setjmp.h>
 #include "cscr_main.h"
 #include "cscr_variable.h"
 #include "cscr_debugger.h"
@@ -151,4 +152,9 @@ void __cdecl Scr_FreeDebugExprValue(scriptInstance_t inst, sval_u val);
 
 
 extern int g_script_error_level[2];
+#if defined(_WIN32) && !defined(_WIN64)
 extern int g_script_error[2][33][16];
+#else
+// LP64: el jmp_buf de x86 son 16 int; el de arm64 es mayor (setjmp desbordaba el hueco y bionic no lo acepta)
+extern jmp_buf g_script_error[2][33];
+#endif

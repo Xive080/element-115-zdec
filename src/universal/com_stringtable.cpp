@@ -350,7 +350,7 @@ int __cdecl StringTable_Checksum(const StringTable *table, unsigned int initialC
     int crc; // [esp+28h] [ebp-8h]
     int col; // [esp+2Ch] [ebp-4h]
 
-    crc = Com_BlockChecksumKey32((const unsigned __int8 *)table->name, strlen(table->name), initialCrc);
+    crc = Com_BlockChecksumKey32((const unsigned __int8 *)table->name.get(), strlen(table->name.get()), initialCrc);
     for ( col = 0; col < table->columnCount; ++col )
     {
         for ( row = 0; row < table->rowCount; ++row )

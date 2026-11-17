@@ -247,7 +247,7 @@ unsigned int __cdecl XModelGetSurfCount(const XModel *model, int lod)
     return model->lodInfo[lod].numsurfs;
 }
 
-Material **__cdecl XModelGetSkins(const XModel *model, int lod)
+PTR32(Material) *__cdecl XModelGetSkins(const XModel *model, int lod)
 {
     if ( !model && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_utils.cpp", 293, 0, "%s", "model") )
         __debugbreak();
@@ -392,7 +392,7 @@ int __cdecl XModelGetLodForDist_Internal(const XModel *model, float dist)
         if ( (LODWORD(lodDist) & 0x7F800000) == 0x7F800000 )
         {
             if ( model->name )
-                v2 = va("'%s' nan lod dist. %d/%d", model->name, lodIndex, lodCount);
+                v2 = va("'%s' nan lod dist. %d/%d", model->name.get(), lodIndex, lodCount);
             else
                 v2 = va("'%s' nan lod dist. %d/%d", "", lodIndex, lodCount);
             if ( !Assert_MyHandler(

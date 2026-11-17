@@ -1385,7 +1385,7 @@ char __cdecl Cmd_ExecFromFastFile(int localClientNum, int controllerIndex, char 
     if ( !rawfile )
         return 0;
     Com_Printf(16, "execing %s from fastfile\n", filename);
-    Cbuf_ExecuteBuffer(localClientNum, controllerIndex, (char *)rawfile->buffer);
+    Cbuf_ExecuteBuffer(localClientNum, controllerIndex, (char *)rawfile->buffer.get());
     return 1;
 }
 

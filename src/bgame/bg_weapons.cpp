@@ -3824,7 +3824,7 @@ void __cdecl PM_Weapon_CheckForMelee(pmove_t *pm, pml_t *pml, int delayedAction)
             && !pm->oldcmd.button_bits.testBit(2u)
             && (ps->fWeaponPosFrac <= 0.0 || primaryWeapDef->overlayReticle == WEAPOVERLAYRETICLE_NONE) )
         {
-            if ( **((_BYTE **)weapVariantDef->szXAnims + 7) )
+            if ( *weapVariantDef->szXAnims[7].get() )
             {
                 if ( (ps->eFlags2 & 0x10000000) == 0 )
                 {

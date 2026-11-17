@@ -839,9 +839,9 @@ int __cdecl G_EntLinkToInternal(gentity_s *ent, gentity_s *parent, unsigned int 
         if ( !checkEnt->tagInfo )
             break;
     }
-    tagInfo = MT_Alloc(112, 17, SCRIPTINSTANCE_SERVER);
-    *(unsigned int *)tagInfo = (unsigned int)parent;
-    *((_WORD *)tagInfo + 4) = 0;
+    tagInfo = MT_Alloc(sizeof(tagInfo_s), 17, SCRIPTINSTANCE_SERVER);   // LP64: por campos de tagInfo_s (x86: 112 bytes)
+    ((tagInfo_s *)tagInfo)->parent = parent;
+    ((tagInfo_s *)tagInfo)->name = 0;
     if ( tagName )
     {
         if ( !SL_IsLowercaseString(tagName, SCRIPTINSTANCE_SERVER) )
@@ -857,10 +857,10 @@ int __cdecl G_EntLinkToInternal(gentity_s *ent, gentity_s *parent, unsigned int 
                 __debugbreak();
         }
     }
-    Scr_SetString((unsigned __int16 *)tagInfo + 4, tagName, SCRIPTINSTANCE_SERVER);
-    *((unsigned int *)tagInfo + 1) = (unsigned int)parent->tagChildren;
-    *((unsigned int *)tagInfo + 3) = index;
-    memset((unsigned __int8 *)tagInfo + 16, 0, 0x30u);
+    Scr_SetString(&((tagInfo_s *)tagInfo)->name, tagName, SCRIPTINSTANCE_SERVER);
+    ((tagInfo_s *)tagInfo)->next = parent->tagChildren;
+    ((tagInfo_s *)tagInfo)->index = index;
+    memset(((tagInfo_s *)tagInfo)->axis, 0, sizeof(((tagInfo_s *)tagInfo)->axis));
     parent->tagChildren = ent;
     ent->tagInfo = (tagInfo_s *)tagInfo;
     memset((unsigned __int8 *)tagInfo + 64, 0, 0x30u);
@@ -993,7 +993,7 @@ void __cdecl G_EntUnlink(gentity_s *ent)
             }
         }
         Scr_SetString(&tagInfo->name, 0, SCRIPTINSTANCE_SERVER);
-        MT_Free((unsigned char*)tagInfo, 112, SCRIPTINSTANCE_SERVER);
+        MT_Free((unsigned char*)tagInfo, sizeof(tagInfo_s), SCRIPTINSTANCE_SERVER);
         G_UpdateClientLinkInfo(ent);
     }
 }
@@ -1872,7 +1872,7 @@ gentity_s *__cdecl G_Spawn()
             Com_Error(ERR_DROP, "G_Spawn: no free entities");
         }
         e = &level.gentities[level.num_entities++];
-        SV_LocateGameData(level.gentities, level.num_entities, 760, &level.clients->ps, 10720);
+        SV_LocateGameData(level.gentities, level.num_entities, sizeof(gentity_s) /*x86 760*/, &level.clients->ps, sizeof(gclient_s) /*x86 10720*/);
     }
     G_InitGentity(e);
     return e;

@@ -1310,7 +1310,7 @@ void __cdecl R_MaterialEdit_f()
             v0 = strstr(rgp.sortedMaterials[i]->info.name, search);
             if ( v0 )
             {
-                Com_Printf(8, "%s\n", rgp.sortedMaterials[i]->info.name);
+                Com_Printf(8, "%s\n", rgp.sortedMaterials[i]->info.name.get());
                 if ( !Current_Edit_Material
                     || strlen(rgp.sortedMaterials[i]->info.name) < strlen(Current_Edit_Material->info.name) )
                 {
@@ -1323,7 +1323,7 @@ void __cdecl R_MaterialEdit_f()
     if ( count )
     {
         if ( count != 1 )
-            Com_Printf(8, "Selecting %s.\n", Current_Edit_Material->info.name);
+            Com_Printf(8, "Selecting %s.\n", Current_Edit_Material->info.name.get());
         for ( i = 0; i < Current_Edit_Material->constantCount; ++i )
         {
             ct = &Current_Edit_Material->localConstantTable[i];
@@ -1392,7 +1392,7 @@ void __cdecl R_MaterialParameterEdit_f()
             if ( index )
             {
                 cte = &Current_Edit_Material->localConstantTable[index - 1];
-                Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+                Com_Printf(8, "%s:\n", Current_Edit_Material->info.name.get());
                 if ( Cmd_Argc() == 2 )
                 {
                     Com_Printf(
@@ -1459,12 +1459,12 @@ void __cdecl R_MaterialParameterEdit_f()
             }
             else
             {
-                Com_Printf(8, "%s is not a parameter of %s.\n", name, Current_Edit_Material->info.name);
+                Com_Printf(8, "%s is not a parameter of %s.\n", name, Current_Edit_Material->info.name.get());
             }
         }
         else
         {
-            Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+            Com_Printf(8, "%s:\n", Current_Edit_Material->info.name.get());
             for ( i = 0; i < Current_Edit_Material->constantCount; ++i )
             {
                 ct = &Current_Edit_Material->localConstantTable[i];
@@ -1604,17 +1604,17 @@ void __cdecl R_MaterialParameterTweak_f()
                 hack->description = desc;
                 MaterialParameterConstantEntry = cte;
                 memcpy(&MaterialParameterConstantEntry_save, cte, sizeof(MaterialParameterConstantEntry_save));
-                Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+                Com_Printf(8, "%s:\n", Current_Edit_Material->info.name.get());
                 Com_Printf(8, "    %s = %g %g %g %g\n", param, cte->literal[0], cte->literal[1], cte->literal[2], cte->literal[3]);
             }
             else
             {
-                Com_Printf(8, "%s is not a parameter of %s.\n", name, Current_Edit_Material->info.name);
+                Com_Printf(8, "%s is not a parameter of %s.\n", name, Current_Edit_Material->info.name.get());
             }
         }
         else
         {
-            Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+            Com_Printf(8, "%s:\n", Current_Edit_Material->info.name.get());
             for ( i = 0; i < Current_Edit_Material->constantCount; ++i )
             {
                 ct = &Current_Edit_Material->localConstantTable[i];

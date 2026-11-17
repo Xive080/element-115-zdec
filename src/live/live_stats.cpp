@@ -2411,7 +2411,7 @@ void __cdecl LiveStats_SortPersonalBests(int controllerIndex)
     {
         __debugbreak();
     }
-    StringTable_GetAsset("mp/personalbests.csv", (XAssetHeader *)&statsTable);
+    StringTable_GetAsset("mp/personalbests.csv", &statsTable);
     if ( !statsTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp", 2545, 0, "%s", "statsTable") )
     {

@@ -3135,7 +3135,7 @@ void __cdecl SV_FetchWADDeferred()
     bool v0; // [esp+0h] [ebp-4h]
 
     SV_SetPlaylistFetchedTime();
-    v0 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v0 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.string;
     if ( !v0 && Dvar_GetBool("playlist_enabled") && !LiveStorage_FetchingOnlineWAD() )
     {
         dwEnterDeferredCritsec();

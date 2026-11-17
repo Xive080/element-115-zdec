@@ -11,6 +11,7 @@
 int __cdecl MSG_RoundFloatToInt(float value)
 {
     const double bias = 9.313225746154785e-10;
+#if defined(_M_IX86) && defined(_MSC_VER)
     int result;
     __asm
     {
@@ -19,6 +20,10 @@ int __cdecl MSG_RoundFloatToInt(float value)
         fistp result
     }
     return result;
+#else
+    // arm64/otros: misma operacion (suma en doble y redondeo al par mas cercano, el modo por defecto de FISTP)
+    return (int)lrint((double)value + bias);
+#endif
 }
 
 int __cdecl MSG_ReadValueNoXor(msg_t *msg, int bits)

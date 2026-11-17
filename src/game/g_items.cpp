@@ -553,9 +553,9 @@ void __cdecl PrintPlayerPickupMessage(gentity_s *player, unsigned int weapIdx)
         __debugbreak();
     }
     if ( BG_WeaponIsClipOnly(weapIdx) )
-        v2 = va("%c GAME_PICKUP_CLIPONLY_AMMO %s", 102, weapVariantDef->szDisplayName);
+        v2 = va("%c GAME_PICKUP_CLIPONLY_AMMO %s", 102, weapVariantDef->szDisplayName.get());
     else
-        v2 = va("%c GAME_PICKUP_AMMO %s", 102, weapVariantDef->szDisplayName);
+        v2 = va("%c GAME_PICKUP_AMMO %s", 102, weapVariantDef->szDisplayName.get());
     SV_GameSendServerCommand(player - g_entities, SV_CMD_CAN_IGNORE, v2);
 }
 
@@ -689,7 +689,7 @@ void __cdecl PrintMessage_CannotGrabItem(
         if ( BG_PlayerHasWeapon(&player->client->ps, weapIndex) )
         {
             WeaponVariantDef = BG_GetWeaponVariantDef(weapIndex);
-            v6 = va("%c GAME_PICKUP_CANTCARRYMOREAMMO %s", 102, WeaponVariantDef->szDisplayName);
+            v6 = va("%c GAME_PICKUP_CANTCARRYMOREAMMO %s", 102, WeaponVariantDef->szDisplayName.get());
         }
         else
         {
@@ -822,7 +822,7 @@ gentity_s *__cdecl LaunchItem(const gitem_s *item, float *origin, float *angles,
     if ( !weapDef && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp", 776, 0, "%s", "weapDef") )
         __debugbreak();
     if ( weapDef->bUseDroppedModelAsStowed
-        && *((unsigned int *)weapDef->worldModel + 1)
+        && weapDef->worldModel[1]
         && weapDef->weapClass != WEAPCLASS_GRENADE
         && weapDef->weapClass != WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON )
     {
@@ -1417,9 +1417,9 @@ void __cdecl SaveRegisteredWeapons()
             lastWrittenIndex = weapIndex;
             lastWrittenVariantCount = weapVariantDef->iVariantCount;
             if ( lastWrittenVariantCount )
-                v0 = va("%i %s %i", weapIndex, weapVariantDef->szInternalName, weapVariantDef->iVariantCount);
+                v0 = va("%i %s %i", weapIndex, weapVariantDef->szInternalName.get(), weapVariantDef->iVariantCount);
             else
-                v0 = va("%i %s", weapIndex, weapVariantDef->szInternalName);
+                v0 = va("%i %s", weapIndex, weapVariantDef->szInternalName.get());
             SV_SetConfigstring(count + 2836, v0);
             ++count;
         }
@@ -1488,17 +1488,17 @@ void __cdecl G_RegisterWeapon(unsigned int weapIndex)
     level.registerWeapons = 1;
     weapDef = bg_weaponVariantDefs[weapIndex]->weapDef;
     if ( *weapDef->szUseHintString
-        && !G_GetHintStringIndex(&weapDef->iUseHintStringIndex, (char *)weapDef->szUseHintString) )
+        && !G_GetHintStringIndex(&weapDef->iUseHintStringIndex, (char *)weapDef->szUseHintString.get()) )
     {
         Com_Error(ERR_DROP, "Too many different hintstring values on weapons. Max allowed is %i different strings.", 96);
     }
-    if ( *weapDef->dropHintString && !G_GetHintStringIndex(&weapDef->dropHintStringIndex, (char *)weapDef->dropHintString) )
+    if ( *weapDef->dropHintString && !G_GetHintStringIndex(&weapDef->dropHintStringIndex, (char *)weapDef->dropHintString.get()) )
         Com_Error(ERR_DROP, "Too many different hintstring values on weapons. Max allowed is %i different strings.", 96);
     if ( *weapDef->worldModel )
     {
-        Name = (char *)XModelGetName(*(const XModel **)weapDef->worldModel);
+        Name = (char *)XModelGetName(weapDef->worldModel[0].get());
         modelindex = G_ModelIndex(Name);
-        if ( XModelBad(*(const XModel **)weapDef->worldModel) )
+        if ( XModelBad(weapDef->worldModel[0].get()) )
             G_OverrideModel(modelindex, (char*)"defaultweapon");
     }
     if ( weapDef->projectileModel )
@@ -1506,9 +1506,9 @@ void __cdecl G_RegisterWeapon(unsigned int weapIndex)
         v2 = (char *)XModelGetName(weapDef->projectileModel);
         G_ModelIndex(v2);
     }
-    if ( *((unsigned int *)weapDef->worldModel + 1) )
+    if ( weapDef->worldModel[1] )
     {
-        v3 = (char *)XModelGetName(*((const XModel **)weapDef->worldModel + 1));
+        v3 = (char *)XModelGetName(weapDef->worldModel[1].get());
         G_ModelIndex(v3);
     }
     if ( weapDef->additionalMeleeModel )

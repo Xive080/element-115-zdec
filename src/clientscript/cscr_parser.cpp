@@ -2083,6 +2083,9 @@ void __cdecl RuntimeErrorInternal(
     {
         __debugbreak();
     }
+#ifdef H5G
+    { extern void H5G_NoteScriptError(int, const char *); H5G_NoteScriptError(inst, msg); }   // harness H5: informe de errores
+#endif
     Monkey_GrabComPrints(1);
     Com_PrintError(channel, "\n******* script runtime error *******\n%s: ", msg);
     Scr_PrintPrevCodePos(inst, channel, codePos, index);

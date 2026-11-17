@@ -340,7 +340,19 @@ const dvar_t *g_turretServerPitchMin;
 const dvar_t *g_turretServerPitchMax;
 const dvar_t *g_turretBipodOffset;
 
+#if defined(__LP64__) || defined(_WIN64)
+// arm64: bgsAnim_s contiene scr_anim_s que la VM de scripts encadena por desplazamiento de 32 bits (Scr_FindAnim ->
+// SCR_P2U(pos)); tiene que vivir en la arena Ptr32. Memoria a cero, como el .data del original.
+#include <universal/ptr32.h>
+static bgsAnim_s *G_LevelBgsAnim()
+{
+    static bgsAnim_s *p = (bgsAnim_s *)Ptr32_ArenaAlloc(sizeof(bgsAnim_s), 16);
+    return p;
+}
+#define level_bgsAnim (*G_LevelBgsAnim())
+#else
 bgsAnim_s level_bgsAnim;
+#endif
 level_locals_t level;
 
 int g_timed_radius_damage_count;
@@ -584,7 +596,7 @@ gclient_s *__cdecl G_GetPlayerState(unsigned int clientNum)
 
 int __cdecl G_GetClientSize()
 {
-    return 10720;
+    return (int)sizeof(gclient_s);   // x86: 10720
 }
 
 void __cdecl G_FreeEntities(bool clearTargets)
@@ -907,12 +919,12 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
         Com_Printf(15, "loadgame: G_InitGame loaded saved weapons\n");
     }
 
-    if (*(_BYTE *)g_log->current.integer)
+    if (*(_BYTE *)g_log->current.string)
     {
         if (g_logSync->current.enabled)
-            FS_FOpenFileByMode((char *)g_log->current.integer, &level.logFile, FS_APPEND_SYNC);
+            FS_FOpenFileByMode((char *)g_log->current.string, &level.logFile, FS_APPEND_SYNC);
         else
-            FS_FOpenFileByMode((char *)g_log->current.integer, &level.logFile, FS_APPEND);
+            FS_FOpenFileByMode((char *)g_log->current.string, &level.logFile, FS_APPEND);
         if (level.logFile)
         {
             char serverinfo[1024];
@@ -980,7 +992,9 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
     if (!restart)
     {
         memset(&bgs->animData->animScriptData, 0, sizeof(animScriptData_t)/*0x8D388u*/);
+#if !defined(__LP64__)
         static_assert(sizeof(animScriptData_t) == 0x8D388);
+#endif
 
         bgs->animData->animScriptData.soundAlias = SND_FindAlias;
         bgs->animData->animScriptData.playSoundAlias = G_AnimScriptSound;
@@ -1051,7 +1065,7 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
     level.num_entities = Com_GetFirstFreeEntityNum();
     level.firstFreeEnt = 0;
     level.lastFreeEnt = 0;
-    SV_LocateGameData(level.gentities, level.num_entities, 760, &level.clients->ps, 10720);
+    SV_LocateGameData(level.gentities, level.num_entities, sizeof(gentity_s) /*x86 760*/, &level.clients->ps, sizeof(gclient_s) /*x86 10720*/);
 
     G_ParseHitLocDmgTable();
     BG_LoadPenetrationDepthTable();
@@ -2398,7 +2412,7 @@ void G_PrintAllFastFileErrors()
     // zombies: the SP front end loads no common zone (SP 0x004C8940..0x004C8966): nothing to report there.
     if ( !Com_IsSPFrontEndRunning() )
         G_PrintFastFileErrors(G_SP_IsSPLevel() ? (char*)"common_zombie" : (char*)"common_mp");
-    G_PrintFastFileErrors((char *)sv_mapname->current.integer);
+    G_PrintFastFileErrors((char *)sv_mapname->current.string);
 }
 
 void __cdecl G_PrintFastFileErrors(char *fastfile)
@@ -2419,7 +2433,7 @@ void __cdecl G_PrintFastFileErrors(char *fastfile)
     if ( rawfile->len )
     {
         Com_PrintError(1, "There were errors when building fast file '%s'\n", fastfile);
-        Com_PrintError(1, (char *)rawfile->buffer);
+        Com_PrintError(1, (char *)rawfile->buffer.get());
     }
 }
 

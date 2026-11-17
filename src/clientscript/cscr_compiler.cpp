@@ -2865,6 +2865,9 @@ void __cdecl EmitCall(scriptInstance_t inst, sval_u func_name, sval_u params, bo
                 Scr_CompileRemoveRefToString(inst, name);
                 EmitCallBuiltinOpcode(inst, param_count, sourcePos);
                 v5 = AddFunction(inst, (intptr_t)func);
+#ifdef H5G
+                { extern void H5G_NoteBuiltinName(int, int, const char *, bool); H5G_NoteBuiltinName(inst, v5, pName, false); }   // harness H5: informe de builtins
+#endif
                 EmitShort(inst, v5);
                 AddExpressionListOpcodePos(inst, params);
                 if ( bStatement )
@@ -3261,6 +3264,9 @@ void __cdecl EmitMethod(
                 Scr_CompileRemoveRefToString(inst, name);
                 EmitCallBuiltinMethodOpcode(inst, param_count, sourcePos);
                 v7 = AddFunction(inst, (intptr_t)meth);
+#ifdef H5G
+                { extern void H5G_NoteBuiltinName(int, int, const char *, bool); H5G_NoteBuiltinName(inst, v7, pName, true); }   // harness H5: informe de builtins
+#endif
                 EmitShort(inst, v7);
                 AddOpcodePos(inst, methodSourcePos.stringValue, 0);
                 AddExpressionListOpcodePos(inst, params);

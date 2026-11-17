@@ -1628,7 +1628,7 @@ void __cdecl CL_GetMilestoneBackingMaterial(
             Com_sprintf(backingMaterialName, stringLength, "%s", "hud_medal_burst");
             if ( perkName && StringBeginsWith("perks_", statName) )
             {
-                StringTable_GetAsset("mp/statstable.csv", (XAssetHeader *)&statsTable);
+                StringTable_GetAsset("mp/statstable.csv", &statsTable);
                 if ( !statsTable
                     && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
@@ -1705,7 +1705,7 @@ void __cdecl CL_GetMilestoneMaterial(char *materialName, int stringLength, const
             Com_sprintf(materialName, stringLength, "%s", "menu_mp_lobby_aar_award_challenge");
             if ( perkName && StringBeginsWith("perks_", statName) )
             {
-                StringTable_GetAsset("mp/statstable.csv", (XAssetHeader *)&statsTable);
+                StringTable_GetAsset("mp/statstable.csv", &statsTable);
                 if ( !statsTable
                     && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",

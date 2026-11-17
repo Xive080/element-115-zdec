@@ -1279,7 +1279,7 @@ void __cdecl CL_FirstSnapshot(int localClientNum)
         if ( zombiemode && zombiemode->current.enabled )
             CG_SP_ScreenFadeIn(localClientNum, clc->serverAddress.type == NA_LOOPBACK ? 500 : 1000, 750);
         Con_TimeJumped(localClientNum, LocalClientGlobals->serverTime);
-        if ( *(_BYTE *)cl_activeAction->current.integer )
+        if ( *(_BYTE *)cl_activeAction->current.string )
         {
             Cbuf_AddText(localClientNum, cl_activeAction->current.string);
             Cbuf_AddText(localClientNum, "\n");

@@ -875,7 +875,7 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
                             "%s\n\t(image->name) = %s",
                             "(static_cast< uint >( image->cardMemory.platform[PICMIP_PLATFORM_USED] ) == Image_GetCardMemoryAmount( loa"
                             "dDef->flags, static_cast< GfxPixelFormat >( loadDef->format ), image->width, image->height, image->depth ))",
-                            image->name) )
+                            image->name.get()) )
             {
                 __debugbreak();
             }
@@ -886,7 +886,7 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
                             1,
                             "%s\n\t(image->name) = %s",
                             "(image->texture.basemap == 0)",
-                            image->name) )
+                            image->name.get()) )
             {
                 __debugbreak();
             }
@@ -897,7 +897,7 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
                 image->cardMemory.platform[0] = 0;
                 image->cardMemory.platform[1] = 0;
                 if ( !Image_LoadFromFile(image, 0) )
-                    Com_Error(ERR_DROP, "Couldn't load image '%s'\n", image->name);
+                    Com_Error(ERR_DROP, "Couldn't load image '%s'\n", image->name.get());
                 DB_LoadedExternalData(externalDataSize);
             }
         }
@@ -1128,7 +1128,7 @@ void __cdecl Image_Reload(GfxImage *image)
         __debugbreak();
     Image_Release(image);
     if ( !Image_LoadFromFile(image, image->skippedMipLevels == 0) )
-        Com_Error(ERR_DROP, "failed to load image '%s'", image->name);
+        Com_Error(ERR_DROP, "failed to load image '%s'", image->name.get());
 }
 
 void __cdecl R_EnumImages(void (__cdecl *func)(GfxImage *, void *), void *data)
@@ -1569,7 +1569,7 @@ LABEL_30:
             }
             v5[i] += v3;
         }
-        Com_Printf(8, "    %s\t\t%x\n", image->name, image);
+        Com_Printf(8, "    %s\t\t%x\n", image->name.get(), image);
     }
     Com_Printf(8, " ---------\n");
     Com_Printf(8, " %i total images\n", imageList.count);

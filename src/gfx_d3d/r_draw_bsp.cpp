@@ -250,7 +250,7 @@ void __cdecl R_DrawTrianglesLit(
                                     0,
                                     "%s\n\t(bspSurf->material->info.name) = %s",
                                     "(!lightmapPrimaryFlag)",
-                                    bspSurf->material->info.name) )
+                                    bspSurf->material->info.name.get()) )
                     {
                         __debugbreak();
                     }
@@ -261,7 +261,7 @@ void __cdecl R_DrawTrianglesLit(
                                     0,
                                     "%s\n\t(bspSurf->material->info.name) = %s",
                                     "(!lightmapSecondaryFlag)",
-                                    bspSurf->material->info.name) )
+                                    bspSurf->material->info.name.get()) )
                     {
                         __debugbreak();
                     }

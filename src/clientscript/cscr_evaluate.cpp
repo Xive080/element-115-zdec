@@ -16,7 +16,12 @@
 scrEvaluateGlob_t gScrEvaluateGlob[2];
 
 int g_script_error_level[2];
+#if defined(_WIN32) && !defined(_WIN64)
 int g_script_error[2][33][16];
+#else
+// LP64: el jmp_buf de x86 son 16 int; el de arm64 es mayor (setjmp desbordaba el hueco y bionic no lo acepta)
+jmp_buf g_script_error[2][33];
+#endif
 
 int __cdecl Scr_CompareCanonicalStrings(unsigned int *arg1, unsigned int *arg2)
 {
@@ -105,7 +110,7 @@ void __cdecl Scr_ArchiveCanonicalStrings(scriptInstance_t inst)
     qsort(
         gScrEvaluateGlob[inst].archivedCanonicalStrings,
         gScrVarPub[inst].canonicalStrCount,
-        8u,
+        sizeof(ArchivedCanonicalStringInfo),   // arm64: 16 bytes (x86: 8u)
         (int(__cdecl *)(const void *, const void *))CompareCanonicalStrings);
     for (ia = 0; ia < (int)gScrVarPub[inst].canonicalStrCount; ++ia)
     {

@@ -335,11 +335,11 @@ void __cdecl BG_SetupWeaponAlts(unsigned int weapIndex, void (__cdecl *regWeap)(
     weapVariantDef->altWeaponIndex = 0;
     if ( *weapVariantDef->szAltWeaponName )
     {
-        altWeaponIndex = BG_GetWeaponIndexForName((char*)weapVariantDef->szAltWeaponName, regWeap);
+        altWeaponIndex = BG_GetWeaponIndexForName((char*)weapVariantDef->szAltWeaponName.get(), regWeap);
         if ( !altWeaponIndex )
         {
             v2 = BG_WeaponName(weapIndex);
-            Com_Error(ERR_DROP, "could not find altWeapon '%s' for weapon '%s'", weapVariantDef->szAltWeaponName, v2);
+            Com_Error(ERR_DROP, "could not find altWeapon '%s' for weapon '%s'", weapVariantDef->szAltWeaponName.get(), v2);
         }
         weapVariantDef->altWeaponIndex = altWeaponIndex;
     }
@@ -357,11 +357,11 @@ void __cdecl BG_SetupDualWieldAlts(unsigned int weapIndex, void (__cdecl *regWea
         weapDef->dualWieldWeaponIndex = 0;
         if ( *weapDef->szDualWieldWeaponName )
         {
-            altWeaponIndex = BG_GetWeaponIndexForName((char*)weapDef->szDualWieldWeaponName, regWeap);
+            altWeaponIndex = BG_GetWeaponIndexForName((char*)weapDef->szDualWieldWeaponName.get(), regWeap);
             if ( !altWeaponIndex )
             {
                 v2 = BG_WeaponName(weapIndex);
-                Com_Error(ERR_DROP, "could not find alt Dual Wield Weapon '%s' for weapon '%s'", weapDef->szDualWieldWeaponName, v2);
+                Com_Error(ERR_DROP, "could not find alt Dual Wield Weapon '%s' for weapon '%s'", weapDef->szDualWieldWeaponName.get(), v2);
             }
             weapDef->dualWieldWeaponIndex = altWeaponIndex;
         }
@@ -392,7 +392,7 @@ void __cdecl BG_SetupWeaponMountedVersions(unsigned int weaponIndex, void (__cde
         {
             standMountedWeapdef = weapDef->standMountedWeapdef;
             v2 = BG_WeaponName(weaponIndex);
-            Com_Error(ERR_DROP, "could not find standingWeapdef '%s' for weapon '%s' Please add the line 'weapon,sp/%s' to your level csv", weapDef->standMountedWeapdef, v2, standMountedWeapdef);
+            Com_Error(ERR_DROP, "could not find standingWeapdef '%s' for weapon '%s' Please add the line 'weapon,sp/%s' to your level csv", weapDef->standMountedWeapdef.get(), v2, standMountedWeapdef);
         }
         weapDef->standMountedIndex = mountedWeaponIndex;
     }
@@ -403,7 +403,7 @@ void __cdecl BG_SetupWeaponMountedVersions(unsigned int weaponIndex, void (__cde
         {
             crouchMountedWeapdef = weapDef->crouchMountedWeapdef;
             v3 = BG_WeaponName(weaponIndex);
-            Com_Error(ERR_DROP, "could not find crouchingWeapdef '%s' for weapon '%s' Please add the line 'weapon,sp/%s' to your level csv", weapDef->crouchMountedWeapdef, v3, crouchMountedWeapdef);
+            Com_Error(ERR_DROP, "could not find crouchingWeapdef '%s' for weapon '%s' Please add the line 'weapon,sp/%s' to your level csv", weapDef->crouchMountedWeapdef.get(), v3, crouchMountedWeapdef);
         }
         weapDef->crouchMountedIndex = mountedWeaponIndexa;
     }
@@ -414,7 +414,7 @@ void __cdecl BG_SetupWeaponMountedVersions(unsigned int weaponIndex, void (__cde
         {
             proneMountedWeapdef = weapDef->proneMountedWeapdef;
             v4 = BG_WeaponName(weaponIndex);
-            Com_Error(ERR_DROP, "could not find proneWeapdef '%s' for weapon '%s' Please add the line 'weapon,sp/%s' to your level csv", weapDef->proneMountedWeapdef, v4, proneMountedWeapdef);
+            Com_Error(ERR_DROP, "could not find proneWeapdef '%s' for weapon '%s' Please add the line 'weapon,sp/%s' to your level csv", weapDef->proneMountedWeapdef.get(), v4, proneMountedWeapdef);
         }
         weapDef->proneMountedIndex = mountedWeaponIndexb;
     }
@@ -674,7 +674,7 @@ void __cdecl BG_WeaponVariantPrecache(
             weapDef = weapVariantDef->weapDef;
             if ( *weapVariantDef->szAltWeaponName )
             {
-                altWeaponIndex = BG_GetWeaponIndexForName((char *)weapVariantDef->szAltWeaponName, regWeap);
+                altWeaponIndex = BG_GetWeaponIndexForName((char *)weapVariantDef->szAltWeaponName.get(), regWeap);
                 if ( altWeaponIndex )
                 {
                     altWeapVariantDef = bg_weaponVariantDefs[altWeaponIndex];
@@ -687,12 +687,12 @@ void __cdecl BG_WeaponVariantPrecache(
                 }
                 else
                 {
-                    Com_PrintWarning(17, "WARNING: Could not load alt weapon file '%s'\n", weapVariantDef->szAltWeaponName);
+                    Com_PrintWarning(17, "WARNING: Could not load alt weapon file '%s'\n", weapVariantDef->szAltWeaponName.get());
                 }
             }
             if ( *weapDef->szDualWieldWeaponName )
             {
-                dualWeaponIndex = BG_GetWeaponIndexForName((char *)weapDef->szDualWieldWeaponName, regWeap);
+                dualWeaponIndex = BG_GetWeaponIndexForName((char *)weapDef->szDualWieldWeaponName.get(), regWeap);
                 if ( dualWeaponIndex )
                 {
                     dualWeapVariantDef = bg_weaponVariantDefs[dualWeaponIndex];
@@ -701,7 +701,7 @@ void __cdecl BG_WeaponVariantPrecache(
                 }
                 else
                 {
-                    Com_PrintWarning(17, "WARNING: Could not load dual wield weapon file '%s'\n", weapDef->szDualWieldWeaponName);
+                    Com_PrintWarning(17, "WARNING: Could not load dual wield weapon file '%s'\n", weapDef->szDualWieldWeaponName.get());
                 }
             }
         }
