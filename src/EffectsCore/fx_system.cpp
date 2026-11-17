@@ -29,7 +29,8 @@ int fx_serverVisClient;
 int __cdecl FX_AllocateClientMemory_SizeRequired(int maxLocalClients)
 {
     // mod (L43): sizeof(FxSystemBuffers) (retail 402560 + 2976 = 405536), elems[FX_ELEM_POOL_MAX]
-    return (int)(sizeof(FxSystemBuffers) + 2976) * maxLocalClients + 127 + 155688 * maxLocalClients + 254;
+    // LP64: 2976 / 155688 eran sizeof(FxSystemContainer) / sizeof(FxMarksSystem) de x86 (los de FX_AllocateClientMemory)
+    return (int)(sizeof(FxSystemBuffers) + sizeof(FxSystemContainer)) * maxLocalClients + 127 + (int)sizeof(FxMarksSystem) * maxLocalClients + 254;
 }
 
 void __cdecl FX_AllocateClientMemory(HunkUser *hunk, int maxLocalClients)
@@ -37,12 +38,13 @@ void __cdecl FX_AllocateClientMemory(HunkUser *hunk, int maxLocalClients)
     int i; // [esp+0h] [ebp-4h]
 
     fx_maxLocalClients = maxLocalClients;
-    fx_systemPool = (FxSystemContainer *)Hunk_UserAlloc(hunk, 2976 * maxLocalClients, 128, "fx_systemPool");
-    memset((unsigned __int8 *)fx_systemPool, 0, 2976 * maxLocalClients);
+    // LP64: 2976 / 155688 eran sizeof(FxSystemContainer) / sizeof(FxMarksSystem) de x86 (FxSystem lleva punteros nativos)
+    fx_systemPool = (FxSystemContainer *)Hunk_UserAlloc(hunk, sizeof(FxSystemContainer) * maxLocalClients, 128, "fx_systemPool");
+    memset((unsigned __int8 *)fx_systemPool, 0, sizeof(FxSystemContainer) * maxLocalClients);
     fx_systemBufferPool = (FxSystemBuffers *)Hunk_UserAlloc(hunk, sizeof(FxSystemBuffers) * maxLocalClients, 128, "fx_systemBufferPool"); // mod (L43): retail 402560
     memset((unsigned __int8 *)fx_systemBufferPool, 0, sizeof(FxSystemBuffers) * maxLocalClients);
-    fx_marksSystemPool = (FxMarksSystem *)Hunk_UserAlloc(hunk, 155688 * maxLocalClients, 128, "fx_marksSystemPool");
-    memset((unsigned __int8 *)fx_marksSystemPool, 0, 155688 * maxLocalClients);
+    fx_marksSystemPool = (FxMarksSystem *)Hunk_UserAlloc(hunk, sizeof(FxMarksSystem) * maxLocalClients, 128, "fx_marksSystemPool");
+    memset((unsigned __int8 *)fx_marksSystemPool, 0, sizeof(FxMarksSystem) * maxLocalClients);
     for ( i = 0; i < maxLocalClients; ++i )
     {
         fx_systemPool[i].system.shared = &fx_systemPool[i].shared;
@@ -123,7 +125,7 @@ void __cdecl FX_InitSystem(int localClientNum)
     {
         __debugbreak();
     }
-    memset((unsigned __int8 *)system, 0, 0x360u);
+    memset((unsigned __int8 *)&system->system, 0, sizeof(FxSystem));   // LP64: 0x360 = sizeof(FxSystem) x86
     system->system.shared = &system->shared;
     systemBuffers = FX_GetSystemBuffers(localClientNum);
     if ( !systemBuffers
@@ -268,7 +270,7 @@ void __cdecl FX_ShutdownSystem(int localClientNum)
     {
         __debugbreak();
     }
-    memset((unsigned __int8 *)system, 0, 0x360u);
+    memset((unsigned __int8 *)&system->system, 0, sizeof(FxSystem));   // LP64: 0x360 = sizeof(FxSystem) x86
     if ( !systemBuffers
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_system.cpp", 558, 0, "%s", "systemBuffers") )
     {
@@ -491,7 +493,7 @@ void __cdecl FX_RunGarbageCollectionAndPrioritySort(FxSystem *system)
                 {
                     effectHandle = system->shared->allEffectHandles[--activeIndex & 0x3FF];
                     effect = (FxEffect *)FX_EffectFromHandle(system, effectHandle);
-                    if ( ((int)effect[1].def & 0x3FFF) != 0 )
+                    if ( (((FxEffectContainer *)effect)->atomics.status & 0x3FFF) != 0 )   // LP64: effect[1] = atomics del contenedor
                     {
                         system->shared->allEffectHandles[((_WORD)freedCount + (_WORD)activeIndex) & 0x3FF] = effectHandle;
                     }
@@ -2310,7 +2312,7 @@ int __cdecl FX_MakePhysId(const FxElemDef *elemDef, const float *origin, const f
     return sequence
              + (((int)vel[2] + (int)vel[1] + (int)*vel + (int)origin[2] + (int)origin[1] + (int)*origin)
                 ^ time
-                ^ (unsigned int)elemDef);
+                ^ (unsigned int)(uintptr_t)elemDef);
 }
 
 void __cdecl FX_SpawnTrailElem_NoCull(
@@ -3259,7 +3261,7 @@ bool __cdecl FX_SpawnModelPhysics(
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
     v11.anonymous = FX_GetElemVisuals(elemDef, randomSeed).anonymous;
     visuals.anonymous = v11.anonymous;
-    if (!*((_DWORD *)v11.anonymous + 59)
+    if (!v11.model->physPreset   // LP64: XModel+236 (x86) por nombre
         && !Assert_MyHandler(
             "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_system.cpp",
             2591,
@@ -3292,12 +3294,12 @@ bool __cdecl FX_SpawnModelPhysics(
     {
         __debugbreak();
     }
-    elem->physObjId = (int)Phys_ObjCreate(
+    elem->physObjId = (int)(intptr_t)Phys_ObjCreate(   // LP64: TODO id de 32 bits; Phys sin portar (devuelve 0)
         1,
         worldOrigin,
         quat,
         velocity,
-        *((const PhysPreset **)visuals.anonymous + 59),
+        visuals.model->physPreset.get(),
         &gjk_geom_list,
         1,
         id);
@@ -3388,7 +3390,7 @@ void __cdecl FX_SpawnSound(
     FX_OffsetSpawnOrigin(effectFrameWhenPlayed, elemDef, randomSeed, spawnOrigin);
     if ( elemDef->visualCount )
     {
-        visuals = (char *)FX_GetElemVisuals(elemDef, randomSeed).anonymous;
+        visuals = (char *)FX_GetElemVisuals(elemDef, randomSeed).soundName.get();
         entHandle.field = CG_SndEntHandle(localClientNumber, 1022).field;
         SND_Play(visuals, 0, 1.0, entHandle, spawnOrigin, 0, 0);
     }

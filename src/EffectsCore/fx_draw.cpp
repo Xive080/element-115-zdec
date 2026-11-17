@@ -1163,7 +1163,7 @@ void __cdecl FX_DrawElem_Cloud_Main(FxDrawState *draw)
     if ( v1 )
     {
         offset = ((1024 - v1 + 1) * LOWORD(fx_randomTable[draw->randomSeed + 29])) >> 16;
-        _InterlockedExchangeAdd((volatile unsigned long long* )&draw->system->gfxCloudCount, 1u);
+        _InterlockedExchangeAdd((volatile unsigned *)&draw->system->gfxCloudCount, 1L);   // LP64: gfxCloudCount es de 32 bits
         visuals.anonymous = FX_GetElemVisuals(draw->elemDef, draw->randomSeed).anonymous;
         if ( !visuals.anonymous
             && !Assert_MyHandler(

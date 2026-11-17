@@ -10,7 +10,8 @@ FxEffectContainer *__cdecl FX_EffectFromHandle(FxSystem *system, unsigned __int1
     {
         __debugbreak();
     }
-    if ( handle >= 0xD000u || handle % 0x34u )
+    // LP64: 0xD000 / 0x34 eran 1024 * sizeof(FxEffectContainer) / 4 y sizeof(FxEffectContainer) / 4 de x86 (0xD0 bytes)
+    if ( handle >= 1024 * sizeof(FxEffectContainer) / 4 || handle % (sizeof(FxEffectContainer) / 4) )
     {
         v2 = va("%p %i", system->effects, handle);
         if ( !Assert_MyHandler(

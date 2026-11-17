@@ -697,7 +697,7 @@ void __cdecl FX_PlayElementSpawnSound(int localClientNum, const FxElemDef *elemD
     if ( elemDef->spawnSound.spawnSound )
     {
         entHandle.field = CG_SndEntHandle(localClientNum, 1022).field;
-        SND_Play((char *)elemDef->spawnSound.spawnSound, 0, 1.0, entHandle, origin, 0, 0);
+        SND_Play((char *)elemDef->spawnSound.spawnSound.get(), 0, 1.0, entHandle, origin, 0, 0);
     }
 }
 
@@ -2547,10 +2547,12 @@ void __cdecl FX_UpdateBatch(
 
 char __cdecl FX_AcquireEffectLock_IsLiveEffect(FxEffect *effect)
 {
-    while ( _InterlockedExchangeAdd((volatile unsigned __int32 *)&effect[1], 0x20000000u) >= 0x20000000 )
+    // LP64: effect[1] (x86) = atomics.status del FxEffectContainer
+    volatile unsigned __int32 *status = &((FxEffectContainer *)effect)->atomics.status;
+    while ( _InterlockedExchangeAdd(status, 0x20000000u) >= 0x20000000 )
     {
-        _InterlockedExchangeAdd((volatile unsigned __int32 *)&effect[1], 0xE0000000);
-        if ( ((int)effect[1].def & 0x3FFF) == 0 )
+        _InterlockedExchangeAdd(status, 0xE0000000);
+        if ( (*status & 0x3FFF) == 0 )
             return 0;
     }
     return 1;
@@ -3246,7 +3248,7 @@ void __cdecl FX_RewindTo(int localClientNum, int time)
     int bitNum; // [esp+2Ch] [ebp-1010h]
     int bitNuma; // [esp+2Ch] [ebp-1010h]
     FxSystemContainer *system; // [esp+30h] [ebp-100Ch]
-    unsigned int v12[1024]; // [esp+34h] [ebp-1008h]
+    uintptr_t v12[1024]; // [esp+34h] [ebp-1008h] (LP64: punteros de efecto)
     int v13; // [esp+1034h] [ebp-8h]
     volatile int i; // [esp+1038h] [ebp-4h]
 
@@ -3266,7 +3268,7 @@ void __cdecl FX_RewindTo(int localClientNum, int time)
         {
             v5 = system->system.shared->allEffectHandles[i & 0x3FF];
             effect = FX_EffectFromHandle(&system->system, v5);
-            v12[v13++] = (unsigned int)effect;
+            v12[v13++] = (uintptr_t)effect;
             if ( (effect->atomics.status & 0x3FFF) != 0 && effect->effect.msecBegin < time && effect->effect.owner == v5 )
             {
                 IsDObjEntityValid = 1;

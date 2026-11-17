@@ -332,7 +332,7 @@ void __cdecl R_SortWorldSurfaces()
     worldSurfArray = rgp.world->dpvs.surfaces;
     worldSurfCount = rgp.world->models->surfaceCount;
     if ( worldSurfCount )
-        memset((unsigned __int8 *)rgp.world->dpvs.surfaceCastsSunShadow, 0, 4 * ((worldSurfCount - 1) >> 5) + 4);
+        memset((unsigned __int8 *)rgp.world->dpvs.surfaceCastsSunShadow.get(), 0, 4 * ((worldSurfCount - 1) >> 5) + 4);
     if ( worldSurfArray != rgp.world->dpvs.surfaces
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
@@ -606,9 +606,9 @@ void __cdecl R_AddRopeCodeMeshDrawSurf(
     {
         v7 = va(
                      "index = 0x%08x, sortedMaterials = 0x%08x, material = 0x%08x\n",
-                     (unsigned int)(material->info.drawSurf.fields.materialSortedIndex,
+                     (unsigned int)(material->info.drawSurf.fields.materialSortedIndex),
                      0,
-                     rgp.sortedMaterials[material->info.drawSurf.fields.materialSortedIndex]));
+                     (unsigned int)(uintptr_t)rgp.sortedMaterials[material->info.drawSurf.fields.materialSortedIndex]);   // LP64
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                         740,

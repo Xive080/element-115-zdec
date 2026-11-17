@@ -506,6 +506,16 @@ void __cdecl FX_ImpactMark(
     }
 }
 
+// LP64: el x86 pasaba unsigned int[5] {localClientNum, material, radius, nativeColor, markAlpha} (punteros de 32 bits)
+struct FxImpactMarkCallbackContext
+{
+    unsigned int localClientNum;
+    Material *material;
+    float radius;
+    const unsigned __int8 *nativeColor;
+    const FxMarkAlphaFade *markAlpha;
+};
+
 void __cdecl FX_ImpactMark_Generate(
                 int localClientNum,
                 MarkFragmentsAgainstEnum markAgainst,
@@ -523,7 +533,7 @@ void __cdecl FX_ImpactMark_Generate(
     FxMarkTri tris[256]; // [esp+230h] [ebp-10C8h] BYREF
     MarkInfo markInfo; // [esp+E28h] [ebp-4D0h] BYREF
     float *viewOffset; // [esp+12E0h] [ebp-18h]
-    unsigned int callbackContext[5]; // [esp+12E4h] [ebp-14h] BYREF
+    FxImpactMarkCallbackContext callbackContext; // [esp+12E4h] [ebp-14h] BYREF (LP64: x86 unsigned int[5] con punteros)
 
     PROF_SCOPED("FX_ImpactMark_Generate");
 
@@ -534,11 +544,11 @@ void __cdecl FX_ImpactMark_Generate(
     }
     else
     {
-        callbackContext[0] = localClientNum;
-        callbackContext[1] = (unsigned int)material;
-        *(float *)&callbackContext[2] = radius;
-        callbackContext[3] = (unsigned int)nativeColor;
-        callbackContext[4] = (unsigned int)markAlpha;
+        callbackContext.localClientNum = localClientNum;
+        callbackContext.material = material;
+        callbackContext.radius = radius;
+        callbackContext.nativeColor = nativeColor;
+        callbackContext.markAlpha = markAlpha;
         markInfo.isSeeThruDecal = isSeeThruDecal;
         if ( fx_marks->current.enabled
             && (markAgainst != MARK_FRAGMENTS_AGAINST_MODELS
@@ -568,7 +578,7 @@ void __cdecl FX_ImpactMark_Generate(
             R_MarkFragments_Go(
                 &markInfo,
                 FX_ImpactMark_Generate_Callback,
-                callbackContext,
+                &callbackContext,
                 255,
                 tris,
                 765,
@@ -785,19 +795,20 @@ void __cdecl FX_ImpactMark_Generate_Callback(
                 const float *markHitNormal,
                 bool isSeeThruDecal)
 {
+    const FxImpactMarkCallbackContext *c = (const FxImpactMarkCallbackContext *)context;
     FX_AllocAndConstructMark(
-        *(unsigned int *)context,
+        c->localClientNum,
         triCount,
         pointCount,
-        *((Material **)context + 1),
+        c->material,
         tris,
         points,
         markOrigin,
         markHitNormal,
-        *((float *)context + 2),
+        c->radius,
         markTexCoordAxis,
-        *((const unsigned __int8 **)context + 3),
-        *((const FxMarkAlphaFade **)context + 4),
+        c->nativeColor,
+        c->markAlpha,
         isSeeThruDecal);
 }
 
@@ -1991,7 +2002,7 @@ void __cdecl FX_EmitMarkTri(
     if ( marksSystem->hasCarryIndex )
     {
         pIndexa = (r_double_index_t *)&outSurf->indices[outSurf->indexCount - 1];
-        if ( ((unsigned __int8)pIndexa & 3) != 0
+        if ( ((uintptr_t)pIndexa & 3) != 0
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                         1684,
@@ -2010,7 +2021,7 @@ void __cdecl FX_EmitMarkTri(
     else
     {
         pIndex = (r_double_index_t *)&outSurf->indices[outSurf->indexCount];
-        if ( ((unsigned __int8)pIndex & 3) != 0
+        if ( ((uintptr_t)pIndex & 3) != 0
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                         1670,
