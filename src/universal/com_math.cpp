@@ -210,7 +210,8 @@ float bradfordMI[4][4] =
 
 double __cdecl random()
 {
-    return (double)rand() / 32768.0;
+    // port: el exe usa el rand() de MSVC (RAND_MAX 0x7FFF); el de libc llega a 2^31-1 y random() daba hasta 65536
+    return (double)(rand() & 0x7FFF) / 32768.0;
 }
 
 double __cdecl crandom()
