@@ -1,4 +1,5 @@
 #include <qcommon/cm_mapkit.h>
+#include <universal/com_rand_msvc.h>
 #include <database/db_registry.h>
 #include "cg_scr_main.h"
 #include "cg_sp_client_ext.h"
@@ -1831,7 +1832,7 @@ void __cdecl CScr_BulletTracer()
     Scr_GetVector(1u, end, SCRIPTINSTANCE_CLIENT);
     if ( Scr_GetNumParam(SCRIPTINSTANCE_CLIENT) == 3 )
         force = Scr_GetInt(2u, SCRIPTINSTANCE_CLIENT) != 0;
-    if ( force || (float)(cg_tracerChance->current.value * 32768.0) > (float)rand() )
+    if ( force || (float)(cg_tracerChance->current.value * 32768.0) > (float)Com_RandMsvc() )
         CG_SpawnTracer(0, start, end, 0, 0.0, 0.0);
 }
 

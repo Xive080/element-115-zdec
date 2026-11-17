@@ -1,4 +1,5 @@
 #include <cgame_mp/cg_anim_commands.h>
+#include <universal/com_rand_msvc.h>
 #include "cg_view_mp.h"
 #include <sound/snd_bo1_trace.h>
 #include <cgame/cg_sp_feeltrace.h>
@@ -2101,8 +2102,8 @@ static void CG_SP_LastStandSway(cg_s *cgameGlob, CgSPClientExt *ext)
         }
         if ( distNext >= distNow )
         {
-            goal[0] = (float)rand() * 0.000030517578f - lastStandSwayMaxDrift->current.value;
-            goal[1] = (float)rand() * 0.000030517578f - lastStandSwayMaxDrift->current.value;
+            goal[0] = (float)Com_RandMsvc() * 0.000030517578f - lastStandSwayMaxDrift->current.value;
+            goal[1] = (float)Com_RandMsvc() * 0.000030517578f - lastStandSwayMaxDrift->current.value;
         }
         for ( i = 0; i < 3; ++i )
         {

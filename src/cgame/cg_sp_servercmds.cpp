@@ -3,6 +3,7 @@
 // indexed by the command letter through the byte table at 0x0078e930). They are called only from
 // zombiemode-gated cases in cg_servercmds_mp.cpp.
 #include "cg_sp_client_ext.h"
+#include <universal/com_rand_msvc.h>
 #include <cgame_mp/cg_local_mp.h>
 #include <qcommon/cmd.h>
 #include <qcommon/common.h>
@@ -104,14 +105,14 @@ void CG_SP_UpdateDoubleVision(int localClientNum)
         if (!s_targetSeeded)
         {
             s_targetSeeded = true;
-            s_targetAngle = (float)rand() * 20.0f * 0.000030517578f - 10.0f;
+            s_targetAngle = (float)Com_RandMsvc() * 20.0f * 0.000030517578f - 10.0f;
         }
         float delta = s_targetAngle - s_angle;
         s_angle = delta * frac + s_angle;
         if (fabs(delta) < 0.1f)
         {
-            float spread = (float)rand() * 2.0f * 0.000030517578f - 1.0f;
-            float scale = (float)rand() * 2.0f * 0.000030517578f + 1.0f;
+            float spread = (float)Com_RandMsvc() * 2.0f * 0.000030517578f - 1.0f;
+            float scale = (float)Com_RandMsvc() * 2.0f * 0.000030517578f + 1.0f;
             s_targetAngle = scale * spread + s_angle;
         }
         dv->direction[0] = (float)sin(s_angle);

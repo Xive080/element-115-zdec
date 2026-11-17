@@ -1,4 +1,5 @@
 #include "cg_weapons.h"
+#include <universal/com_rand_msvc.h>
 #include <bgame/bg_local.h>
 #include <cgame_mp/cg_local_mp.h>
 #include <bgame/bg_weapons.h>
@@ -5970,7 +5971,7 @@ void __cdecl CG_SndWeaponFakeFire(snd_weapon_shot *shot, const WeaponDef *weapon
         && (cgameGlob->bgs.clientinfo[shooter_index].team != cgameGlob->bgs.clientinfo[cgameGlob->nextSnap->ps.clientNum].team
          || cgameGlob->bgs.clientinfo[cgameGlob->nextSnap->ps.clientNum].team == TEAM_FREE
          && shooter_index != cgameGlob->nextSnap->ps.clientNum)
-        && (float)(cg_fakefireWizbyChance->current.value * 32768.0) > (float)rand() )
+        && (float)(cg_fakefireWizbyChance->current.value * 32768.0) > (float)Com_RandMsvc() )
     {
         CG_SoundWhizby(shot->localClientNum, weaponDef, shot->origin, shotDirection, endPosition);
     }

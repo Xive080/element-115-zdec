@@ -1,4 +1,5 @@
 #include "DynEntity_pieces.h"
+#include <universal/com_rand_msvc.h>
 
 #include <universal/dvar.h>
 #include <gfx_d3d/r_gfx.h>
@@ -204,9 +205,9 @@ void __cdecl DynEntPieces_CalcForceDir(const float *hitDir, float spreadFraction
 {
     float outDir[3]; // [esp+8h] [ebp-Ch] BYREF
 
-    outDir[0] = (float)((float)((float)rand() / 32767.0) * 2.0) - 1.0;
-    outDir[1] = (float)((float)((float)rand() / 32767.0) * 2.0) - 1.0;
-    outDir[2] = (float)((float)((float)rand() / 32767.0) * 2.0) - 1.0;
+    outDir[0] = (float)((float)((float)Com_RandMsvc() / 32767.0) * 2.0) - 1.0;
+    outDir[1] = (float)((float)((float)Com_RandMsvc() / 32767.0) * 2.0) - 1.0;
+    outDir[2] = (float)((float)((float)Com_RandMsvc() / 32767.0) * 2.0) - 1.0;
     Vec3Lerp(hitDir, outDir, spreadFraction, forceDir);
 }
 

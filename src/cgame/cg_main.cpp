@@ -1,4 +1,5 @@
 #include "cg_main.h"
+#include <universal/com_rand_msvc.h>
 #include "cg_local.h"
 #include <bgame/bg_weapons_def.h>
 #include <universal/com_loadutils.h>
@@ -22,7 +23,7 @@ int __cdecl CG_irand(int min, int max)
     {
         __debugbreak();
     }
-    result = rand() * (__int64)(max - min) / 0x7FFF + min;
+    result = Com_RandMsvc() * (__int64)(max - min) / 0x7FFF + min;
     if ( (min > result || result > max)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",
@@ -41,7 +42,7 @@ double __cdecl CG_flrand(float min, float max)
 {
     float result; // [esp+8h] [ebp-4h]
 
-    result = (float)((float)((float)(max - min) * (float)rand()) / 32767.0) + min;
+    result = (float)((float)((float)(max - min) * (float)Com_RandMsvc()) / 32767.0) + min;
     if ( (result < min || max < result)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",
@@ -58,7 +59,7 @@ double __cdecl CG_flrand(float min, float max)
 
 int __cdecl CG_rand()
 {
-    return rand();
+    return Com_RandMsvc();
 }
 
 float __cdecl CG_random()

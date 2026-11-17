@@ -1,4 +1,5 @@
 #include "ui_utils.h"
+#include <universal/com_rand_msvc.h>
 #include <universal/assertive.h>
 #include <client_mp/cl_scrn_mp.h>
 #include "ui_feeders.h"
@@ -868,7 +869,7 @@ void __cdecl CL_SelectStringTableEntryInDvar_f()
             v1 = Sys_Milliseconds();
             srand(v1);
             rowCount = (float)table->rowCount;
-            row = (int)(float)((float)(rowCount * (float)rand()) / 32767.0);
+            row = (int)(float)((float)(rowCount * (float)Com_RandMsvc()) / 32767.0);
             v2 = Cmd_Argv(2);
             v3 = atoi(v2);
             ColumnValueForRow = (char *)StringTable_GetColumnValueForRow(table, row, v3);

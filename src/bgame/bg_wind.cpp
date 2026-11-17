@@ -1,4 +1,5 @@
 #include "bg_wind.h"
+#include <universal/com_rand_msvc.h>
 #include <cgame_mp/cg_local_mp.h>
 #include <cgame/cg_drawtools.h>
 #include <qcommon/cm_trace.h>
@@ -310,15 +311,15 @@ void __cdecl SeedVariantWind(
                                                     + (float)(wind->wind_vector[1] * wind->wind_vector[1]))
                                     + (float)(wind->wind_vector[2] * wind->wind_vector[2]))
                     / (float)(windLeafScale * windLeafScale);
-    v9 = (float)(rand() - 0x3FFF) / 32767.0;
-    v10 = (float)(rand() - 0x3FFF) / 32767.0;
-    v11 = (float)(rand() - 0x3FFF) / 32767.0;
+    v9 = (float)(Com_RandMsvc() - 0x3FFF) / 32767.0;
+    v10 = (float)(Com_RandMsvc() - 0x3FFF) / 32767.0;
+    v11 = (float)(Com_RandMsvc() - 0x3FFF) / 32767.0;
     wind->rustle_amplitude[0] = v_scale * v9;
     wind->rustle_amplitude[1] = v_scale * v10;
     wind->rustle_amplitude[2] = v_scale * v11;
-    v6 = (float)(rand() - 0x3FFF) / 32767.0;
-    v7 = (float)(rand() - 0x3FFF) / 32767.0;
-    v8 = (float)(rand() - 0x3FFF) / 32767.0;
+    v6 = (float)(Com_RandMsvc() - 0x3FFF) / 32767.0;
+    v7 = (float)(Com_RandMsvc() - 0x3FFF) / 32767.0;
+    v8 = (float)(Com_RandMsvc() - 0x3FFF) / 32767.0;
     wind->rustle_angular_frequency[0] = (float)(v_scale * 3.1415927) * v6;
     wind->rustle_angular_frequency[1] = (float)(v_scale * 3.1415927) * v7;
     wind->rustle_angular_frequency[2] = (float)(v_scale * 3.1415927) * v8;
@@ -333,7 +334,7 @@ void __cdecl BG_SeedVarintWinds(unsigned int variant_seed, int start_time)
 
     srand(variant_seed);
     for (i = 0; i < 17; ++i)
-        g_WindVariants[i] = (float)((float)(rand() - 0x3FFF) * 0.1) / 32767.0;
+        g_WindVariants[i] = (float)((float)(Com_RandMsvc() - 0x3FFF) * 0.1) / 32767.0;
     for (ia = 0; ia < 16; ++ia)
         SeedVariantWind(
             &g_VariantWind[ia],
