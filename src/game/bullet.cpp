@@ -616,6 +616,9 @@ void __cdecl Bullet_Process(
             __debugbreak();
         }
         targetWasAlive = br->hitEnt->health > 0;
+#ifdef H5G
+        const int h5eHealthBefore = br->hitEnt->health;
+#endif
         hitLoc = (hitLocation_t)br->trace.partGroup;
         if ( hitLoc == HITLOC_HEAD || hitLoc == HITLOC_HELMET )
             *outImpactFlags |= 1u;
@@ -664,7 +667,16 @@ void __cdecl Bullet_Process(
         scr_playerdamage_boneindex = -2;
         v16 = br->hitEnt->r.inuse && br->hitEnt->health > 0;
         targetIsAlive = v16;
+#ifdef H5G
+        { void H5E_NoteBulletHit(const float *, const float *, gentity_s *, gentity_s *, int, int, int, int, int);   // H5e: registro [H5E]
+          H5E_NoteBulletHit(bp->start, br->hitPos, attacker, br->hitEnt, damage, (int)hitLoc, h5eHealthBefore, br->hitEnt->health, br->trace.hitType); }
+#endif
     }
+#ifdef H5G
+    else
+    { void H5E_NoteBulletHit(const float *, const float *, gentity_s *, gentity_s *, int, int, int, int, int);
+      H5E_NoteBulletHit(bp->start, br->hitPos, attacker, br->hitEnt, damage, -1, br->hitEnt ? br->hitEnt->health : 0, br->hitEnt ? br->hitEnt->health : 0, br->trace.hitType); }
+#endif
     if ( br->trace.hitType == TRACE_HITTYPE_GLASS )
         GlassSv_Damage(br->trace.hitId, damage, bp->methodOfDeath, br->hitPos, bp->dir);
     if ( bulletEffectTempEnt )
