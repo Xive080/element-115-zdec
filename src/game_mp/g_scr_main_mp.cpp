@@ -274,6 +274,8 @@ int __cdecl GScr_LoadScriptAndLabel(scriptInstance_t inst, const char *filename,
     return func;
 }
 
+void (*g_h0ScrLoadHook)(scriptInstance_t inst);   // Port (OLA 15E): gancho del arnes, ver final de GScr_LoadScripts
+
 void __cdecl    GScr_LoadScripts(scriptInstance_t inst)
 {
     Scr_BeginLoadScripts(inst, 1);
@@ -322,6 +324,10 @@ void __cdecl    GScr_LoadScripts(scriptInstance_t inst)
         GScr_LoadGameTypeScript();
         GScr_LoadLevelScript();
     }
+    // Port (OLA 15E): el arnes puede pedir handles de funciones GSC para sus pruebas antes de que Scr_EndLoadScripts libere
+    // scriptsPos (nulo fuera de las pruebas; no cambia la carga).
+    if ( g_h0ScrLoadHook )
+        g_h0ScrLoadHook(inst);
     Scr_PostCompileScripts(inst);
     GScr_PostLoadScripts(inst);
 

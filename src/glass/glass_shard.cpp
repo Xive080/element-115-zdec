@@ -2922,6 +2922,9 @@ void __thiscall GlassShard::UpdateBBox()
     }
 }
 
+// Port (OLA 15E): gancho de colision de los fragmentos con GlassPhysics; el arnes da la version fuerte (h12_glasscl.cpp).
+__attribute__((weak)) int GlassShard_PortCollide(GlassShard *, const float *) { return 0; }
+
 void __thiscall GlassShard::Update(float deltaTime)
 {
     ShardGroup *group; // esi
@@ -2951,11 +2954,19 @@ void __thiscall GlassShard::Update(float deltaTime)
         {
             if ( deltaTime > 0.0 )
             {
+                const float prevOrigin[3] = { this->origin[0], this->origin[1], this->origin[2] };   // Port (OLA 15E)
                 this->glassPhysics->Step(deltaTime);
                 this->glassPhysics->GetPosition(this->origin, this->axis);
                 this->timeUntilAction = this->timeUntilAction - deltaTime;
                 hitBottom = this->timeUntilAction < 0.0;
                 isStable = 0;
+                // Port (OLA 15E): GlassPhysics no colisiona (el original usa Phys_ObjCreate; el port no tiene motor Nitrous). El arnes
+                // traza el paso contra el mundo y hace rebotar o posarse el fragmento; 1 = posado (como rigid_body::is_stable).
+                if ( GlassShard_PortCollide(this, prevOrigin) )
+                {
+                    isStable = 1;
+                    hitBottom = 0;
+                }
             }
         }
         else
