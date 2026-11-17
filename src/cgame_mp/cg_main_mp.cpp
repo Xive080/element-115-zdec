@@ -1936,10 +1936,9 @@ void __cdecl CG_AllocateClientMemory(HunkUser *hunk, int maxLocalClients)
 {
     int localClientNum; // [esp+0h] [ebp-4h]
 
-    cgArray = (cg_s *)Hunk_UserAlloc(hunk, 466048 * maxLocalClients, 128, "cgArray");
+    cgArray = (cg_s *)Hunk_UserAlloc(hunk, (sizeof(cg_s) > 466048 ? sizeof(cg_s) : 466048) * maxLocalClients, 128, "cgArray"); // LP64: cg_s crece (punteros de 8 B)
     // zombies: was 12712 * maxLocalClients (the MP exe's sizeof(cgs_t)); cgs_t holds 32 actor corpses now
     // (MAX_ACTOR_CORPSES_SP), and the literal let cgsArray overrun into the next hunk block.
-    static_assert(sizeof(cg_s) <= 466048, "cgArray literal");
     cgsArray = (cgs_t *)Hunk_UserAlloc(hunk, sizeof(cgs_t) * maxLocalClients, 8, "cgsArray");
     cg_fakeEntitiesArray = (fake_centity_s *)Hunk_UserAlloc(hunk, 415744 * maxLocalClients, 4, "cg_fakeEntitiesArray");
     cg_viewModelArray = (ViewModelInfo *)Hunk_UserAlloc(hunk, 52 * maxLocalClients, 4, "cg_viewModelArray");

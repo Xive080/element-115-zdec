@@ -1040,7 +1040,7 @@ double __cdecl CG_GetVehicleCrossHairAlpha(int localClientNum)
         }
         if ( (float)(angleDiff_4 + s_arcEpsilon) < weapDef->leftArc
             //&& COERCE_FLOAT(LODWORD(weapDef->rightArc) ^ _mask__NegFloat_) < (float)(angleDiff_4 - s_arcEpsilon) )
-            -(weapDef->rightArc) < (float)(angleDiff_4 - s_arcEpsilon) )
+            && -(weapDef->rightArc) < (float)(angleDiff_4 - s_arcEpsilon) ) // faltaba el && al quitar el COERCE (comparacion encadenada)
         {
             if ( (float)(angleDiff + s_arcEpsilon) < weapDef->bottomArc
                 //&& COERCE_FLOAT(LODWORD(weapDef->topArc) ^ _mask__NegFloat_) < (float)(angleDiff - s_arcEpsilon) )

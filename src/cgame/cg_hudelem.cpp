@@ -847,7 +847,7 @@ int __cdecl GetSortedHudElems(int localClientNum, hudelem_s **elems)
     elemCount = 0;
     CopyInUseHudElems(elems, &elemCount, ps->hud.current, 31);
     CopyInUseHudElems(elems, &elemCount, ps->hud.archival, 31);
-    qsort(elems, elemCount, 4u, compare_hudelems);
+    qsort(elems, elemCount, sizeof(hudelem_s *), compare_hudelems); // LP64: punteros de 8 B
     return elemCount;
 }
 
@@ -863,7 +863,7 @@ int __cdecl compare_hudelems(const void *pe0, const void *pe1)
 {
     float delta; // [esp+0h] [ebp-Ch]
 
-    delta = *(float *)(*(unsigned int *)pe0 + 56) - *(float *)(*(unsigned int *)pe1 + 56);
+    delta = (*(hudelem_s *const *)pe0)->sort - (*(hudelem_s *const *)pe1)->sort; // LP64: +56 == sort; el puntero de 32 bits se truncaba
     if ( delta >= 0.0 )
         return delta > 0.0;
     else
@@ -876,7 +876,7 @@ int __cdecl GetSortedDebugHudElems(hudelem_s **elems)
 
     elemCount = 0;
     CopyInUseDebugHudElems(elems, &elemCount, g_hudelems, 1024);
-    qsort(elems, elemCount, 4u, compare_hudelems);
+    qsort(elems, elemCount, sizeof(hudelem_s *), compare_hudelems); // LP64: punteros de 8 B
     return elemCount;
 }
 

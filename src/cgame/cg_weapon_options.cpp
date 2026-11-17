@@ -21,7 +21,7 @@ const GfxImage *__cdecl WeaponOptions::GetImageFromTable(const StringTable *tabl
     if ( !name || !strlen(name) )
         return 0;
     v4.xmodelPieces = DB_FindXAssetHeader(ASSET_TYPE_IMAGE, (char*)name, 1, -1).xmodelPieces;
-    return (const GfxImage *)v4.xmodelPieces;
+    return (const GfxImage *)v4.xmodelPieces.get(); // LP64: Ptr32 -> puntero
 }
 
 void __thiscall WeaponOptions::InitWeaponOptionTextures(
