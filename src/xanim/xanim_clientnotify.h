@@ -13,9 +13,11 @@ struct XAnimClientNotifyAdder // sizeof=0x0
 {                                       // XREF: ?CG_UpdateViewWeaponAnim@@YAXHH@Z/r
 };
 
-struct XAnimClientNotifyList // sizeof=0x604
+struct XAnimClientNotifyList // sizeof=0x604 en x86
 {                                       // XREF: ?CG_UpdateViewWeaponAnim@@YAXHH@Z/r
-    unsigned __int8 m_clientNotifyMemory[1536];
+    // LP64: 64 x sizeof(XAnimClientNotify). En x86 eran 64 x 24 = 1536 bytes y el codigo indexaba con paso 24; con el puntero
+    // name de 8 bytes la estructura ocupa 32 y el paso fijo solapaba entradas (y la 64 pisaba m_numNotifies).
+    alignas(8) unsigned __int8 m_clientNotifyMemory[64 * 32];
     int m_numNotifies;
 
     XAnimClientNotifyList();
