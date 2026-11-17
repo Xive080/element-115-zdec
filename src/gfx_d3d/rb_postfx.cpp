@@ -1786,8 +1786,8 @@ void    RB_GenericFilterFX(const GfxViewInfo *viewInfo)
   //ProjMatrix = a1;
   //ViewMatrix = retaddr;
   p_genericFilter = &viewInfo->genericFilter;
-  *(unsigned int *)&iPass[72] = (unsigned int)viewInfo;
-  *(unsigned int *)&iPass[68] = (unsigned int)&viewInfo->cullViewInfo.viewParms.projectionMatrix;
+  *(unsigned int *)&iPass[72] = (unsigned int)(uintptr_t)viewInfo;
+  *(unsigned int *)&iPass[68] = (unsigned int)(uintptr_t)&viewInfo->cullViewInfo.viewParms.projectionMatrix;
   MatrixMultiply44(
     viewInfo->cullViewInfo.viewParms.viewMatrix.m,
     viewInfo->cullViewInfo.viewParms.projectionMatrix.m,
@@ -1821,7 +1821,7 @@ LABEL_18:
             v107 = 0;
             imageSurface = (IDirect3DSurface9 *)p_genericFilter->passSampler0[i][j];
             imageSurface = (IDirect3DSurface9 *)((char *)imageSurface - 1);
-            switch ( (unsigned int)imageSurface )
+            switch ( (unsigned int)(uintptr_t)imageSurface )
             {
               case 0u:
                 v108 = 12;
