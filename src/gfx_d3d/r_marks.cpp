@@ -38,7 +38,7 @@ void    R_BoxSurfaces(
         surfCounts[i] = 0;
 
     R_BoxSurfaces_r(
-        (mnode_t *)rgp.world->dpvsPlanes.nodes,
+        (mnode_t *)rgp.world->dpvsPlanes.nodes.get(),
         mins,
         maxs,
         allowSurf,
@@ -473,7 +473,7 @@ int    R_BoxStaticModels(
     Com_Memset(cellBits, 0, rgp.world->cellBitsCount);
     smodelCount = 0;
     R_BoxStaticModels_r(
-        (mnode_t *)rgp.world->dpvsPlanes.nodes,
+        (mnode_t *)rgp.world->dpvsPlanes.nodes.get(),
         mins,
         maxs,
         allowSModel,
@@ -1222,8 +1222,8 @@ LABEL_14:
                     R_WARN_MARKS_ERR_PROBE_MISMATCH,
                     markInfo->markHasReflection,
                     surface->reflectionProbeIndex,
-                    markInfo->material->info.name,
-                    surface->material->info.name);
+                    markInfo->material->info.name.get(),
+                    surface->material->info.name.get());
             return 1;
         }
     }
@@ -1234,8 +1234,8 @@ LABEL_14:
                 R_WARN_MARKS_ERR_LMAP_MISMATCH,
                 markInfo->markHasLightmap,
                 surface->lightmapIndex,
-                markInfo->material->info.name,
-                surface->material->info.name);
+                markInfo->material->info.name.get(),
+                surface->material->info.name.get());
         return 1;
     }
 }
@@ -1278,8 +1278,8 @@ bool __cdecl R_MarkFragments_BrushSurface(
                 R_WARN_MARKS_ERR_LMAP_MISMATCH,
                 markInfo->markHasLightmap,
                 surface->lightmapIndex,
-                markInfo->material->info.name,
-                surface->material->info.name);
+                markInfo->material->info.name.get(),
+                surface->material->info.name.get());
         }
         return true;
     }
@@ -1296,8 +1296,8 @@ bool __cdecl R_MarkFragments_BrushSurface(
                 R_WARN_MARKS_ERR_PROBE_MISMATCH,
                 markInfo->markHasReflection,
                 surface->reflectionProbeIndex,
-                markInfo->material->info.name,
-                surface->material->info.name);
+                markInfo->material->info.name.get(),
+                surface->material->info.name.get());
         }
         return true;
     }
@@ -1946,7 +1946,7 @@ char __cdecl R_MarkFragments_AnimatedXModel(
     int surfIndex; // [esp+3D0h] [ebp-18h]
     unsigned int vertListIndex; // [esp+3D4h] [ebp-14h]
     int surfCount; // [esp+3D8h] [ebp-10h]
-    Material **materials; // [esp+3DCh] [ebp-Ch]
+    PTR32(Material) *materials; // LP64: materialHandles es PTR32 (zona) [esp+3DCh] [ebp-Ch]
     XSurface *surfaces; // [esp+3E0h] [ebp-8h] BYREF
     XSurface *surface; // [esp+3E4h] [ebp-4h]
     int savedregs; // [esp+3E8h] [ebp+0h] BYREF
@@ -2534,7 +2534,7 @@ char __cdecl R_MarkFragments_EntirelyRigidXModel(
 {
     int surfIndex; // [esp+C0h] [ebp-10h]
     int surfCount; // [esp+C4h] [ebp-Ch]
-    Material **materials; // [esp+C8h] [ebp-8h]
+    PTR32(Material) *materials; // LP64: materialHandles es PTR32 (zona) [esp+C8h] [ebp-8h]
     XSurface *surfaces; // [esp+CCh] [ebp-4h] BYREF
 
     surfCount = XModelGetSurfaces(xmodel, &surfaces, 0);
