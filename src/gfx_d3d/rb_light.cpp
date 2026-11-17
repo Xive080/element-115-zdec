@@ -588,7 +588,7 @@ unsigned __int8 __cdecl R_LightGridLookup(
             honorSuppression = 1;
             bestPrimaryLightWeight = cornerWeight[cornerIndex];
             primaryLightIndex = entry->primaryLightIndex;
-            memset((unsigned __int8 *)cornerEntry, 0, 4 * cornerIndex);
+            memset((unsigned __int8 *)cornerEntry, 0, sizeof(*cornerEntry) * cornerIndex); // LP64: punteros de 8 bytes (x86: 4 * cornerIndex)
             goto LABEL_10;
         }
         v10 = entry->primaryLightIndex;
@@ -1590,7 +1590,7 @@ void __cdecl R_SaveLightVisHistory()
             buffer = (unsigned __int16 (*)[3])Z_VirtualAlloc(6 * lightPointCount, "R_SaveLightVisHistory", 0);
             if ( buffer )
             {
-                R_LightVisHistoryFilename((char *)rgp.world->name, filename);
+                R_LightVisHistoryFilename((char *)rgp.world->name.get(), filename);
                 count = 0;
                 for ( i = 0; i < 0x100007; ++i )
                 {
