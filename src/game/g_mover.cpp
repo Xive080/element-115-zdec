@@ -642,7 +642,7 @@ void __cdecl G_CreatePhysicsObject(gentity_s *ent)
         ent->physObjId = physObjId;
         if ( physObjId )
         {
-            userData = (PhysObjUserData *)physObjId;
+            userData = Phys_GetUserData(physObjId);   // LP64: el handle no es un puntero
             if ( userData->refcount == 1 )
             {
                 direction[0] = ent->s.lerp.apos.trDelta[0];
@@ -665,7 +665,7 @@ void __cdecl G_CreatePhysicsObject(gentity_s *ent)
         }
         else
         {
-            Name = DObjGetName(obj);
+            Name = obj ? DObjGetName(obj) : "sbmodel";   // brushmodel: no hay DObj (el original asertaba)
             Com_PrintWarning(1, "Failed to create physics object for '%s'.\n", Name);
             ent->physObjId = -1;
             Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
