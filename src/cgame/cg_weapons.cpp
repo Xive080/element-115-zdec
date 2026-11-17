@@ -615,7 +615,7 @@ void __cdecl CG_FreeWeapons(int localClientNum)
             XAnimFreeTree(viewModelInfo->tree, 0, SCRIPTINSTANCE_SERVER);
         viewModelInfo->tree = 0;
     }
-    memset((unsigned __int8 *)cg_weaponsArray[localClientNum], 0, 0x12000u);
+    memset((unsigned __int8 *)cg_weaponsArray[localClientNum], 0, 2048 * sizeof(weaponInfo_s));   // 0x12000 en x86 (2048 x 36); en LP64 por sizeof
 }
 
 // zombies: SP builds the view-weapon anim tree with 0x0063E450 = Hunk_AllocLowAlign(size, 4) (push at SP 0x00796C6B,
@@ -692,7 +692,7 @@ void __cdecl CG_RegisterWeapon(int localClientNum, unsigned int weaponNum)
                 cgMedia.hintMaterials[weaponNum + 7] = weapDef->hudIcon;
             else
                 cgMedia.hintMaterials[weaponNum + 7] = cgMedia.hintMaterials[3];
-            weapInfo->translatedDisplayName = SEH_StringEd_GetString((char*)weapVariantDef->szDisplayName);
+            weapInfo->translatedDisplayName = SEH_StringEd_GetString((char*)weapVariantDef->szDisplayName.get());
             if ( !weapInfo->translatedDisplayName )
             {
                 if ( loc_warnings->current.enabled )
@@ -712,7 +712,7 @@ void __cdecl CG_RegisterWeapon(int localClientNum, unsigned int weaponNum)
                 }
                 weapInfo->translatedDisplayName = weapVariantDef->szDisplayName;
             }
-            weapInfo->translatedModename = SEH_StringEd_GetString((char *)weapDef->szModeName);
+            weapInfo->translatedModename = SEH_StringEd_GetString((char *)weapDef->szModeName.get());
             if ( !weapInfo->translatedModename )
             {
                 if ( loc_warnings->current.enabled )
@@ -732,7 +732,7 @@ void __cdecl CG_RegisterWeapon(int localClientNum, unsigned int weaponNum)
                 }
                 weapInfo->translatedModename = weapDef->szModeName;
             }
-            weapInfo->translatedAIOverlayDescription = SEH_StringEd_GetString((char *)weapDef->szOverlayName);
+            weapInfo->translatedAIOverlayDescription = SEH_StringEd_GetString((char *)weapDef->szOverlayName.get());
             if ( !weapInfo->translatedAIOverlayDescription )
             {
                 if ( loc_warnings->current.enabled )
@@ -995,7 +995,7 @@ void __cdecl ChangeViewmodelDobj(
                         XAnimSetGoalWeight(viewModelInfo->viewModelDObj, 1u, 1.0, 0.0, 1.0, 0, 1u, 0, -1);
                     else
                         XAnimSetGoalWeight(viewModelInfo->viewModelDObj, 2u, 1.0, 0.0, 1.0, 0, 1u, 0, -1);
-                    if (**((_BYTE **)weapVariantDef->szXAnims + 65))
+                    if (*weapVariantDef->szXAnims[65].get())
                     {
                         XAnimSetGoalWeight(viewModelInfo->viewModelDObj, 0x41u, 1.0, 0.0, 0.0, 0, 1u, 0, -1);
                         XAnimSetTime(viewModelInfo->tree, 0x41u, 1.0, -1);
@@ -1105,10 +1105,10 @@ void __cdecl CG_CreateWeaponViewModelXAnim(ViewModelInfo *viewModelInfo, const W
             BG_CreateXAnim(pAnimsa, animIndex, weapVariantDef->szXAnims[v2]);
         }
     }
-    if ( **((_BYTE **)weapVariantDef->szXAnims + 64) && XAnimIsLooped(pAnimsa, 0x40u) )
-        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", *((unsigned int *)weapVariantDef->szXAnims + 64));
-    if ( **((_BYTE **)weapVariantDef->szXAnims + 65) && XAnimIsLooped(pAnimsa, 0x41u) )
-        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", *((unsigned int *)weapVariantDef->szXAnims + 65));
+    if ( *weapVariantDef->szXAnims[64].get() && XAnimIsLooped(pAnimsa, 0x40u) )
+        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", weapVariantDef->szXAnims[64].get());
+    if ( *weapVariantDef->szXAnims[65].get() && XAnimIsLooped(pAnimsa, 0x41u) )
+        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", weapVariantDef->szXAnims[65].get());
     for ( animIndexa = 53; animIndexa <= 57; ++animIndexa )
     {
         if ( *weapVariantDef->szXAnims[animIndexa] )
@@ -1135,7 +1135,7 @@ void __cdecl CG_CreateWeaponViewModelXAnim(ViewModelInfo *viewModelInfo, const W
 
 bool __cdecl CG_NonDualWieldAnimsValid(const WeaponVariantDef *weapVariantDef)
 {
-    return *((unsigned int *)weapVariantDef->szXAnims + 1) && **((_BYTE **)weapVariantDef->szXAnims + 1);
+    return weapVariantDef->szXAnims[1].get() && *weapVariantDef->szXAnims[1].get();
 }
 
 void __cdecl CG_UpdateHandViewmodels(int localClientNum)
@@ -1363,9 +1363,9 @@ void __cdecl CG_UpdateMinigunSpin(int localClientNum, cg_s *cgameGlob, centity_s
                 }
                 nextSnap = cgameGlob->nextSnap;
                 if ( (nextSnap->ps.otherFlags & 6) != 0 && cent->nextState.number == nextSnap->ps.clientNum )
-                    AliasId = SND_FindAliasId((char *)weaponDef->fireLoopSoundPlayer);
+                    AliasId = SND_FindAliasId((char *)weaponDef->fireLoopSoundPlayer.get());
                 else
-                    AliasId = SND_FindAliasId((char *)weaponDef->fireLoopSound);
+                    AliasId = SND_FindAliasId((char *)weaponDef->fireLoopSound.get());
                 CG_PlaySound(localClientNum, vehCent->nextState.number, sndOrigin, 0, 0, 1.0, AliasId);
             }
         }
@@ -1466,9 +1466,9 @@ void __cdecl CG_UpdateMinigunSounds(int localClientNum, cg_s *cgameGlob, centity
         if ( ci->weaponSpinLerp > snd_minigun_loop_start->current.value )
         {
             if ( v10 )
-                AliasId = SND_FindAliasId((char *)weaponDef->spinLoopSoundPlayer);
+                AliasId = SND_FindAliasId((char *)weaponDef->spinLoopSoundPlayer.get());
             else
-                AliasId = SND_FindAliasId((char *)weaponDef->spinLoopSound);
+                AliasId = SND_FindAliasId((char *)weaponDef->spinLoopSound.get());
             spinLoopId = CG_PlaySoundWithHandle(localClientNum, entityNum, sndOrigin, 0, 0, 1.0, AliasId);
             spinScalar = snd_minigun_pitch_end->current.value - snd_minigun_pitch_start->current.value;
             spinPitch = (float)(ci->weaponSpinLerp * spinScalar) + snd_minigun_pitch_start->current.value;
@@ -1485,26 +1485,26 @@ void __cdecl CG_UpdateMinigunSounds(int localClientNum, cg_s *cgameGlob, centity
         if ( (float)(ci->weaponSpinLerp - ci->lastWeaponSpinLerp) > 0.0 && ci->weaponSpinLerp < 0.2 )
         {
             if ( v10 )
-                v5 = SND_FindAliasId((char *)weaponDef->startSpinSoundPlayer);
+                v5 = SND_FindAliasId((char *)weaponDef->startSpinSoundPlayer.get());
             else
-                v5 = SND_FindAliasId((char *)weaponDef->startSpinSound);
+                v5 = SND_FindAliasId((char *)weaponDef->startSpinSound.get());
             CG_PlaySound(localClientNum, entityNum, sndOrigin, 0, 0, 1.0, v5);
         }
         if ( (float)(ci->weaponSpinLerp - ci->lastWeaponSpinLerp) < 0.0 )
         {
             if ( v10 )
-                v6 = SND_FindAliasId((char *)weaponDef->stopSpinSoundPlayer);
+                v6 = SND_FindAliasId((char *)weaponDef->stopSpinSoundPlayer.get());
             else
-                v6 = SND_FindAliasId((char *)weaponDef->stopSpinSound);
+                v6 = SND_FindAliasId((char *)weaponDef->stopSpinSound.get());
             CG_PlaySound(localClientNum, entityNum, sndOrigin, 0, 0, 1.0, v6);
         }
         if ( ci->weaponSpinLerp >= 1.0 && (cent->nextState.lerp.eFlags & 0x40) != 0 )
         {
             ci->minigunWasFiring = 1;
             if ( v10 )
-                v7 = SND_FindAliasId((char *)weaponDef->fireLoopSoundPlayer);
+                v7 = SND_FindAliasId((char *)weaponDef->fireLoopSoundPlayer.get());
             else
-                v7 = SND_FindAliasId((char *)weaponDef->fireLoopSound);
+                v7 = SND_FindAliasId((char *)weaponDef->fireLoopSound.get());
             CG_PlaySound(localClientNum, entityNum, sndOrigin, 0, 0, 1.0, v7);
         }
         if ( ci->minigunWasFiring
@@ -1513,9 +1513,9 @@ void __cdecl CG_UpdateMinigunSounds(int localClientNum, cg_s *cgameGlob, centity
         {
             ci->minigunWasFiring = 0;
             if ( v10 )
-                v8 = SND_FindAliasId((char *)weaponDef->fireLoopEndSoundPlayer);
+                v8 = SND_FindAliasId((char *)weaponDef->fireLoopEndSoundPlayer.get());
             else
-                v8 = SND_FindAliasId((char *)weaponDef->fireLoopEndSound);
+                v8 = SND_FindAliasId((char *)weaponDef->fireLoopEndSound.get());
             CG_PlaySound(localClientNum, entityNum, sndOrigin, 0, 0, 1.0, v8);
         }
     }
@@ -2951,7 +2951,7 @@ void __cdecl WeaponRunXModelAnims(
         v4 = !v6 && v5;
         PlayADSAnim(ps->fWeaponPosFrac, weaponIndex, obj, 65 - v4);
     }
-    else if ( **((_BYTE **)weapVariantDef->szXAnims + 65) )
+    else if ( *weapVariantDef->szXAnims[65].get() )
     {
         PlayADSAnim(0.0, weaponIndex, obj, 65);
     }
@@ -3150,14 +3150,14 @@ void __cdecl WeaponRunXModelAnims(
                 StartWeaponAnim(localClientNum, weaponIndex, obj, 23, 0.0, newPlayerstate);
                 break;
             case 0x1Bu:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 25) )
+                if ( *weapVariantDef->szXAnims[25].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 25;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 25, 0.0, newPlayerstate);
                 }
                 break;
             case 0x1Cu:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 25) )
+                if ( *weapVariantDef->szXAnims[25].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 26;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 26, 0.0, newPlayerstate);
@@ -3166,37 +3166,37 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 53) )
+                if ( *weapVariantDef->szXAnims[53].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 53, 0.0);
                 break;
             case 0x1Du:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 27) )
+                if ( *weapVariantDef->szXAnims[27].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 27;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 27, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 53) )
+                if ( *weapVariantDef->szXAnims[53].get() )
                     StopCameraAnim(obj);
                 break;
             case 0x1Eu:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 28) )
+                if ( *weapVariantDef->szXAnims[28].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 28;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 28, 0.0, newPlayerstate);
                 }
-                else if ( **((_BYTE **)weapVariantDef->szXAnims + 25) )
+                else if ( *weapVariantDef->szXAnims[25].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 25;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 25, 0.0, newPlayerstate);
                 }
                 break;
             case 0x1Fu:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 28) )
+                if ( *weapVariantDef->szXAnims[28].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 29;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 29, 0.0, newPlayerstate);
                 }
-                else if ( **((_BYTE **)weapVariantDef->szXAnims + 25) )
+                else if ( *weapVariantDef->szXAnims[25].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 26;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 26, 0.0, newPlayerstate);
@@ -3205,21 +3205,21 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 53) )
+                if ( *weapVariantDef->szXAnims[53].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 53, 0.0);
                 break;
             case 0x20u:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 30) )
+                if ( *weapVariantDef->szXAnims[30].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 30;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 30, 0.0, newPlayerstate);
                 }
-                else if ( **((_BYTE **)weapVariantDef->szXAnims + 27) )
+                else if ( *weapVariantDef->szXAnims[27].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 27;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 27, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 53) )
+                if ( *weapVariantDef->szXAnims[53].get() )
                     StopCameraAnim(obj);
                 break;
             case 0x24u:
@@ -3259,7 +3259,7 @@ void __cdecl WeaponRunXModelAnims(
                 StartWeaponAnim(localClientNum, weaponIndex, obj, 38, 0.0, newPlayerstate);
                 break;
             case 0x2Du:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 45) )
+                if ( *weapVariantDef->szXAnims[45].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 45;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 45, 0.0, newPlayerstate);
@@ -3268,11 +3268,11 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 54) )
+                if ( *weapVariantDef->szXAnims[54].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 54, 0.0);
                 break;
             case 0x2Eu:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 46) )
+                if ( *weapVariantDef->szXAnims[46].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 46;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 46, 0.0, newPlayerstate);
@@ -3281,11 +3281,11 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 55) )
+                if ( *weapVariantDef->szXAnims[55].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 55, 0.0);
                 break;
             case 0x2Fu:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 47) )
+                if ( *weapVariantDef->szXAnims[47].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 47;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 47, 0.0, newPlayerstate);
@@ -3294,16 +3294,16 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 56) )
+                if ( *weapVariantDef->szXAnims[56].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 56, 0.0);
                 break;
             case 0x30u:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 48) )
+                if ( *weapVariantDef->szXAnims[48].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 48;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 48, 0.0, newPlayerstate);
                 }
-                else if ( **((_BYTE **)weapVariantDef->szXAnims + 45) )
+                else if ( *weapVariantDef->szXAnims[45].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 45;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 45, 0.0, newPlayerstate);
@@ -3312,16 +3312,16 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 54) )
+                if ( *weapVariantDef->szXAnims[54].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 54, 0.0);
                 break;
             case 0x31u:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 49) )
+                if ( *weapVariantDef->szXAnims[49].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 49;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 49, 0.0, newPlayerstate);
                 }
-                else if ( **((_BYTE **)weapVariantDef->szXAnims + 46) )
+                else if ( *weapVariantDef->szXAnims[46].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 46;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 46, 0.0, newPlayerstate);
@@ -3330,16 +3330,16 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 55) )
+                if ( *weapVariantDef->szXAnims[55].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 55, 0.0);
                 break;
             case 0x32u:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 50) )
+                if ( *weapVariantDef->szXAnims[50].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 50;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 50, 0.0, newPlayerstate);
                 }
-                else if ( **((_BYTE **)weapVariantDef->szXAnims + 47) )
+                else if ( *weapVariantDef->szXAnims[47].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 47;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 47, 0.0, newPlayerstate);
@@ -3348,11 +3348,11 @@ void __cdecl WeaponRunXModelAnims(
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 56) )
+                if ( *weapVariantDef->szXAnims[56].get() )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 56, 0.0);
                 break;
             case 0x33u:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 51) )
+                if ( *weapVariantDef->szXAnims[51].get() )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 51;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 51, 0.0, newPlayerstate);
@@ -3364,7 +3364,7 @@ LABEL_68:
                 }
                 break;
             case 0x34u:
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 52) && Mantle_DoAnim(ps) )
+                if ( *weapVariantDef->szXAnims[52].get() && Mantle_DoAnim(ps) )
                 {
                     viewModelInfo->hand[0].iHandAnimIndex = 52;
                     StartWeaponAnim(localClientNum, weaponIndex, obj, 52, 0.0, newPlayerstate);
@@ -3373,7 +3373,7 @@ LABEL_68:
                 {
                     PlayIdleAnim(localClientNum, ps, viewModelInfo, obj, weaponIndex, 0.0, newPlayerstate);
                 }
-                if ( **((_BYTE **)weapVariantDef->szXAnims + 57) && Mantle_DoAnim(ps) )
+                if ( *weapVariantDef->szXAnims[57].get() && Mantle_DoAnim(ps) )
                     StartCameraAnim(localClientNum, weaponIndex, obj, 57, 0.0);
                 break;
             default:
@@ -3586,18 +3586,25 @@ void __cdecl ProcessWeaponNoteTracks(int localClientNum, const playerState_s *pr
             for ( i = 0; i < noteListSize; ++i )
             {
                 //notify = (XAnimClientNotify *)((char *)XAnimClientNotifyList::GetNotifyList(pNotifyList) + 24 * i);
-                notify = (XAnimClientNotify *)((char *)pNotifyList->GetNotifyList() + 24 * i);
+                notify = (XAnimClientNotify *)pNotifyList->GetNotifyList()->m_clientNotifyMemory + i;   // LP64: era + 24 * i (sizeof x86)
                 //NotifyStringName = XAnimClientNotify::GetNotifyStringName(notify);
                 NotifyStringName = notify->GetNotifyStringName();
                 if ( I_stricmp(NotifyStringName, "end") )
                 {
                     //value = (char *)XAnimClientNotify::GetNotifyStringName(notify);
                     value = (char*)notify->GetNotifyStringName();
+#ifdef H5G
+                    // H5e: el harness no carga los client scripts (CSC): sin VM de cliente (pila nula) el primer Scr_Add* acaba en
+                    // Sys_Error "Internal script stack overflow". El notify "notetrack" a CSC queda para la ola de client scripts.
+                    if ( cg_scr_data.levelnotify )
+#endif
+                    {
                     Scr_AddString(value, SCRIPTINSTANCE_CLIENT);
                     Scr_AddInt(localClientNum, SCRIPTINSTANCE_CLIENT);
                     Scr_AddString("notetrack", SCRIPTINSTANCE_CLIENT);
                     t = Scr_ExecThread(SCRIPTINSTANCE_CLIENT, cg_scr_data.levelnotify, 3u);
                     Scr_FreeThread(t, SCRIPTINSTANCE_CLIENT);
+                    }
                     //v5 = XAnimClientNotify::GetNotifyStringName(notify);
                     v5 = notify->GetNotifyStringName();
                     PlayNoteMappedSoundAliases(localClientNum, v5, weapDef);
@@ -4931,7 +4938,7 @@ void __cdecl CG_VehicleJolt(centity_s *cent, float *origin, float *dir)
         {
             __debugbreak();
         }
-        Phys_ObjAddForce((int)cent->nitrousVeh->m_phys_user_data, origin, dir, 0);
+        Phys_ObjAddForce((int)(uintptr_t)cent->nitrousVeh->m_phys_user_data, origin, dir, 0);
     }
 }
 
@@ -5172,7 +5179,7 @@ void __cdecl CG_FireWeapon(
             AnglesToAxis(cent->pose.angles, entMatrix);
             R_FoliageNofityWeaponFiring(
                 (int)localClientNum,
-                (unsigned int)cent,
+                (unsigned int)(uintptr_t)cent, // LP64: identificador opaco del emisor (solo se compara)
                 fireOrigin,
                 entMatrix[0],
                 weaponDef->weapClass == WEAPCLASS_GAS);
@@ -5887,17 +5894,17 @@ void __cdecl CG_SndWeaponFire(snd_weapon_shot *shot)
     if ( shot->shooterIsLocalPlayer )
     {
         if ( shot->isLastShotInClip && weaponDef->fireLastSoundPlayer && *weaponDef->fireLastSoundPlayer )
-            firesound = SND_FindAliasId((char *)weaponDef->fireLastSoundPlayer);
+            firesound = SND_FindAliasId((char *)weaponDef->fireLastSoundPlayer.get());
         else
-            firesound = SND_FindAliasId((char *)weaponDef->fireSoundPlayer);
+            firesound = SND_FindAliasId((char *)weaponDef->fireSoundPlayer.get());
     }
     else if ( shot->isLastShotInClip && weaponDef->fireLastSound && *weaponDef->fireLastSound )
     {
-        firesound = SND_FindAliasId((char *)weaponDef->fireLastSound);
+        firesound = SND_FindAliasId((char *)weaponDef->fireLastSound.get());
     }
     else
     {
-        firesound = SND_FindAliasId((char *)weaponDef->fireSound);
+        firesound = SND_FindAliasId((char *)weaponDef->fireSound.get());
     }
     if ( (!shot->shooterIsLocalPlayer || shot->isTurret) && !shot->fakeFire )
         WeaponFlash(
@@ -6608,7 +6615,7 @@ void __cdecl CG_ImpactEffectForWeapon(
     case 6:
         fxType = 11;
         if (weaponDef->bounceSound)
-            AliasId = SND_FindAliasId((char *)weaponDef->bounceSound[surfType]);
+            AliasId = SND_FindAliasId((char *)weaponDef->bounceSound[surfType].get());
         else
             AliasId = SND_FindAliasId((char*)0);
         *outSnd = AliasId;
@@ -6631,19 +6638,19 @@ void __cdecl CG_ImpactEffectForWeapon(
         break;
     case 11:
         fxType = 15;
-        *outSnd = SND_FindAliasId((char *)weaponDef->projDudSound);
+        *outSnd = SND_FindAliasId((char *)weaponDef->projDudSound.get());
         break;
     case 12:
         fxType = 16;
         if (weaponDef->mortarShellSound)
-            *outSnd = SND_FindAliasId((char *)weaponDef->mortarShellSound);
+            *outSnd = SND_FindAliasId((char *)weaponDef->mortarShellSound.get());
         else
             *outSnd = cgMedia.mortarShellExplodeSound[surfType];
         break;
     case 13:
         fxType = 17;
         if (weaponDef->tankShellSound)
-            *outSnd = SND_FindAliasId((char *)weaponDef->tankShellSound);
+            *outSnd = SND_FindAliasId((char *)weaponDef->tankShellSound.get());
         else
             *outSnd = cgMedia.tankShellExplodeSound[surfType];
         break;
