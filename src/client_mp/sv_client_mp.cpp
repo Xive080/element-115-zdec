@@ -2625,6 +2625,9 @@ void __cdecl SV_UnmutePlayer_f(client_t *cl)
         Com_Printf(0, "Invalid unmute client %i\n", otherClient);
 }
 
+#ifdef H0_HARNESS
+bool (*g_h0ClientCmdFilter)(client_t *cl, const char *cmd);
+#endif
 void __cdecl SV_ExecuteClientCommand(client_t *cl, const char *s, int clientOK, int fromOldServer)
 {
     const ucmd_t *u; // [esp+14h] [ebp-4h]
@@ -2641,6 +2644,15 @@ void __cdecl SV_ExecuteClientCommand(client_t *cl, const char *s, int clientOK, 
         __debugbreak();
     }
     SV_Cmd_TokenizeString(s);
+#ifdef H0_HARNESS
+    // OLA 11 (h11_net.cpp): lista blanca de comandos para clientes remotos (download/nextdl/... leerian ficheros del anfitrion,
+    // y ClientCommand del juego trae comandos de trampa/consola). Si el filtro lo rechaza, el comando se ignora.
+    if ( g_h0ClientCmdFilter && !g_h0ClientCmdFilter(cl, SV_Cmd_Argv(0)) )
+    {
+        SV_Cmd_EndTokenizedString();
+        return;
+    }
+#endif
     for ( u = ucmds; u->name; ++u )
     {
         if ( !strcmp(SV_Cmd_Argv(0), u->name) )
@@ -2953,19 +2965,23 @@ void __cdecl SV_UserMove(client_t *cl, msg_t *msg, int delta)
             }
             else
             {
+#ifndef H0_HARNESS   // OLA 11: dato del cliente remoto; un assert seria un cierre del anfitrion provocado desde la red
                 if ( !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp",
                                 4587,
                                 0,
                                 "cmdCount > MAX_PACKET_USERCMDS") )
                     __debugbreak();
+#endif
                 Com_Printf(15, "cmdCount > MAX_PACKET_USERCMDS\n");
             }
         }
         else
         {
+#ifndef H0_HARNESS
             if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_client_mp.cpp", 4580, 0, "cmdCount < 1") )
                 __debugbreak();
+#endif
             Com_Printf(15, "cmdCount < 1\n");
         }
     }

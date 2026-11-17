@@ -649,6 +649,20 @@ int __cdecl Netchan_Process(netchan_t *chan, msg_t *msg)
         maxFragmentIndex = MSG_ReadByte(msg);
         c = MSG_ReadShort(msg);
         fragmentLength = MSG_ReadShort(msg);
+        // OLA 11 (red real): la cabecera del fragmento viene del otro extremo. El original no la comprobaba: fragment_ack tiene
+        // 128 bits (indice <= 127), el desplazamiento c * indice y la longitud salian del paquete y el memcpy escribia fuera de
+        // fragmentBuffer (2048 bytes en el servidor) y leia fuera del datagrama. Se descarta el paquete si algo no cuadra.
+        if ( msg->overflowed || c != FRAGMENT_SIZE || fragmentIndex < 0 || fragmentIndex > 127 || maxFragmentIndex > 127
+            || fragmentIndex > maxFragmentIndex || fragmentLength < 0 || fragmentLength > FRAGMENT_SIZE
+            || fragmentLength > msg->cursize - msg->readcount
+            || c * fragmentIndex + fragmentLength > chan->fragmentBufferSize
+            || (fragmentIndex < maxFragmentIndex && fragmentLength != FRAGMENT_SIZE) )
+        {
+            if ( showdrop->current.enabled )
+                Com_Printf(16, "[%s] %s: fragmento invalido descartado (indice %i/%i, tam %i, long %i)\n", netsrcString[chan->sock],
+                    NET_AdrToString(chan->remoteAddress), fragmentIndex, maxFragmentIndex, c, fragmentLength);
+            return 0;
+        }
         if ( sequence > chan->fragmentSequence )
         {
             chan->fragmentSequence = sequence;
@@ -702,7 +716,7 @@ int __cdecl Netchan_Process(netchan_t *chan, msg_t *msg)
             if ( !messageComplete )
                 return 0;
         }
-        if ( chan->fragmentLength > msg->maxsize )
+        if ( chan->fragmentLength + 4 > msg->maxsize )   // OLA 11: +4 de la secuencia que se escribe delante (antes desbordaba 4 bytes)
             return 0;
         *(int *)msg->data = sequence;
         memcpy(msg->data + 4, chan->fragmentBuffer, chan->fragmentLength);

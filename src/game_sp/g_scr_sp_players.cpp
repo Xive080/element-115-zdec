@@ -134,9 +134,22 @@ static bool SP_IsFrontendMap()
     return !I_strnicmp(map, "menu_", 5) || !I_stricmp(map, "frontend");
 }
 
+#ifdef H0_HARNESS
+// OLA 11 (co-op en red, harness2/h11_net.cpp): jugadores que espera la partida antes de "all_players_connected" (sala de espera
+// del anfitrion). Nulo o < 0: comportamiento original.
+int (*g_h0ExpectedPlayersHook)();
+#endif
+
 // zombies: getnumexpectedplayers (SP 0x005e6b20).
 static void G_f_getnumexpectedplayers()
 {
+#ifdef H0_HARNESS
+    if (g_h0ExpectedPlayersHook)
+    {
+        const int n = g_h0ExpectedPlayersHook();
+        if (n > 0) { Scr_AddInt(n, SCRIPTINSTANCE_SERVER); return; }
+    }
+#endif
     if (!SP_IsFrontendMap() && (Dvar_GetBool("onlinegame") || Dvar_GetBool("systemlink")))
     {
         // SP uses max(Party_CountMembers(&g_partyData), 1) here. KB has no party implementation.

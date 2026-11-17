@@ -4811,7 +4811,7 @@ void __cdecl MSG_ReadDeltaPlayerstate(
     int lc; // [esp+54h] [ebp-26CCh]
     NetField *array; // [esp+58h] [ebp-26C8h]
     float *v47; // [esp+5Ch] [ebp-26C4h]
-    unsigned __int8 dst[9896]; // [esp+60h] [ebp-26C0h] BYREF
+    alignas(16) unsigned __int8 dst[sizeof(playerState_s)]; // [esp+60h] [ebp-26C0h] BYREF  OLA 11: era 9896 fijo y el memset de sizeof(playerState_s) (10152 con el mod) pisaba la pila
     int Bits; // [esp+2708h] [ebp-18h]
     float *v50; // [esp+270Ch] [ebp-14h]
     BOOL v51; // [esp+2710h] [ebp-10h]
