@@ -87,6 +87,11 @@ LABEL_10:
     return string_0;
 }
 
+#ifdef H0_HARNESS
+// Harness (OLA 6a, h5_audio_cl.cpp): comandos de servidor del cliente de prueba (p.ej. '9' = ClientSysSetState, musicCmd),
+// que el cliente de prueba no guarda en su cola de fiables. Solo lee.
+void (*g_h0ServerCmdHook)(const client_t *client, const char *cmd);
+#endif
 void __cdecl SV_AddServerCommand(client_t *client, svscmd_type type, char *cmd)
 {
     svscmd_info_t *v3; // edx
@@ -98,6 +103,9 @@ void __cdecl SV_AddServerCommand(client_t *client, svscmd_type type, char *cmd)
 
     // k1 c17 TEST: the headless test client runs its client-dvar commands like SP's local client (see there).
     G_SP_HeadlessTestClientServerCommand(client, cmd);
+#ifdef H0_HARNESS
+    if (g_h0ServerCmdHook) g_h0ServerCmdHook(client, cmd);
+#endif
     if ( !client->bIsTestClient && !client->bIsDemoClient )
     {
         if ( client->reliableSequence - client->reliableAcknowledge < 64 && client->header.state == CS_ACTIVE
