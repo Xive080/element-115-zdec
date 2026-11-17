@@ -541,7 +541,7 @@ void __cdecl R_AddCodeMeshDrawSurf(
             __debugbreak();
         }
         if ( !r_fullbright->current.enabled && !r_lightConflicts->current.enabled )
-            R_WarnOncePerFrame(R_WARN_NONEMISSIVE_FX_MATERIAL, material->info.name, fxName);
+            R_WarnOncePerFrame(R_WARN_NONEMISSIVE_FX_MATERIAL, material->info.name.get(), fxName);
     }
 }
 
@@ -913,7 +913,7 @@ void __cdecl R_AddMarkMeshDrawSurf(
     }
     else
     {
-        R_WarnOncePerFrame(R_WARN_NONLIGHTMAP_MARK_MATERIAL, material->info.name);
+        R_WarnOncePerFrame(R_WARN_NONLIGHTMAP_MARK_MATERIAL, material->info.name.get());
     }
 }
 
@@ -986,7 +986,7 @@ char __cdecl R_AddParticleCloudDrawSurf(volatile unsigned int cloudIndex, Materi
     }
     else
     {
-        R_WarnOncePerFrame(R_WARN_NONEMISSIVE_FX_MATERIAL, material->info.name, "UNKNOWN-FX");
+        R_WarnOncePerFrame(R_WARN_NONEMISSIVE_FX_MATERIAL, material->info.name.get(), "UNKNOWN-FX");
         return 0;
     }
 }
