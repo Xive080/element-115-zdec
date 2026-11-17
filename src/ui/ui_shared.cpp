@@ -6335,7 +6335,8 @@ void __cdecl Scroll_ListBox_ThumbFunc(int localClientNum, UiContext *dc, scrollI
 
 void __cdecl Scroll_Slider_ThumbFunc(int localClientNum, UiContext *dc, itemDef_s **p)
 {
-    Scroll_Slider_SetThumbPos(dc, p[6]);
+    // LP64: p es &scrollInfo (scrollInfo_s); p[6] solo valia con punteros de 4 bytes (offset 0x18 = item)
+    Scroll_Slider_SetThumbPos(dc, ((scrollInfo_s *)p)->item);
 }
 
 void __cdecl Scroll_Slider_SetThumbPos(UiContext *dc, itemDef_s *item)
@@ -9376,9 +9377,11 @@ const char *__cdecl Item_Multi_Setting(itemDef_s *item)
     int ia; // [esp+8h] [ebp-8h]
     float value; // [esp+Ch] [ebp-4h]
 
+    // LP64: textDef->text es un PTR32: las cadenas por defecto tienen que vivir en la arena de 32 bits (un literal del ejecutable abortaba)
+    static const char *const kNotSet = Ptr32_ArenaStrdup("<dvarStrList or dvarFloatList not set>"), *const kEmpty = Ptr32_ArenaStrdup("");
     multiPtr = Item_GetMultiDef(item);
     if ( !multiPtr )
-        return "<dvarStrList or dvarFloatList not set>";
+        return kNotSet;
     if ( multiPtr->strDef )
     {
         string = Dvar_GetVariantString(item->dvar);
@@ -9398,7 +9401,7 @@ const char *__cdecl Item_Multi_Setting(itemDef_s *item)
                 return multiPtr->dvarList[ia];
         }
     }
-    return "";
+    return kEmpty;
 }
 
 void __cdecl Item_DvarEnum_Paint(int localClientNum, UiContext *dc, itemDef_s *item)

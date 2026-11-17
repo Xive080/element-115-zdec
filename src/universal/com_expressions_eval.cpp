@@ -13712,12 +13712,12 @@ void __cdecl RPN_OP_AND(int localClientNum, itemDef_s *item, OperandStack *dataS
     if ( data1.dataType == VAL_STRING )
     {
         data1.dataType = VAL_INT;
-        data1.internals.intVal = *(char *)data1.internals.intVal;
+        data1.internals.intVal = *data1.internals.string.get();   // LP64: la cadena es PTR32 (el int solo vale con punteros de 4 bytes)
     }
     if ( data2.dataType == VAL_STRING )
     {
         data2.dataType = VAL_INT;
-        data2.internals.intVal = *(char *)data2.internals.intVal;
+        data2.internals.intVal = *data2.internals.string.get();   // LP64: la cadena es PTR32 (el int solo vale con punteros de 4 bytes)
     }
     switch ( data1.dataType | (4 * data2.dataType) )
     {
@@ -13761,12 +13761,12 @@ void __cdecl RPN_OP_OR(int localClientNum, itemDef_s *item, OperandStack *dataSt
     if ( data1.dataType == VAL_STRING )
     {
         data1.dataType = VAL_INT;
-        data1.internals.intVal = *(char *)data1.internals.intVal;
+        data1.internals.intVal = *data1.internals.string.get();   // LP64: la cadena es PTR32 (el int solo vale con punteros de 4 bytes)
     }
     if ( data2.dataType == VAL_STRING )
     {
         data2.dataType = VAL_INT;
-        data2.internals.intVal = *(char *)data2.internals.intVal;
+        data2.internals.intVal = *data2.internals.string.get();   // LP64: la cadena es PTR32 (el int solo vale con punteros de 4 bytes)
     }
     switch ( data1.dataType | (4 * data2.dataType) )
     {
@@ -14249,7 +14249,8 @@ char *__cdecl GetExpressionResultStringCompile(
 {
     ExpressionStatement statement; // [esp+0h] [ebp-10h] BYREF
 
-    statement.filename = (char*)"runtime";
+    static const char *s_runtime = Ptr32_ArenaStrdup("runtime");   // LP64: filename es PTR32 (el literal no esta en la arena)
+    statement.filename = (char*)s_runtime;
     statement.line = 0;
     if ( Expression_Parse(text, &statement, compileBuffer, compileBufferSize) )
         return GetExpressionResultString(localClientNum, item, &statement);

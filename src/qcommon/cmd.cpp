@@ -783,7 +783,8 @@ void __cdecl Cmd_EvaluateExpression(const char **text_in, CmdArgs *argsPriv)
     itemDef_s *v2; // eax
     int v3; // [esp+0h] [ebp-C24h]
     int v4; // [esp+4h] [ebp-C20h]
-    char compileBuffer[3072]; // [esp+1Ch] [ebp-C08h] BYREF
+    // LP64: el rpn compilado (PTR32) tiene que vivir en la arena de 32 bits, no en la pila (Ptr32_AssertInArena)
+    static thread_local char *compileBuffer = (char *)Ptr32_ArenaAlloc(3072, 64);
     const char *result; // [esp+C20h] [ebp-4h]
 
     if ( !text_in && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp", 1084, 0, "%s", "text_in") )

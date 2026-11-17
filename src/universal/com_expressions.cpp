@@ -811,7 +811,7 @@ char __cdecl Expression_Parse(
                     i = atoi(token->token);
                     if ( fl == (float)i )
                     {
-                        v6 = Expression_Alloc(allocState, 16);
+                        v6 = Expression_Alloc(allocState, (int)sizeof(expressionEntry))   /* LP64: 16 = tamano en 32 bits */;
                         v6->next = 0;
                         v6->type = 1;
                         v6->data.op = OP_NOOP;
@@ -820,7 +820,7 @@ char __cdecl Expression_Parse(
                     }
                     else
                     {
-                        v7 = Expression_Alloc(allocState, 16);
+                        v7 = Expression_Alloc(allocState, (int)sizeof(expressionEntry))   /* LP64: 16 = tamano en 32 bits */;
                         v7->next = 0;
                         v7->type = 1;
                         v7->data.op = OP_RIGHTPAREN;
@@ -892,7 +892,7 @@ LABEL_39:
                     break;
             }
 LABEL_31:
-            v8 = Expression_Alloc(allocState, 16);
+            v8 = Expression_Alloc(allocState, (int)sizeof(expressionEntry))   /* LP64: 16 = tamano en 32 bits */;
             v8->next = 0;
             v8->type = 0;
             v8->data.op = op;
@@ -918,7 +918,7 @@ LABEL_40:
     }
     Com_EndParseSession();
     rpn = MakeRPN(head, &statement->numRpn);
-    statement->rpn = (expressionRpn *)Expression_Alloc(allocState, 12 * statement->numRpn);
+    statement->rpn = (expressionRpn *)Expression_Alloc(allocState, (int)sizeof(expressionRpn) * statement->numRpn)   /* LP64: 12 en 32 bits */;
     memcpy((unsigned __int8 *)statement->rpn.get(), (unsigned __int8 *)rpn, 12 * statement->numRpn);
     return 1;
 }
@@ -1007,7 +1007,7 @@ expressionEntry *__cdecl Expression_HashOperand(const char *str, ExpressionAlloc
 {
     expressionEntry *entry; // [esp+Ch] [ebp-4h]
 
-    entry = Expression_Alloc(alloc, 16);
+    entry = Expression_Alloc(alloc, (int)sizeof(expressionEntry))   /* LP64 */;
     entry->next = 0;
     entry->type = 1;
     entry->data.op = OP_NOOP;
@@ -1022,13 +1022,14 @@ expressionEntry *__cdecl Expression_StringOperand(const char *str, ExpressionAll
     const char *v5; // [esp+Ch] [ebp-18h]
     expressionEntry *entry; // [esp+20h] [ebp-4h]
 
-    entry = Expression_Alloc(alloc, strlen(str) + 17);
+    entry = Expression_Alloc(alloc, (int)(strlen(str) + sizeof(expressionEntry) + 1));
     entry->next = 0;
     entry->type = 1;
     entry->data.op = OP_MULTIPLY;
-    entry->data.operand.internals.intVal = (int)(intptr_t)&entry[1]; // LP64: solo parser de texto (no se usa con menus de zona); la cadena queda truncada
+    // LP64: la cadena es PTR32 (el bufer de compilacion y Z_Malloc estan en la arena de 32 bits); antes se truncaba a int
+    entry->data.operand.internals.string = (char *)&entry[1];
     v5 = str;
-    intVal = (_BYTE *)entry->data.operand.internals.intVal;
+    intVal = (_BYTE *)&entry[1];
     do
     {
         v2 = *v5;
