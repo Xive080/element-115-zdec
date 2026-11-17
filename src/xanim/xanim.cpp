@@ -22,7 +22,7 @@ XAnimServerNotifyList *g_currList;
 
 int __cdecl XAnimTreeSize()
 {
-    return 8;
+    return sizeof(XAnimTree_s);   // x86: 8; LP64: 16 (anims es un puntero nativo; con 8 quedaba children sin limpiar)
 }
 
 bool __cdecl XAnimTreeHasInfo(const XAnimTree_s *tree)

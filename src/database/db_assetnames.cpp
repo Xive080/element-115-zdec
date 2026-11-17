@@ -300,6 +300,13 @@ int __cdecl DB_SizeofXAsset_Glasses_()
     return 56;
 }
 
+// x86: el compilador fusiono los "return 8" de estos tipos (LocalizeEntry y otros de 8 bytes) con XAnimTreeSize y la tabla
+// decompilada apuntaba a esa. En LP64 XAnimTree_s mide 16 y XAnimTreeSize ya no vale: tamano propio de 8 (el del original).
+static int __cdecl DB_SizeofXAsset_8Bytes_()
+{
+    return 8;
+}
+
 int(__cdecl *DB_GetXAssetSizeHandler[43])() =
 {
   &DB_SizeofXAsset_RawFile_,
@@ -326,13 +333,13 @@ int(__cdecl *DB_GetXAssetSizeHandler[43])() =
   &DB_SizeofXAsset_Font_s_,
   &DB_SizeofXAsset_RawFile_,
   &DB_SizeofXAsset_menuDef_t_,
-  &XAnimTreeSize,
+  &DB_SizeofXAsset_8Bytes_,
   &DB_SizeofXAsset_WeaponVariantDef_,
   NULL,
   NULL,
   &DB_SizeofXAsset_SndDriverGlobals_,
   &DB_SizeofXAsset_FxEffectDef_,
-  &XAnimTreeSize,
+  &DB_SizeofXAsset_8Bytes_,
   NULL,
   NULL,
   NULL,
@@ -343,7 +350,7 @@ int(__cdecl *DB_GetXAssetSizeHandler[43])() =
   &DB_SizeofXAsset_StringTable_,
   &DB_SizeofXAsset_PackIndex_,
   &DB_SizeofXAsset_XGlobals_,
-  &XAnimTreeSize,
+  &DB_SizeofXAsset_8Bytes_,
   &DB_SizeofXAsset_Glasses_,
   &DB_SizeofXAsset_EmblemSet_
 };

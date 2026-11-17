@@ -237,7 +237,7 @@ int __cdecl Path_AStarAlgorithm_CustomSearchInfo_FindCloseNode_(
     float v[7]; // [esp+8h] [ebp-C0h] BYREF
     pathnode_t *pEval; // [esp+24h] [ebp-A4h]
     pathnode_t *pCurrent; // [esp+2Ch] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+30h] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+30h] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+B4h] [ebp-14h]
     pathnode_t *pInsert; // [esp+B8h] [ebp-10h]
     int i; // [esp+BCh] [ebp-Ch]
@@ -385,7 +385,7 @@ int Path_AStarAlgorithm_CustomSearchInfo_FindPath_(
     double v11; // st7
     int success; // [esp+28h] [ebp-A0h]
     pathnode_t *pCurrent; // [esp+2Ch] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+30h] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+30h] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+B4h] [ebp-14h]
     pathnode_t *pInsert; // [esp+B8h] [ebp-10h]
     int i; // [esp+BCh] [ebp-Ch]
@@ -567,7 +567,7 @@ int Path_AStarAlgorithm_CustomSearchInfo_FindPathWithWidth_(
     double v11; // st7
     int success; // [esp+30h] [ebp-A0h]
     pathnode_t *pCurrent; // [esp+34h] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+38h] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+38h] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+BCh] [ebp-14h]
     pathnode_t *pInsert; // [esp+C0h] [ebp-10h]
     int i; // [esp+C4h] [ebp-Ch]
@@ -755,7 +755,7 @@ int Path_AStarAlgorithm_CustomSearchInfo_FindPathNotCrossPlanes_(
     double v11; // st7
     int success; // [esp+30h] [ebp-A0h]
     pathnode_t *pCurrent; // [esp+34h] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+38h] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+38h] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+BCh] [ebp-14h]
     pathnode_t *pInsert; // [esp+C0h] [ebp-10h]
     int i; // [esp+C4h] [ebp-Ch]
@@ -938,7 +938,7 @@ int Path_AStarAlgorithm_CustomSearchInfo_FindPathInCylinderWithLOS_(
     double v11; // st7
     int success; // [esp+34h] [ebp-A0h]
     pathnode_t *pCurrent; // [esp+38h] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+3Ch] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+3Ch] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+C0h] [ebp-14h]
     pathnode_t *pInsert; // [esp+C4h] [ebp-10h]
     int i; // [esp+C8h] [ebp-Ch]
@@ -1121,7 +1121,7 @@ int Path_AStarAlgorithm_CustomSearchInfo_CouldAttack_(
     char v11; // [esp+3h] [ebp-A5h]
     int success; // [esp+8h] [ebp-A0h]
     pathnode_t *pCurrent; // [esp+Ch] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+10h] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+10h] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+94h] [ebp-14h]
     pathnode_t *pInsert; // [esp+98h] [ebp-10h]
     int i; // [esp+9Ch] [ebp-Ch]
@@ -1311,7 +1311,7 @@ int Path_AStarAlgorithm_CustomSearchInfo_FindPathClosestPossible_(
     float v13; // [esp+24h] [ebp-A8h]
     int success; // [esp+2Ch] [ebp-A0h]
     pathnode_t *pCurrent; // [esp+30h] [ebp-9Ch]
-    pathnode_t TopParent; // [esp+34h] [ebp-98h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+34h] [ebp-98h] BYREF
     float fApproxTotalCost; // [esp+B8h] [ebp-14h]
     pathnode_t *pInsert; // [esp+BCh] [ebp-10h]
     int i; // [esp+C0h] [ebp-Ch]

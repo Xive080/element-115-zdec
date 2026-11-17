@@ -3794,7 +3794,7 @@ void    Path_UpdateLimitedDepthArcBadPlaceCount(
     double v5; // xmm0_8
     float side1end[3]; // [esp+28h] [ebp-3FCh] BYREF
     float side0end[3]; // [esp+34h] [ebp-3F0h] BYREF
-    pathnode_t TopParent; // [esp+40h] [ebp-3E4h] BYREF
+    Path_TopParentScope topParentScope; pathnode_t &TopParent = *topParentScope.node; // LP64 (arena); x86: pila [esp+40h] [ebp-3E4h] BYREF
     pathnode_t *node; // [esp+C0h] [ebp-364h]
     int nodeCount; // [esp+C4h] [ebp-360h] BYREF
     pathsort_t pathReturn[64]; // [esp+C8h] [ebp-35Ch] BYREF
@@ -4153,3 +4153,18 @@ void __cdecl G_ClearSelectedPathNode()
 //    return (pathnode_parent_t *)slot;
 //}
 //
+
+static pathnode_t *s_topParentPool;
+static int s_topParentDepth;
+Path_TopParentScope::Path_TopParentScope()
+{
+    if (!s_topParentPool)
+        s_topParentPool = (pathnode_t *)Ptr32_ArenaAlloc(8 * sizeof(pathnode_t), 16);
+    iassert(s_topParentDepth < 8);
+    node = &s_topParentPool[s_topParentDepth++];
+    memset(node, 0, sizeof(*node));
+}
+Path_TopParentScope::~Path_TopParentScope()
+{
+    --s_topParentDepth;
+}

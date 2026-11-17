@@ -317,6 +317,13 @@ void __cdecl destroy_client_gjkcc_info(int localClientNum)
 
 void    gjkcc_prolog(const gjkcc_input_t *gjkcc_in, float *origin)
 {
+#ifdef H0_HARNESS
+    // port arm64: la cache GJK (phys_gjk*.cpp: x87 e ids de 32 bits) no esta portada. Con phys_player_collision_mode y
+    // phys_ai_collision_mode a 0 jugador y actores trazan con CM_BoxTrace y la cache no se consulta: prolog/epilog vacios.
+    if (phys_player_collision_mode->current.integer != 1 && phys_ai_collision_mode->current.integer != 1)
+        return;
+#endif
+
     phys_vec3 v4; // [esp-20h] [ebp-2Ch] BYREF
     gjkcc_info *v5; // [esp-4h] [ebp-10h]
     //unsigned int v6[2]; // [esp+0h] [ebp-Ch] BYREF
@@ -358,6 +365,12 @@ void __thiscall gjkcc_info::Lock()
 void __cdecl gjkcc_epilog(const gjkcc_input_t *gjkcc_in, const float *origin)
 {
     gjkcc_info *gcci; // [esp+20h] [ebp-4h]
+#ifdef H0_HARNESS
+    // port arm64: la cache GJK (phys_gjk*.cpp: x87 e ids de 32 bits) no esta portada. Con phys_player_collision_mode y
+    // phys_ai_collision_mode a 0 jugador y actores trazan con CM_BoxTrace y la cache no se consulta: prolog/epilog vacios.
+    if (phys_player_collision_mode->current.integer != 1 && phys_ai_collision_mode->current.integer != 1)
+        return;
+#endif
 
     gcci = find_gjkcc_info(gjkcc_in->gjkcc_id, gjkcc_in->is_server_thread);
     //phys_heap_gjk_cache_system_avl_tree::update_cache(&gcci->m_gjk_cache);

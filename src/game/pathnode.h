@@ -535,3 +535,11 @@ extern pathlink_s g_tempPathNodeLinks[2048];
 extern int g_tempPathNodeLinksCount;
 extern void *g_oldContents;
 extern const char *nodeStringTable[21];
+// LP64: el nodo centinela de A* (TopParent) era una variable de pila en x86; sus enlaces PTR32 (pNextOpen/pPrevOpen/pParent)
+// exigen que este en la arena de 32 bits. Path_TopParentScope presta uno de la arena (con anidamiento) para la duracion del ambito.
+struct Path_TopParentScope
+{
+    pathnode_t *node;
+    Path_TopParentScope();
+    ~Path_TopParentScope();
+};

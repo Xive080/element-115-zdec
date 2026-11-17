@@ -2460,9 +2460,9 @@ float (*__cdecl MSG_GetMapCenter())[3]
 
 int __cdecl GetMinBitCountForNum(unsigned int num)
 {
-    int v2; // eax
+    unsigned long v2; // eax (LP64: unsigned long, el puntero de 8 bytes sobre un int de 4 escribia fuera y -O2 devolvia 0)
 
-    if (!_BitScanReverse((unsigned long *)&v2, num))
+    if (!_BitScanReverse(&v2, num))
     {
         //v2 = `CountLeadingZeros'::`2': : notFound;
         v2 = 63;

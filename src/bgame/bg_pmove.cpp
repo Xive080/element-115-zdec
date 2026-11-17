@@ -5718,6 +5718,12 @@ void __cdecl PM_UpdatePush(pmove_t *pm, pml_t *pml)
     ps = pm->ps;
     if ( !ps && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_pmove.cpp", 6088, 0, "%s", "ps") )
         __debugbreak();
+#ifdef H0_HARNESS
+    // port arm64: gjk_sentient_push es colision GJK (no portada). Sin ella el jugador no se aparta de los actores al chocar
+    // (playerPushAmount 1 lo pone el script por SetClientDvars). PENDIENTE: portar phys_gjk* o un empuje equivalente.
+    if (phys_player_collision_mode->current.integer != 1)
+        return;
+#endif
     if ( playerPushAmount->current.value != 0.0 )
     {
         setup_gjkcc_input(pm, &gjkcc_in);
