@@ -486,7 +486,7 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
     obj = ikState->model;
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 672, 0, "%s", "obj") )
         __debugbreak();
-    matArray = (DObjAnimMat *)*((unsigned int *)obj + 21);
+    matArray = I_dmaGetDObjSkel((const DObj *)obj);   // LP64: era *((unsigned int *)obj + 21), skel.mat en x86
     if ( !matArray && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 675, 0, "%s", "matArray") )
         __debugbreak();
     ikState->rootOffset[0] = matArray->trans[0];
@@ -720,7 +720,7 @@ bool __cdecl IKImport_IsIKEntity_Internal(unsigned __int8 *model)
 
     if ( !model && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 1105, 0, "%s", "obj") )
         __debugbreak();
-    entityNum = *((unsigned __int16 *)model + 3) - 1;
+    entityNum = ((const DObj *)model)->entnum - 1;   // LP64: era *((unsigned __int16 *)model + 3), el desplazamiento x86 de entnum
     if ( entityNum > 1023 )
         return 0;
     ikState = 0;
@@ -743,7 +743,8 @@ bool __cdecl IKImport_IsIKEntity_Internal(unsigned __int8 *model)
         return 0;
     if ( ikState && !ikState->isIKModel )
         return 0;
-    if ( !*((unsigned int *)model + 30) || !model[9] || !**((unsigned int **)model + 30) )
+    // LP64: era *((unsigned int *)model + 30) / model[9] (desplazamientos x86 de models y numModels)
+    if ( !((const DObj *)model)->models || !((const DObj *)model)->numModels || !((const DObj *)model)->models[0] )
         return 0;
     if ( entityNum < 0 )
         return 0;
@@ -820,7 +821,7 @@ bool __cdecl IKImport_BypassTerrainMapping(IKState *ikState)
     obj = ikState->model;
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 1300, 0, "%s", "obj") )
         __debugbreak();
-    entityNum = *((unsigned __int16 *)obj + 3) - 1;
+    entityNum = ((const DObj *)obj)->entnum - 1;   // LP64: era *((unsigned __int16 *)obj + 3), el desplazamiento x86 de entnum
     if ( (unsigned int)entityNum >= 0x400 )
         return 1;
     if ( entityNum < 32 )
@@ -847,7 +848,7 @@ bool __cdecl IKImport_ApplyTerrainMapping(IKState *ikState)
     obj = ikState->model;
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 1336, 0, "%s", "obj") )
         __debugbreak();
-    entityNum = *((unsigned __int16 *)obj + 3) - 1;
+    entityNum = ((const DObj *)obj)->entnum - 1;   // LP64: era *((unsigned __int16 *)obj + 3), el desplazamiento x86 de entnum
     if ( entityNum >= 0x400 )
         return 0;
     if ( ikState->isServer )
@@ -907,12 +908,12 @@ bool __cdecl IKImport_ApplyLeftHandIK(IKState *ikState)
     obj = ikState->model;
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 1433, 0, "%s", "obj") )
         __debugbreak();
-    entityNum = *((unsigned __int16 *)obj + 3) - 1;
+    entityNum = ((const DObj *)obj)->entnum - 1;   // LP64: era *((unsigned __int16 *)obj + 3), el desplazamiento x86 de entnum
     if ( (unsigned int)entityNum >= 0x400 )
         return 0;
     if ( ikState->isServer )
         return 0;
-    if ( (char)obj[112] == -1
+    if ( ((const DObj *)obj)->localClientIndex == -1   // LP64: era (char)obj[112]
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp",
                     1443,
@@ -922,7 +923,7 @@ bool __cdecl IKImport_ApplyLeftHandIK(IKState *ikState)
     {
         __debugbreak();
     }
-    cent = CG_GetEntity((char)obj[112], entityNum);
+    cent = CG_GetEntity(((const DObj *)obj)->localClientIndex, entityNum);
     if ( ((*((unsigned int *)cent + 201) >> 1) & 1) == 0 )
         return 0;
     if ( IKImport_GetVar_IK_Left_Hand_Lerp_Test() )
@@ -2463,7 +2464,7 @@ int __cdecl IKImport_GetActorNum(unsigned __int8 *model)
 
     if ( !model && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 3030, 0, "%s", "obj") )
         __debugbreak();
-    entityNum = *((unsigned __int16 *)model + 3) - 1;
+    entityNum = ((const DObj *)model)->entnum - 1;   // LP64: era *((unsigned __int16 *)model + 3), el desplazamiento x86 de entnum
     if ( DObjIsServer((const DObj *)model) )
     {
         if ( g_entities[entityNum].s.eType != 17
@@ -2517,7 +2518,7 @@ bool __cdecl IKImport_IsValidEntityType(const unsigned __int8 *model)
 
     if ( !model && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 3076, 0, "%s", "obj") )
         __debugbreak();
-    entityNum = *((unsigned __int16 *)model + 3) - 1;
+    entityNum = ((const DObj *)model)->entnum - 1;   // LP64: era *((unsigned __int16 *)model + 3), el desplazamiento x86 de entnum
     if ( DObjIsServer((const DObj *)model) )
         return g_entities[entityNum].s.eType == 1;
     LocalClientIndex = DObjGetLocalClientIndex((const DObj *)model);
