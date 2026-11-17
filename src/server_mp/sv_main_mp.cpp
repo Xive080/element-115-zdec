@@ -1203,6 +1203,11 @@ void __cdecl SV_UpdatePerformanceFrame(int time)
     }
 }
 
+#ifdef H0_HARNESS
+// Harness (H5d, h5_play.cpp): la entrada local de H4/app como usercmd del jugador de prueba. Si devuelve true, ese usercmd pasa
+// por el SV_ClientThink ordinario de abajo (Pmove ORIGINAL del servidor), en el lugar del arnes headless y de SV_BotThink.
+bool (*g_h0BotCmdHook)(client_t *bot, usercmd_s *cmd);
+#endif
 void __cdecl SV_UpdateBots()
 {
     int j; // [esp+4h] [ebp-44h]
@@ -1219,7 +1224,11 @@ void __cdecl SV_UpdateBots()
     {
         if ( bot->header.state != CS_FREE && bot->header.state != CS_RECONNECTING && bot->bIsTestClient && !bot->bIsDemoClient )
         {
-            if (!G_SP_HeadlessReplayCommand(bot, &botcmd) && !G_SP_HeadlessMoveCommand(bot, &botcmd)
+            if (
+#ifdef H0_HARNESS
+                !(g_h0BotCmdHook && g_h0BotCmdHook(bot, &botcmd)) &&
+#endif
+                !G_SP_HeadlessReplayCommand(bot, &botcmd) && !G_SP_HeadlessMoveCommand(bot, &botcmd)
                 && !G_SP_HeadlessFightCommand(bot, &botcmd))
                 SV_BotThink(bot, &botcmd);
             SV_ClientThink(bot, &botcmd);
