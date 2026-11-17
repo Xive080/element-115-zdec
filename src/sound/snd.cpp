@@ -189,7 +189,7 @@ void __cdecl DoLengthNotify(unsigned int msec, const char *lengthNotifyData, snd
 
     if ( id == SND_LENGTH_NOTIFY_SCRIPT )
     {
-        SND_LengthNotify((unsigned int)lengthNotifyData, msec);
+        SND_LengthNotify((unsigned int)(uintptr_t)lengthNotifyData, msec); // LP64: entnum guardado como puntero
     }
     else if ( id == SND_LENGTH_NOTIFY_SUBTITLE )
     {
@@ -723,7 +723,7 @@ void __cdecl SND_SetVoiceStartFlux(snd_voice_t *voice, float *player)
             move_type = (snd_flux_type_t)(rand() % 3 + 1);
         if ( !((alias->flags & 2) >> 1) )
         {
-            Com_PrintError(9, "Alias %s has move_type but is not 3d\n", alias->name);
+            Com_PrintError(9, "Alias %s has move_type but is not 3d\n", alias->name.get());
             return;
         }
         if ( (float)((float)((float)(voice->direction[0] * voice->direction[0])
@@ -758,7 +758,7 @@ void __cdecl SND_SetVoiceStartFlux(snd_voice_t *voice, float *player)
                                                  + (float)(voice->direction[1] * voice->direction[1]))
                                  + (float)(voice->direction[2] * voice->direction[2])) < 0.0000152879 )
             {
-                Com_PrintError(9, "Alias %s has move_type of shot but has no direction\n", alias->name);
+                Com_PrintError(9, "Alias %s has move_type of shot but has no direction\n", alias->name.get());
                 return;
             }
             *(_QWORD *)&moveBasis[0][0] = *(_QWORD *)voice->direction;
@@ -1751,7 +1751,7 @@ snd_alias_t *__cdecl SND_PickSoundAliasFromList(snd_alias_list_t *aliasList, int
         randomIndex = -1;
         if ( (((selectionArray[0]->flags & 0xE0000000) >> 29) & 4) != 0 )
         {
-            seed = (int)aliasList + objectId;
+            seed = (int)(uintptr_t)aliasList + objectId; // LP64: semilla de los 32 bits bajos
             v3 = RandWithSeed(&seed);
             randomIndex = v3 % actualCount;
         }
@@ -1938,7 +1938,7 @@ unsigned int __cdecl SND_PlaySoundAlias(
         return -1;
     if ( alias->dryCurve == -1 )
     {
-        Com_PrintError(9, "Error: '%s' had bad volume curve\n", alias->name);
+        Com_PrintError(9, "Error: '%s' had bad volume curve\n", alias->name.get());
         return -1;
     }
     // zombies (L16): probability byte * 0.003921569f (SP 0x005BBBC2), not / 255.0
@@ -4099,7 +4099,7 @@ void __cdecl SND_UpdateVoice(snd_voice_t *voice, float dt)
                         fard = (float)alias->distMin;
                         if ( neard >= fard )
                         {
-                            Com_PrintError(9, "Alias %s had invalid dist min %f. needs to be > than %f\n", alias->name, fard, neard);
+                            Com_PrintError(9, "Alias %s had invalid dist min %f. needs to be > than %f\n", alias->name.get(), fard, neard);
                             fard = neard + 1.0;
                         }
                         g_4b = SND_GetDistance(voice);
@@ -4247,7 +4247,7 @@ void __cdecl SND_UpdateVoice(snd_voice_t *voice, float dt)
                 else
                 {
                     if ( (alias->flags & 0x40) >> 6 )
-                        Com_PrintError(9, "ERROR: alias %s has mono asset but is marked as futz\n", alias->name);
+                        Com_PrintError(9, "ERROR: alias %s has mono asset but is marked as futz\n", alias->name.get());
                     ga = (float)voice->alias->centerSend * 1.5259022e-05f;
                     t_4a = SND_GetPanByIndex(voice->alias->pan);
                     v3 = Snd_GetMixChannelCount(snd_speakerConfiguration->current.unsignedInt);

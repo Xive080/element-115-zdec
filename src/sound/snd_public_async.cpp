@@ -77,7 +77,7 @@ static void SND_BO1NoDeviceLength(unsigned int id, SndEntHandle entHandle, const
     else if (alias->soundFile->type != 1)
     {
         if (SND_BO1TraceEnabled())
-            SND_BO1TraceText("cl nodevice_length alias=%s ent=%d -> stream (no report)", alias->name, ent);
+            SND_BO1TraceText("cl nodevice_length alias=%s ent=%d -> stream (no report)", alias->name.get(), ent);
         return;
     }
     else
@@ -1263,7 +1263,7 @@ void __cdecl SND_SubtitleNotify(const char *subtitle, unsigned int lengthMs)
     if ( cmd )
     {
         cmd->type = SND_NOTIFY_SUBTITLE;
-        cmd->context.length.ent = (unsigned int)subtitle;
+        cmd->context.subtitle.subtitle = subtitle; // LP64: por nombre (en x86 length.ent solapaba subtitle.subtitle)
         cmd->context.ent_update.handle.handle = lengthMs;
         SND_NotifyPush(cmd);
     }
@@ -1296,7 +1296,7 @@ void __cdecl SND_FreePlaybackNotify(snd_playback *playback)
     if ( cmd )
     {
         cmd->type = SND_NOTIFY_PLAYBACK_FREE;
-        cmd->context.ent_update.handle.handle = (int)playback;
+        cmd->context.playback_free.playback = playback; // LP64: por nombre (puntero de 8 bytes)
         SND_NotifyPush(cmd);
     }
 }

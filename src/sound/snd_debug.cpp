@@ -163,13 +163,13 @@ void __cdecl DebugDrawWorldSound3D(
     case 1:
         goto LABEL_29;
     case 2:
-        CL_AddDebugString(org, colorWhiteFaded, fontsize, (char *)voice->alias->name, 1);
+        CL_AddDebugString(org, colorWhiteFaded, fontsize, (char *)voice->alias->name.get(), 1); // LP64
     LABEL_29:
         CL_AddDebugStarWithText(org, starColor, colorWhiteFaded, 0, fontsize, 1);
         return;
     case 3:
         fontsize = fontsize * 0.85000002;
-        text = va("Details: %s %d", voice->alias->name, entNum);
+        text = va("Details: %s %d", voice->alias->name.get(), entNum);
         if (offsets[entNum])
             CL_AddDebugStarWithText(org, starColor, colorWhiteFaded, 0, fontsize, 1);
         else
@@ -316,7 +316,7 @@ int __cdecl SND_GetSoundOverlay(snd_overlay_info *info, int start, int count)
                 __debugbreak();
             }
             SND_AliasGetFileName(voice->alias, info[i].pszSampleName, 128);
-            Com_sprintf(info[i].name, 0x40u, "%s", voice->alias->name);
+            Com_sprintf(info[i].name, 0x40u, "%s", voice->alias->name.get());
             info[i].channel |= (voice->alias->flags & 0xC000) >> 14 << 30;
             info[i].fPitch = SND_GetPitch(voice);
             info[i].fDry = SND_LinearToDbSpl(voice->dryLevel);

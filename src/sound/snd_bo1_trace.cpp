@@ -242,7 +242,7 @@ void SND_BO1TraceBanks(const char *when)
     // L14: each sound group's attenuation columns and the product along its parent chain (the factor SND_GetBaseLevel
     // multiplies into every voice of the group); used = the column this build reads (SND_GroupAttenuationRaw).
     // Without a sound device SND_Init leaves g_snd.global_constants null; the asset is loaded with the zone anyway.
-    const SndDriverGlobals *globals = g_snd.global_constants ? g_snd.global_constants
+    const SndDriverGlobals *globals = g_snd.global_constants ? (const SndDriverGlobals *)g_snd.global_constants // LP64
         : DB_FindXAssetHeader(ASSET_TYPE_SNDDRIVER_GLOBALS, (char *)"singleton", false, 0).sndDriverGlobals;
     const unsigned int groupCount = globals ? globals->groupCount : 0;
     for (unsigned int g = 0; g < groupCount; ++g)
