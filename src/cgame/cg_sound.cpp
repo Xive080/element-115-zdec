@@ -610,7 +610,7 @@ void __cdecl CG_SoundWhizby(
         && CG_SoundWhizbyPath(shotPosition, position, cgameGlob->refdef.vieworg, 250.0, startPosition, endPosition) )
     {
         if ( weapDef->whizbySound && *weapDef->whizbySound )
-            AliasId = SND_FindAliasId((char *)weapDef->whizbySound);
+            AliasId = SND_FindAliasId((char *)weapDef->whizbySound.get());
         else
             AliasId = cgMedia.bulletWhizby;
         isUnderwater = CM_GetWaterHeight(cgameGlob->refdef.vieworg, 200.0, -200.0) > cgameGlob->refdef.vieworg[2];
@@ -621,7 +621,7 @@ void __cdecl CG_SoundWhizby(
             id = AliasId;
         SND_Play(id, 0, 1.0, entHandle, startPosition, shotDirection, 0);
         if ( weapDef->crackSound && *weapDef->crackSound )
-            v5 = SND_FindAliasId((char *)weapDef->crackSound);
+            v5 = SND_FindAliasId((char *)weapDef->crackSound.get());
         else
             v5 = 0;
         if ( v5 )
