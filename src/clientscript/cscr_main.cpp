@@ -534,8 +534,16 @@ void __cdecl Scr_PostCompileScripts(scriptInstance_t inst)
 
 #include <game_sp/scr_sp_debug.h>
 
+#ifdef H0_HARNESS
+// Harness (H5f, h5_play.cpp): ultimo momento en que gScrCompilePub.canonicalStrings sigue valido (nombres de campos de script
+// -> identificador canonico), como G_SP_MeasureFields. Solo lee; no crea variables ni cadenas.
+void (*g_h0EndLoadScriptsHook)(scriptInstance_t inst);
+#endif
 void __cdecl Scr_EndLoadScripts(scriptInstance_t inst)
 {
+#ifdef H0_HARNESS
+    if (g_h0EndLoadScriptsHook) g_h0EndLoadScriptsHook(inst);
+#endif
     Scr_SP_BuildCodePosMap(inst);
     G_SP_MeasureFields(inst);
     { void GScr_ModScriptPerfFields(scriptInstance_t); GScr_ModScriptPerfFields(inst); } // mod (L43) bo1_mod_scriptperf
