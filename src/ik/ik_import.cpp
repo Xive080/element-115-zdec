@@ -299,7 +299,8 @@ char __cdecl IKImport_CalcAnimatedIKBonesBits(IKState *ikState, unsigned __int8 
     ikState->animatedIKBonesBits[0] = 0;
     for ( ikBoneIndex = 0; ikBoneIndex < 23; ++ikBoneIndex )
     {
-        if ( (*(unsigned int *)&model[4 * ((int)ikState->ikBoneToObjBone[ikBoneIndex] >> 5) + 20]
+        // LP64: era model[20 + 4*w] (offset x86 de skel.partBits.anim)
+        if ( (((const unsigned int *)&((const DObj *)model)->skel.partBits.anim)[(int)ikState->ikBoneToObjBone[ikBoneIndex] >> 5]
                 & (0x80000000 >> (ikState->ikBoneToObjBone[ikBoneIndex] & 0x1F))) != 0 )
             ikState->animatedIKBonesBits[ikBoneIndex >> 5] |= 0x80000000 >> (ikBoneIndex & 0x1F);
     }
@@ -504,9 +505,10 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
     matArray->quat[2] = 0.0f;
     matArray->quat[3] = 1.0f;
     thisMat = matArray;
-    for ( objBoneIndex = 0; objBoneIndex < *(unsigned __int8 *)(**((unsigned int **)obj + 30) + 4); ++objBoneIndex )
+    // LP64: era *(**((unsigned int **)obj + 30) + 4) = models[0]->numBones y obj[20 + 4*w] = skel.partBits.anim (offsets x86)
+    for ( objBoneIndex = 0; objBoneIndex < ((const DObj *)obj)->models[0]->numBones; ++objBoneIndex )
     {
-        if ( (*(unsigned int *)&obj[4 * (objBoneIndex >> 5) + 20] & (0x80000000 >> (objBoneIndex & 0x1F))) != 0 )
+        if ( (((const unsigned int *)&((const DObj *)obj)->skel.partBits.anim)[objBoneIndex >> 5] & (0x80000000 >> (objBoneIndex & 0x1F))) != 0 )
         {
             v1 = Vec4LengthSq(thisMat->quat);
             if ( v1 == 0.0 )
@@ -557,9 +559,9 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
             memcpy(&localMat, thisMata, sizeof(localMat));
             IKImport_AccumulateParentObjBones(
                 ikState,
-                *(const unsigned __int8 **)(**((unsigned int **)obj + 30) + 12),
-                *(unsigned __int8 *)(**((unsigned int **)obj + 30) + 5),
-                *(float **)(**((unsigned int **)obj + 30) + 20),
+                (const unsigned __int8 *)((const DObj *)obj)->models[0]->parentList,   // LP64: era +12 de models[0] (x86)
+                ((const DObj *)obj)->models[0]->numRootBones,                         // LP64: era +5
+                (float *)((const DObj *)obj)->models[0]->trans,                         // LP64: era +20
                 objBoneIndexa,
                 matArray,
                 &localMat);
