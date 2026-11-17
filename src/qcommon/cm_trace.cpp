@@ -1404,7 +1404,8 @@ void __cdecl CM_TestInTempBrush(const traceWork_t *tw, trace_t *trace)
     geoms = *tw->threadInfo.geoms;
     for ( i = 0; i < geoms->count; ++i )
     {
-        info = (const cbrush_t **)&geoms->geoms[i];
+        const cbrush_t *geomBrush = (const cbrush_t *)geoms->geoms[i].brush.get();   // LP64: PhysGeomInfo.brush es PTR32 (el cast a cbrush_t** leia 8 bytes)
+        info = &geomBrush;
         if ( *info )
         {
             if ( (tw->contents & (*info)->contents) != 0 )
@@ -1428,7 +1429,8 @@ void __cdecl CM_TraceThroughTempBrush(const traceWork_t *tw, trace_t *trace)
         geoms = *tw->threadInfo.geoms;
         for ( i = 0; i < geoms->count; ++i )
         {
-            info = (const cbrush_t **)&geoms->geoms[i];
+            const cbrush_t *geomBrush = (const cbrush_t *)geoms->geoms[i].brush.get();   // LP64: PhysGeomInfo.brush es PTR32 (el cast a cbrush_t** leia 8 bytes)
+        info = &geomBrush;
             if ( *info )
             {
                 if ( (tw->contents & (*info)->contents) != 0 )
@@ -3256,7 +3258,8 @@ int __cdecl CM_SightTraceThroughTempBrush(const traceWork_t *tw, trace_t *trace)
     geoms = *tw->threadInfo.geoms;
     for ( i = 0; i < geoms->count; ++i )
     {
-        info = (const cbrush_t **)&geoms->geoms[i];
+        const cbrush_t *geomBrush = (const cbrush_t *)geoms->geoms[i].brush.get();   // LP64: PhysGeomInfo.brush es PTR32 (el cast a cbrush_t** leia 8 bytes)
+        info = &geomBrush;
         if ( *info && (tw->contents & (*info)->contents) != 0 && CM_SightTraceThroughBrush(tw, *info, 1, trace) )
             return -1;
     }
