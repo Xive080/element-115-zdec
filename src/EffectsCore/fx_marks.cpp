@@ -321,14 +321,15 @@ void __cdecl FX_FreeMarkPointGroups(FxMarksSystem *marksSystem, FxMark *mark)
 
 FxPointGroupPool *__cdecl FX_PointGroupFromHandle(FxMarksSystem *marksSystem, unsigned int handle)
 {
-    if ( handle >= 0x19800
+    // LP64: FxPointGroupPool mide 72 bytes (union con puntero), no 0x44; el limite sale de sizeof y no del 0x19800 de 32 bits
+    if ( handle >= sizeof( marksSystem->pointGroups )
         && !Assert_MyHandler(
                     "c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",
                     237,
                     0,
                     "handle doesn't index FX_POINT_GROUP_LIMIT * sizeof( FxPointGroup )\n\t%i not in [0, %i)",
                     handle,
-                    104448) )
+                    (int)sizeof( marksSystem->pointGroups ) ) )
     {
         __debugbreak();
     }
@@ -1203,14 +1204,15 @@ int __cdecl FX_PointGroupToHandle(FxMarksSystem *marksSystem, FxPointGroup *grou
     if ( !group && !Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h", 225, 0, "%s", "group") )
         __debugbreak();
     handle = (char *)group - (char *)marksSystem->pointGroups;
-    if ( handle >= 0x19800
+    // LP64: FxPointGroupPool mide 72 bytes (union con puntero), no 0x44; el limite sale de sizeof y no del 0x19800 de 32 bits
+    if ( handle >= sizeof( marksSystem->pointGroups )
         && !Assert_MyHandler(
                     "c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",
                     228,
                     0,
                     "handle doesn't index FX_POINT_GROUP_LIMIT * sizeof( FxPointGroup )\n\t%i not in [0, %i)",
                     handle,
-                    104448) )
+                    (int)sizeof( marksSystem->pointGroups ) ) )
     {
         __debugbreak();
     }
