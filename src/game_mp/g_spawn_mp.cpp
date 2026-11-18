@@ -441,6 +441,14 @@ unsigned int __cdecl G_SpawnStruct(SpawnVar *spawnVar)
     {
         __debugbreak();
     }
+    // zombies (SP): la clave "model" de un script_struct queda registrada al cargar el nivel. El GSC lo da por hecho:
+    // _zombiemode_sidequests::precache_sidequest_assets mira asset.model (nunca definido; el modelo esta en asset.struct.model)
+    // y build_asset_from_struct hace SetModel(struct.model) en mitad de la partida (Shangri-La: p_ztem_glyphs_NN_unlit de OaFC).
+    {
+        const char *structModel;
+        if (level.initializing && G_SpawnString(spawnVar, "model", "", &structModel) && structModel[0])
+            G_ModelIndex((char *)structModel);
+    }
     Scr_AddExecThread(SCRIPTINSTANCE_SERVER, g_scr_data.createstruct, 0);
     structId = Scr_GetObject(0, SCRIPTINSTANCE_SERVER);
     for ( i = 0; i < spawnVar->numSpawnVars; ++i )
