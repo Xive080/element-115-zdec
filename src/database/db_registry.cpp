@@ -2191,6 +2191,8 @@ XAssetEntry *__cdecl DB_CreateDefaultEntry(XAssetType type, const char *name)
     }
     asset.type = type;
     ++g_defaultAssetCount;
+    if ( g_defaultAssetCount <= 200 ) // port (OLA M1): asset que falta en las zonas cargadas -> se usa el de por defecto
+        fprintf(stderr, "[DB] asset por defecto: %s '%s'\n", DB_GetXAssetTypeName(type), name);
     newEntry = &DB_AllocXAssetEntry(type, 0)->entry;
     DB_CloneXAssetInternal(&asset, &newEntry->asset);
     hash = DB_HashForName(name, type);

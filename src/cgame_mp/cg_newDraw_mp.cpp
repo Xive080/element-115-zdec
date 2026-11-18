@@ -5078,6 +5078,11 @@ void    CG_DrawCursorhint(
                         scrPlace = &scrPlaceView[localClientNum];
                         if (cgameGlob->cursorHintIcon == 3)
                         {
+                            // port (OLA M1): HINT_NOICON sin cadena (Kino: pad del teletransportador recien
+                            // enlazado, cursorHintString < 0) -> no hay texto que dibujar; KB llamaba a
+                            // UI_TextWidth(NULL) y saltaba el assert de r_font.cpp
+                            if (!displayString || !*displayString)
+                                return;
                             length = (float)UI_TextWidth(displayString, 0, font, fontscale);
                             height = (float)UI_TextHeight(font, fontscale);
                             x = (float)((float)((float)(rect->w + scale) + length) * -0.5) - rect->x;
