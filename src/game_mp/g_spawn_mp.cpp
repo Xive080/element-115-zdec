@@ -1133,7 +1133,7 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
                 Scr_AddObject(id, SCRIPTINSTANCE_SERVER);
             break;
         case F_MODEL:
-            v6 = G_ModelName(b[ofs]);
+            v6 = G_ModelName(*(unsigned __int16 *)&b[ofs]);   // el campo es de 16 bits (como la copia de F_MODEL): con b[ofs] los modelos >= 256 leian otro nombre (Shangri-La: power-up que roba el mono)
             Scr_AddConstString(v6, SCRIPTINSTANCE_SERVER);
             break;
         default:
