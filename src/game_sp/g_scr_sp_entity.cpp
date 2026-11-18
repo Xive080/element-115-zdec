@@ -1672,7 +1672,7 @@ static pathnode_link_override_t *Path_GetLinkOverride(pathnode_t *node)
     rec->node = node;
     rec->origLinks = node->constant.Links;
     rec->origCount = node->constant.totalLinkCount;
-    rec->links = (pathlink_s *)PMM_ALLOC(sizeof(pathlink_s) * node->constant.totalLinkCount, 4);
+    rec->links = (pathlink_s *)Ptr32_ArenaAlloc(sizeof(pathlink_s) * node->constant.totalLinkCount, 4); // LP64: Links es PTR32 -> dentro de la arena
     rec->count = node->constant.totalLinkCount;
     for (int i = 0; i < rec->count; ++i)
         rec->links[i] = rec->origLinks[i];
@@ -1692,7 +1692,7 @@ static void Path_LinkNodes(pathnode_t *from, pathnode_t *to)
             return;
     }
     int newCount = rec->count + 1;
-    pathlink_s *links = (pathlink_s *)PMM_ALLOC(sizeof(pathlink_s) * newCount, 4);
+    pathlink_s *links = (pathlink_s *)Ptr32_ArenaAlloc(sizeof(pathlink_s) * newCount, 4); // LP64: Links es PTR32
     float dz = from->constant.vOrigin[2] - to->constant.vOrigin[2];
     float dx = from->constant.vOrigin[0] - to->constant.vOrigin[0];
     float dy = from->constant.vOrigin[1] - to->constant.vOrigin[1];
@@ -1706,7 +1706,7 @@ static void Path_LinkNodes(pathnode_t *from, pathnode_t *to)
     ++from->dynamic.wLinkCount;
     from->constant.Links = links;
     from->constant.totalLinkCount = newCount;
-    PMM_FREE((unsigned __int8 *)rec->links, sizeof(pathlink_s) * rec->count, 4);
+    Ptr32_ArenaFree(rec->links);
     rec->links = links;
     rec->count = newCount;
 }
@@ -1725,7 +1725,7 @@ static void Path_UnlinkNodes(pathnode_t *from, pathnode_t *to)
     if (!found)
         return;
     int newCount = rec->count - 1;
-    pathlink_s *links = (pathlink_s *)PMM_ALLOC(sizeof(pathlink_s) * newCount, 4);
+    pathlink_s *links = (pathlink_s *)Ptr32_ArenaAlloc(sizeof(pathlink_s) * newCount, 4); // LP64: Links es PTR32
     pathlink_s *out = links;
     for (int i = 0; i < rec->count; ++i)
     {
@@ -1736,7 +1736,7 @@ static void Path_UnlinkNodes(pathnode_t *from, pathnode_t *to)
     from->constant.totalLinkCount = newCount;
     if (found - rec->links < from->dynamic.wLinkCount)
         --from->dynamic.wLinkCount;
-    PMM_FREE((unsigned __int8 *)rec->links, sizeof(pathlink_s) * rec->count, 4);
+    Ptr32_ArenaFree(rec->links);
     rec->links = links;
     rec->count = newCount;
 }
@@ -1766,7 +1766,7 @@ static void Path_FreeLinkOverride(pathnode_link_override_t *rec)
         rec->node->constant.totalLinkCount = rec->origCount;
         rec->node->dynamic.wLinkCount = rec->origCount;
     }
-    PMM_FREE((unsigned __int8 *)rec->links, sizeof(pathlink_s) * rec->count, 4);
+    Ptr32_ArenaFree(rec->links);
     g_pathnodeLinkAllocator.free(rec);
 }
 
