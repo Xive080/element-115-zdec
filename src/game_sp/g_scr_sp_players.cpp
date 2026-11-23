@@ -304,6 +304,13 @@ static void G_m_setwatersheeting(scr_entref_t entref)
     SV_GameSendServerCommand(entref.entnum, SV_CMD_RELIABLE, va("%c %i %i", '!', on, duration));
 }
 
+// zombies: givegamerpicture( <name>, <all> ) - SP binds it to 0x00651a30, an empty function shared by several stubs (the
+// gamer picture is a platform profile award): it does nothing. Shangri-La's sidequest reward (zombie_temple_achievement.gsc
+// givegamerpicture_wrapper) called the not-ported stub and raised a script error. Same no-op here.
+static void G_m_givegamerpicture(scr_entref_t)
+{
+}
+
 // zombies: allowprone (SP 0x006121a0). Storage port; movement consumers still need a port.
 static void G_m_allowprone(scr_entref_t entref)
 {
@@ -595,6 +602,7 @@ const BuiltinMethodDef g_sp_players_methods[] =
     { "visionsetnaked", G_SP_PlayerVisionSetNaked, 0 },
     { "getvisionsetnaked", G_SP_GetVisionSetNaked, 0 },
     { "allowprone", G_m_allowprone, 0 },
+    { "givegamerpicture", G_m_givegamerpicture, 0 },
     { "settransported", G_m_settransported, 0 },
     { "setwatersheeting", G_m_setwatersheeting, 0 },
     { "allowcrouch", G_m_allowcrouch, 0 },
