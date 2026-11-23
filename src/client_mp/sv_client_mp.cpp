@@ -3258,6 +3258,17 @@ gentity_s *__cdecl SV_AddTestClient()
             name = friendName;
         else
             name = SV_BotNameRandom();
+        // Port Element 115: el jugador local entra por este cliente de prueba; su nombre es el que se eligio en el menu (H11_NAME), no uno al azar
+        char menuName[32];
+        if (const char *mn = getenv("H11_NAME"))
+        {
+            int k = 0;
+            for (; mn[k] && k < 16; ++k)
+                menuName[k] = (mn[k] == '\\' || mn[k] == '"' || mn[k] == ';' || (unsigned char)mn[k] < 32) ? '_' : mn[k];
+            menuName[k] = 0;
+            if (k)
+                name = menuName;
+        }
         xuid = -256;
         XUIDToString(&xuid, xuidStr);
         sprintf(
